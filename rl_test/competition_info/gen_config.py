@@ -1,6 +1,12 @@
 import copy
 import numpy as np
+#######
 
+#This is the configuration which will be used to setup the observation space for your agent
+#You need to update the config_dict_competition to match your observation space requirements!!!
+#Changing other settings which are not Observation parameters will result in DISQUALIFICATION of that submission
+
+######
 
 ### Constants ###
 EQUATORIAL_RADIUS = 6378137.0  # meters (https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html)
@@ -11,8 +17,8 @@ EPSG_3857_EXT_Y = 20048966.104014594 # meters (https://epsg.io/3857)
 
 LINE_INTERSECT_TOL = 1e-9
 
-### Standard Configuration Dictionary ###
-config_dict_std = {
+### Competition Configuration ###
+config_dict_competition = {
 
     # Geometry parameters
     "gps_env":             False,  # option to use a real world location for the game
@@ -54,7 +60,7 @@ config_dict_std = {
     "max_time":         600.0,  # maximum time (seconds) per episode
     "tagging_cooldown":  60.0,  # cooldown on an agent (seconds) after they tag another agent, to prevent consecutive tags
     "tag_on_collision": False,  # option for setting the agent to a tagged state upon collsion with an obstacle
-    "tag_on_oob":       False,  # option for setting the agent to a tagged state upon driving out-of-bounds
+    "tag_on_oob":        True,  # option for setting the agent to a tagged state upon driving out-of-bounds
 
     # Observation parameters
     "normalize_obs":        True,  # flag for normalizing the observation space
@@ -171,6 +177,7 @@ LIDAR_DETECTION_CLASS_MAP = {class_name: i for i, class_name in enumerate(lidar_
 ### Action Map ###
 # maps discrete action id to (speed, heading)
 ACTION_MAP = []
+
 for spd in [1.0, 0.5]:
     for hdg in range(180, -180, -45):
         ACTION_MAP.append([spd, hdg])
