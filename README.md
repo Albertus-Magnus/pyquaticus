@@ -3,94 +3,60 @@ This is a [PettingZoo](https://pettingzoo.farama.org/) environment for maritime 
 
 ## Motivation
 This PettingZoo is a _lightweight_ environment for developing algorithms to play multi-agent Capture-the-Flag with surface vehicle dynamics.
-
-The primary motivation is to enable quick iteration of algorithm development or training loops for Reinforcement Learning (RL). The implementation is pure-Python and supports faster-than-real-time execution and can easily be parallelized on a cluster. This is critical for scaling up learning-based techniques before transitioning to higher-fidelity simulation and/or USV hardware.
-
-The default vehicle dynamics are based on the [MOOS-IvP](https://oceanai.mit.edu/moos-ivp/pmwiki/pmwiki.php?n=Main.HomePage) `uSimMarine` dynamics [here](https://oceanai.mit.edu/ivpman/pmwiki/pmwiki.php?n=IvPTools.USimMarine). MOOS-IvP stands for Mission Oriented Operating Suite with Interval Programming. The IvP addition to the core MOOS software package is developed and maintained by the Laboratory for Autonomous Marine Sensing Systems at MIT. MOOS-IvP is a popular choice for maritime autonomy filling a similar role to the Robot Operating System (ROS) used in other robotics fields.
-
-## Key Capabilities
+## Example
 * Supports standard PettingZoo interface for multi-agent RL
 * Pure-Python implementation without many dependencies
-* Easy integration with standard learning frameworks
-* Implementation of MOOS-IvP vehicle dynamics such that algorithms and learning policies can easily be ported to MOOS-IvP and deployed on hardware
-* Baseline policies to train against
-* Parameterized number of agents
-* Configurable observation space
-* Decentralized and agent-relative observation space
-* Configurable reward function
-* Supports custom agent dynamics
-* Simulate real-world maritime scenarios of any aquatic region on earth with [OpenStreetMap](https://www.openstreetmap.org/)-based environments
-* Example integration with [RLLib](https://docs.ray.io/en/latest/rllib/index.html) for reinforcement learning
-* Easy deployment on MOOS-compatible robots  
-
-
-## Installation
-### Conda
-It is highly recommended to use a `conda` environment. Assuming you have [Anaconda](https://www.anaconda.com/) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html) installed, run the following from the top-level of this repository:
-
-```
-# create a small virtual environment -- just enough to run the PettingZoo environment
-./setup-conda-env.sh light
-```
-
-```
-# or create the full virtual environment -- with RLLib and PyTorch
-./setup-conda-env.sh full
-```
-
-You can then activate the environment with: `conda activate env-light/` or `conda activate env-full/`
-### Venv
-Create a virtual environment with Python 3.10
-
-Source the environment
-
-In the pyquaticus root directory, run either
-```
-pip install -e .
-```
-or
 ```
 pip install -e .[torch,ray]
 ```
 
-## Basic Tests
 
-* Random action: `python ./test/rand_env_test.py`
-* Control with arrow keys: `python ./test/arrowkeys_test.py`
-  * control agents with WASD and the arrow keys
+# Master Project Documentation Magnus Amann 
+## 22.8.2025 – 24.10.2530.9.2025
 
-## Environment Visuals
+## Setting up Pyquatics
+Followed instructions on readme on github. Had to set up Miniconda.
+## Setting up Miniconda
+Miniconda should be installed but „conda: not found“. Reading the Getting Started on it’s website for correct setup…
+Installing again but using the documentation on the site: https://www.anaconda.com/docs/getting-started/miniconda/install#linux-x86
+(it looks like the SHA-256 hash value of the other install download "Miniconda3-latest-Linux-x86_64.sh" was wrong, the new one seems correct)
+I selected the option to automatically initialize conda (reversible by `conda init --reverse $SHELL`). This made the terminal display "(base) " at the beginnning of each prompt line.
+Conda commands are now working.
+## Setting up Pyquatics (continued)
+Following the instructions on:
+https://github.com/mit-ll-trusted-autonomy/pyquaticus/tree/main?tab=readme-ov-file
+Selected the option to "create the full virtual environment -- with RLLib and PyTorch".
+Created environment at /home/magnus-amann/Master_Project/pyquaticus-main/env-full
+Some error was shown in the output (~~see Anhang 1~~)
 
-* Rendered with `pygame`
-* Blue vs Red 1v1 or multiagent teams
-* **Flag keepout zone:** circle (team's color) drawn around flag
-* **Flag pickup zone:** black circle drawn around flag
-* **Tagging cooldown**: receding black circle around agent
-* **Out-of-bounds**: yellow halo around agent (occurs if out-of-bounds)
-* **Drive-to-home**: green halo around agent (occurs if tagged)
-* **Lines between agents:**
-  * Drawn between agents of opposite teams
-  * **Green**: within `2*catch_radius`
-  * **Orange/Yellow**: within `1.5*catch_radius`
-  * **Red**: within `catch_radius`
+I should now be able to activate the pyquaticus environment with:
+conda activate /home/magnus-amann/Master_Project/pyquaticus-main/env-full
+Failed.
+Troubleshooting:
+Retrying './setup-conda-env.sh full'
+On the pyquatics readme a different command to activate the environment was found:
+conda activate env-full/
+Now the environment could be activated.
+### Testing the Pyquatics setup
+Continuing with the Basic Tests section of the Pyquatics readme, both tests did not run correctly.
+$ python ./test/rand_env_test.py
+Traceback (most recent call last):
+  File "/home/magnus-amann/Master_Project/pyquaticus-main/./test/rand_env_test.py", line 24, in <module>
+    import gymnasium as gym
+ModuleNotFoundError: No module named 'gymnasium'
+Might be related to the error when creating the environment?
+Error suggested missing metadata from git was an issue. Restarted the process after cloning the repository (instead of downloading the zip).
+Now the basic tests work.
+Implementing the naive approach
+Looking at the files in the pyquaticus/test/ folder, heuristic agents seem to be sourced from pyquaticus.base_policies.base_combined.
 
-## Configurable Reward
+In the base_combined.py file the behaviour of this particular agent seems to be sourced from base_defender and base_attacker (indeed this agent is described as a combination of both of these in a readme in this folder).
 
-Pyquaticus comes with a simple sparse reward, but it can be extended with different reward structures. See [rewards.py](https://github.com/mit-ll-trusted-autonomy/pyquaticus/blob/main/pyquaticus/utils/rewards.py) for more information.
+The key import here is:
+import pyquaticus.base_policies.base_defend as defend_policy
+Copied the file heuristic_test.py and began adjusting it.
+First change the number of agents to three per team. To change the behaviour to that of Otho-Indep for now we just have to change the mode of a team from "hard" to "nothing". More nuanced changes to the behaviour will require to modify a base_policies file.
 
-## Docker
-
-Out-of-date, do not use. Coming soon!
-
-## Distribution and Disclaimer Statements
-
-DISTRIBUTION STATEMENT A. Approved for public release. Distribution is unlimited.
-
-This material is based upon work supported by the Under Secretary of Defense for Research and Engineering under Air Force Contract No. FA8702-15-D-0001. Any opinions, findings, conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the Under Secretary of Defense for Research and Engineering.
-
-© 2023 Massachusetts Institute of Technology.
-
-The software/firmware is provided to you on an As-Is basis
-
-Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, U.S. Government rights in this work are defined by DFARS 252.227-7013 or DFARS 252.227-7014 as detailed above. Use of this work other than as specifically authorized by the U.S. Government may violate any copyrights that exist in this work.
+The game already starts with the agents in reasonable defensive positions. 
+Whoever submitted this as entry for the competition was a mad genius to get seccond and third rank by only changing "hard" to "nothing" three times...
 
