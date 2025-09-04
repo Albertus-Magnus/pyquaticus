@@ -12,7 +12,9 @@ pip install -e .[torch,ray]
 
 
 # Master Project Documentation Magnus Amann 
-## 22.8.2025 – 24.10.2530.9.2025
+## 22.8.2025 – ~~24.10.25~~30.9.2025
+
+![alt text](https://media.discordapp.net/attachments/836610886634307588/1413286767229931521/Screenshot_from_2025-08-29_00-49-27.png?ex=68bb615e&is=68ba0fde&hm=d51ee06a789a39e400d5698bfdcbeaad93cc86848b892db6ca58de758a220fd7&=&format=webp&quality=lossless)
 
 ## Setting up Pyquatics
 Followed instructions on readme on github. Had to set up Miniconda.
