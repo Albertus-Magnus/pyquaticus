@@ -70,3 +70,23 @@ import pyquaticus.base_policies.base_defend as defend_policy
 * The game already starts with the agents in reasonable defensive positions. 
 * Whoever submitted this as entry for the competition was a mad genius to get seccond and third rank by only changing "hard" to "nothing" three times...
 
+## The search for the Rolling Horizon Evolutionary Algorithm (RHEA) or the MRHE
+* Paper is cited by the main paper: Rolling Horizon Evolutionary Algorithms for General Video Game Playing
+* This paper mentions a github repo: https://github.com/rdgain/ExperimentData/tree/NTBEA-RHEA-2019
+* This repo contains only stats data and a link to another repo: https://github.com/Bam4d/NTBEA
+* This repo contains the NTBEA algorithm which is not the RHE or MRHE but an algorithm that is used to optimize the parameters of RHE.
+* Chris Bamford (Bam4d) who is the owner of that repository also has other repositories on github:
+```
+Older and not well documented:
+https://github.com/Bam4d/ALE-Rolling-Horizon
+A visualization tool, perhaps useful at a different stage but not RHEA:
+https://github.com/rdgain/VERTIGO
+Promising, seemingly well documented RHEA:
+https://github.com/Bam4d/RollingHorizonEvolutionaryAlgorithm
+```
+* No MRHE yet found. To use RHEA on a single-member team it has to be integrated into the pyquaticus setup.
+### Integrating RollingHorizonEvolutionaryAlgorithm into pyquaticus
+* New policy has to be created.
+* Parameters and initialization have to be figured out.
+* First trying to get a single agent RHEA running in pyquaticus framework.
+
