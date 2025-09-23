@@ -90,3 +90,5 @@ https://github.com/Bam4d/RollingHorizonEvolutionaryAlgorithm
 * Parameters and initialization have to be figured out.
 * First trying to get a single agent RHEA running in pyquaticus framework.
 
+![plan_tuesday](https://github.com/user-attachments/assets/c81034a8-84bd-4990-b6cf-d6e455de826e)
+
