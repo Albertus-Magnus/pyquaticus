@@ -118,7 +118,7 @@ class Heuristic_CTF_Agent(BaseAgentPolicy):
                         try:
                             self._other_action = self._action_space.sample()
                         except Exception:
-                            print("marker 124")
+                            print("marker 124") #TODO this is the problem right now (21.27 23.09.2025)
                             self._other_action = (0.0, 0.0) if continuous else -1
                     else:
                         print("marker 386")
