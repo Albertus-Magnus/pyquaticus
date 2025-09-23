@@ -59,8 +59,8 @@ class Heuristic_CTF_Agent(BaseAgentPolicy):
         env: Union[PyQuaticusEnv, PyQuaticusMoosBridge],
         flag_keepout: float = config_dict_std["flag_keepout"],
         catch_radius: float = config_dict_std["catch_radius"],
-        continuous: bool = False,
-        mode: str = "easy",
+        continuous: bool = True,
+        mode: str = "nothing",
         defensiveness: float = 20.0,
     ):
         super().__init__(agent_id, env)
