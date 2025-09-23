@@ -71,20 +71,24 @@ class Heuristic_CTF_Agent(BaseAgentPolicy):
         self.defensiveness = defensiveness
         self.continuous = continuous
         self.flag_keepout = flag_keepout
-        self.base_attacker = attack_policy.BaseAttacker(
-            self.id,
-            env,
-            continuous,
-            mode,
-        )
-        self.base_defender = defend_policy.BaseDefender(
-            self.id,
-            env,
-            flag_keepout,
-            catch_radius,
-            continuous,
-            mode,
-        )
+        if mode != "rhea":
+            self.base_attacker = attack_policy.BaseAttacker(
+                self.id,
+                env,
+                continuous,
+                mode,
+            )
+            self.base_defender = defend_policy.BaseDefender(
+                self.id,
+                env,
+                flag_keepout,
+                catch_radius,
+                continuous,
+                mode,
+            )
+        else:
+            self.base_attacker = None
+            self.base_defender = None
 
         scrimmage_line = env.scrimmage_coords
         flag_line = np.array(
@@ -256,19 +260,17 @@ class Heuristic_CTF_Agent(BaseAgentPolicy):
             # use RHEA instance if available
             if self.rhea is None:
                 # fallback to attacker if not initialized
-                print("RHEA not initialized, falling back to base attacker")
-                self.mode = "easy"
-                self.base_attacker.mode = "easy"
-                return self.base_attacker.compute_action(obs, info)
+                print("RHEA not initialized, falling back to failsafe")
+                self.mode = "nothing"
+                return self.compute_action(obs, info)
             # let the internal wrapper snapshot the current env state for rollouts
             try:
                 return self.rhea.compute_action(obs, info)
             except Exception:
                 # on any failure, fallback to base attacker
-                print("Failure: on any failure, fallback to base attacker")
-                self.mode = "easy"
-                self.base_attacker.mode = "easy" #idk which of these is correct...
-                return self.base_attacker.compute_action(obs, info)
+                print("Failure: on any failure, fallback to failsafe")
+                self.mode = "nothing"
+                return self.compute_action(obs, info)
 
         if self.mode == "easy":
             # Opp is close - needs to defend:
