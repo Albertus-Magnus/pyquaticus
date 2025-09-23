@@ -111,11 +111,17 @@ class Heuristic_CTF_Agent(BaseAgentPolicy):
                     self._max_speed = max_speed
                     # snapshot that will be used as rollout starting point
                     self._start_env = None
-                    # default other agents action (stationary)
-                    if continuous:
-                        self._other_action = (0.0, 0.0)
+                    # detect action space for this agent (if available) and keep for sampling
+                    self._action_space = self._try_agent_action_space()
+                    # default other agents action (stationary) or sampled from action_space if possible
+                    if self._action_space is not None:
+                        try:
+                            self._other_action = self._action_space.sample()
+                        except Exception:
+                            self._other_action = (0.0, 0.0) if continuous else -1
                     else:
-                        self._other_action = -1
+                        self._other_action = (0.0, 0.0) if continuous else -1
+
                 def _try_agent_action_space(self):
                     """
                     Try to find an action space object for this agent on the wrapped env.
@@ -147,7 +153,7 @@ class Heuristic_CTF_Agent(BaseAgentPolicy):
 
                 def get_random_action(self):
                     # If the wrapped env exposes an action space for the agent, sample from it
-                    space = self._try_agent_action_space()
+                    space = self._action_space or self._try_agent_action_space()
                     if space is not None:
                         try:
                             return space.sample()
@@ -188,7 +194,14 @@ class Heuristic_CTF_Agent(BaseAgentPolicy):
                             # other agents: keep them stationary / default
                             for tid in (self._teammate_ids + self._opponent_ids):
                                 if tid != self._agent_id:
-                                    action_dict[tid] = self._other_action
+                                    # if an action space exists, sample for other agents to ensure compatibility
+                                    if self._action_space is not None:
+                                        try:
+                                            action_dict[tid] = self._action_space.sample()
+                                        except Exception:
+                                            action_dict[tid] = self._other_action
+                                    else:
+                                        action_dict[tid] = self._other_action
                             try:
                                 # step the simulated env
                                 obs, reward, terminated, truncated, info = sim_env.step(action_dict)
@@ -224,7 +237,13 @@ class Heuristic_CTF_Agent(BaseAgentPolicy):
                     action_dict = {self._agent_id: action}
                     for tid in (self._teammate_ids + self._opponent_ids):
                         if tid != self._agent_id:
-                            action_dict[tid] = self._other_action
+                            if self._action_space is not None:
+                                try:
+                                    action_dict[tid] = self._action_space.sample()
+                                except Exception:
+                                    action_dict[tid] = self._other_action
+                            else:
+                                action_dict[tid] = self._other_action
                     try:
                         self._py_env.step(action_dict)
                     except Exception:
