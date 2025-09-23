@@ -38,6 +38,15 @@ from pyquaticus.envs.pyquaticus import PyQuaticusEnv, Team
 from pyquaticus.moos_bridge.pyquaticus_moos_bridge import PyQuaticusMoosBridge
 from pyquaticus.utils.utils import angle180, dist, line_intersection
 
+# NEW imports for RHEA integration
+import copy
+import numpy as _np
+try:
+	from RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea import RollingHorizonEvolutionaryAlgorithm
+except Exception:
+	# Try alternative import path if package layout differs #TODO this exception can be removed
+	from RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea import RollingHorizonEvolutionaryAlgorithm
+
 MODES = {"easy", "medium", "hard", "nothing", "rhea"}
 
 
@@ -83,6 +92,140 @@ class Heuristic_CTF_Agent(BaseAgentPolicy):
         )
         self.midpoint_global = line_intersection(scrimmage_line, flag_line)
 
+        ######START of cpilot edit
+        # If using RHEA, create a small adapter that implements the minimal env API RHEA expects
+        self.rhea = None
+        if self.mode == "rhea":
+            # minimal SingleAgent wrapper
+            class SingleAgentRHEAEnv:
+                def __init__(self, py_env, agent_id, teammate_ids, opponent_ids, continuous, max_speed):
+                    self._py_env = py_env
+                    self._agent_id = agent_id
+                    self._teammate_ids = list(teammate_ids)
+                    self._opponent_ids = list(opponent_ids)
+                    self._continuous = continuous
+                    self._max_speed = max_speed
+                    # snapshot that will be used as rollout starting point
+                    self._start_env = None
+                    # default other agents action (stationary)
+                    if continuous:
+                        self._other_action = (0.0, 0.0)
+                    else:
+                        self._other_action = -1
+
+                def set_start_state(self, obs, info):
+                    # snapshot the current env for fast rollouts (deepcopy)
+                    try:
+                        self._start_env = copy.deepcopy(self._py_env)
+                    except Exception:
+                        # fallback: keep reference to live env (less safe)
+                        self._start_env = self._py_env
+
+                def get_random_action(self):
+                    # produce a continuous-style action: (speed, heading)
+                    if self._continuous:
+                        speed = _np.random.random() * self._max_speed
+                        heading = (_np.random.random() * 360.0) - 180.0
+                        return (speed, heading)
+                    else:
+                        # discrete fallback
+                        return int(_np.random.randint(0, 15))
+
+                def evaluate_rollout(self, solutions, discount_factor=None, ignore_frames=0):
+                    """
+                    solutions: numpy array-like of shape (num_evals, rollout_length, ...) where ... is action representation
+                    Return: 1D numpy array of scores for each solution
+                    """
+                    scores = []
+                    # iterate candidate solutions
+                    for sol in solutions:
+                        # use a fresh copy of the start env
+                        try:
+                            sim_env = copy.deepcopy(self._start_env)
+                        except Exception:
+                            sim_env = copy.deepcopy(self._py_env)
+                        total_reward = 0.0
+                        discount = 1.0
+                        # each element in sol is an action for the controlled agent
+                        for action in sol:
+                            # build action dict for all agents
+                            action_dict = {}
+                            # controlled agent action
+                            action_dict[self._agent_id] = action
+                            # other agents: keep them stationary / default
+                            for tid in (self._teammate_ids + self._opponent_ids):
+                                if tid != self._agent_id:
+                                    action_dict[tid] = self._other_action
+                            try:
+                                # step the simulated env
+                                obs, reward, terminated, truncated, info = sim_env.step(action_dict)
+                            except Exception:
+                                # older gym versions may return 4-tuple
+                                try:
+                                    obs, reward, done, info = sim_env.step(action_dict)
+                                    terminated = done.get(self._agent_id, False) if isinstance(done, dict) else done
+                                    truncated = False
+                                except Exception:
+                                    # can't step: give zero score
+                                    terminated = True
+                                    truncated = True
+                                    reward = {self._agent_id: 0.0}
+                            # accumulate reward for the agent
+                            r = 0.0
+                            if isinstance(reward, dict):
+                                r = float(reward.get(self._agent_id, 0.0))
+                            else:
+                                # single-number reward
+                                r = float(reward)
+                            total_reward += discount * r
+                            if discount_factor is not None:
+                                discount *= discount_factor
+                            # optional ignore frames: not used in this simple impl
+                            if terminated or truncated:
+                                break
+                        scores.append(total_reward)
+                    return _np.array(scores)
+
+                def perform_action(self, action):
+                    # direct perform a single action on the real env
+                    action_dict = {self._agent_id: action}
+                    for tid in (self._teammate_ids + self._opponent_ids):
+                        if tid != self._agent_id:
+                            action_dict[tid] = self._other_action
+                    try:
+                        self._py_env.step(action_dict)
+                    except Exception:
+                        pass
+
+                def is_game_over(self):
+                    # best-effort check: if the real env exposes done info/state, try it
+                    try:
+                        return getattr(self._py_env, "game_over", False)
+                    except Exception:
+                        return False
+
+                def get_current_score(self):
+                    # best-effort: return 0 (RHEA run() logging only)
+                    return 0.0
+
+            # create the wrapper and RHEA instance with reasonable defaults
+            self._rhea_env_wrapper = SingleAgentRHEAEnv(
+                env,
+                self.id,
+                self.teammate_ids,
+                self.opponent_ids,
+                continuous=self.continuous,
+                max_speed=self.max_speed,
+            )
+            # Tune these hyper-parameters to your needs
+            rollout_actions_length = 8
+            mutation_probability = 0.2
+            num_evals = 16
+            self.rhea = RollingHorizonEvolutionaryAlgorithm(
+                rollout_actions_length, self._rhea_env_wrapper, mutation_probability, num_evals
+            )
+        ######END of cpilot edit
+
     def set_mode(self, mode: str):
         """Sets difficulty mode."""
         if mode not in MODES:
@@ -110,12 +253,17 @@ class Heuristic_CTF_Agent(BaseAgentPolicy):
 
         # RHEA algorithm (only works for a single agent so far):
         if self.mode == "rhea":
-            # TODO unfinished, RHEA needs to be included here. Add correct import and use appropriate method. Some parameter probably will make it work for a single agent?
-            #TODO [] import and [] parameter for following method are to be added:
-            rhea = RollingHorizonEvolutionaryAlgorithm(rollout_length, environment, mutation_probability, num_evals)
-            return rhea._get_next_action() #TODO [] untested, [] also check if this returns an appropriate format as action for copy_rhea_test.py
-            #return rhea.compute_action
-            #return RollingHorizonEvolutionaryAlgorithm._get_next_action
+            # use RHEA instance if available
+            if self.rhea is None:
+                # fallback to attacker if not initialized
+                print("RHEA not initialized, falling back to base attacker")
+                return self.base_attacker.compute_action(obs, info)
+            # let the internal wrapper snapshot the current env state for rollouts
+            try:
+                return self.rhea.compute_action(obs, info)
+            except Exception:
+                # on any failure, fallback to base attacker
+                return self.base_attacker.compute_action(obs, info)
 
         if self.mode == "easy":
             # Opp is close - needs to defend:
