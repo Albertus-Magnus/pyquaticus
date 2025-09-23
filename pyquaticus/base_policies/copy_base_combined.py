@@ -257,12 +257,17 @@ class Heuristic_CTF_Agent(BaseAgentPolicy):
             if self.rhea is None:
                 # fallback to attacker if not initialized
                 print("RHEA not initialized, falling back to base attacker")
+                self.mode = "easy"
+                self.base_attacker.mode = "easy"
                 return self.base_attacker.compute_action(obs, info)
             # let the internal wrapper snapshot the current env state for rollouts
             try:
                 return self.rhea.compute_action(obs, info)
             except Exception:
                 # on any failure, fallback to base attacker
+                print("Failure: on any failure, fallback to base attacker")
+                self.mode = "easy"
+                self.base_attacker.mode = "easy" #idk which of these is correct...
                 return self.base_attacker.compute_action(obs, info)
 
         if self.mode == "easy":

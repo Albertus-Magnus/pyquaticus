@@ -32,6 +32,7 @@ from pyquaticus.base_policies.utils import (dist_rel_bearing_to_local_rect,
 from pyquaticus.envs.pyquaticus import PyQuaticusEnv, Team
 from pyquaticus.moos_bridge.pyquaticus_moos_bridge import PyQuaticusMoosBridge
 from pyquaticus.utils.utils import angle180, closest_point_on_line, dist
+from pyquaticus.base_policies.copy_base_combined import copy_base_combined
 
 MODES = {"nothing", "easy", "medium", "hard", "competition_easy", "competition_medium"}
 
