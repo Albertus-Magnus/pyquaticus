@@ -14,7 +14,7 @@ config_dict = {}
 config_dict["max_time"] = 600.0
 config_dict["max_score"] = 100
 config_dict["render_agent_ids"] = True
-config_dict["dynamics"] = ["si", "si", "si", "si", "si", "si"]
+config_dict["dynamics"] = ["si", "si"]#["si", "si", "si", "si", "si", "si"]
 config_dict["sim_speedup_factor"] = 3
 
 env = pyquaticus_v0.PyQuaticusEnv(team_size=1, config_dict=config_dict,render_mode='human')
