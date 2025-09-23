@@ -116,6 +116,26 @@ class Heuristic_CTF_Agent(BaseAgentPolicy):
                         self._other_action = (0.0, 0.0)
                     else:
                         self._other_action = -1
+                def _try_agent_action_space(self):
+                    """
+                    Try to find an action space object for this agent on the wrapped env.
+                    Returns a gym-space-like object or None if not found.
+                    """
+                    try:
+                        # Common multi-agent patterns: env.action_space is a dict-like
+                        sp = getattr(self._py_env, "action_space", None)
+                        if sp is not None:
+                            try:
+                                return sp[self._agent_id]
+                            except Exception:
+                                return sp
+                        # some env implementations expose per-player spaces
+                        players = getattr(self._py_env, "players", None)
+                        if players is not None and self._agent_id in players:
+                            return getattr(players[self._agent_id], "action_space", None)
+                    except Exception:
+                        pass
+                    return None
 
                 def set_start_state(self, obs, info):
                     # snapshot the current env for fast rollouts (deepcopy)
@@ -126,6 +146,15 @@ class Heuristic_CTF_Agent(BaseAgentPolicy):
                         self._start_env = self._py_env
 
                 def get_random_action(self):
+                    # If the wrapped env exposes an action space for the agent, sample from it
+                    space = self._try_agent_action_space()
+                    if space is not None:
+                        try:
+                            return space.sample()
+                        except Exception:
+                            # fall through to previous behaviour if sampling fails
+                            pass
+
                     # produce a continuous-style action: (speed, heading)
                     if self._continuous:
                         speed = _np.random.random() * self._max_speed
@@ -369,11 +398,21 @@ class Heuristic_CTF_Agent(BaseAgentPolicy):
             away_x.append(ag[0])
             away_y.append(ag[1])
 
-        home_mean = np.array([np.mean(home_x), np.mean(home_y)])
-        home_std = np.mean(np.array([np.std(home_x), np.std(home_y)]))
+        # Safe defaults to avoid numpy warnings on empty slices.
+        if len(home_x) == 0 or len(home_y) == 0:
+            home_mean = np.array([0.0, 0.0])
+            home_std = 0.0
+        else:
+            home_mean = np.array([np.mean(home_x), np.mean(home_y)])
+            home_std = float(np.mean(np.array([np.std(home_x), np.std(home_y)])))
 
-        away_mean = np.array([np.mean(away_x), np.mean(away_y)])
-        away_std = np.mean(np.array([np.std(away_x), np.std(away_y)]))
+        # If no enemies detected, place their "mean" far away so is_close_to_flag/is_far_from_flag behave sensibly.
+        if len(away_x) == 0 or len(away_y) == 0:
+            away_mean = np.array([1e6, 1e6])
+            away_std = 0.0
+        else:
+            away_mean = np.array([np.mean(away_x), np.mean(away_y)])
+            away_std = float(np.mean(np.array([np.std(away_x), np.std(away_y)])))
 
         return [home_mean, home_std], [away_mean, away_std]
 
