@@ -41,11 +41,11 @@ from pyquaticus.utils.utils import angle180, dist, line_intersection
 # NEW imports for RHEA integration
 import copy
 import numpy as _np
-try:
-	from RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea import RollingHorizonEvolutionaryAlgorithm
-except Exception:
+#try:
+from RollingHorizonEA.rhea import RollingHorizonEvolutionaryAlgorithm
+#except Exception:
 	# Try alternative import path if package layout differs #TODO this exception can be removed
-	from RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea import RollingHorizonEvolutionaryAlgorithm
+#	from RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea import RollingHorizonEvolutionaryAlgorithm
 
 MODES = {"easy", "medium", "hard", "nothing", "rhea"}
 
