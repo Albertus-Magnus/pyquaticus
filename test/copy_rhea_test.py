@@ -3,8 +3,8 @@ import os
 import os.path
 import pyquaticus
 from pyquaticus import pyquaticus_v0
-from pyquaticus.base_policies.base_attack import BaseAttacker
-from pyquaticus.base_policies.base_defend import BaseDefender
+#from pyquaticus.base_policies.base_attack import BaseAttacker
+#from pyquaticus.base_policies.base_defend import BaseDefender
 from pyquaticus.base_policies.copy_base_combined import Heuristic_CTF_Agent #changed it to copy_base_combined to create new difficulties/policies
 from pyquaticus.envs.pyquaticus import Team
 from collections import OrderedDict
@@ -33,7 +33,7 @@ temp_tags = env.state["tags"]
 
 H_one = Heuristic_CTF_Agent('agent_1', env, mode="rhea", continuous=True)
 
-R_one = Heuristic_CTF_Agent('agent_0', env, mode="hard", continuous=True)
+R_one = Heuristic_CTF_Agent('agent_0', env, mode="nothing", continuous=True) #changed to nothing for testing, hard was there before
 
 step = 0
 while True:

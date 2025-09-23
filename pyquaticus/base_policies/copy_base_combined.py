@@ -71,20 +71,20 @@ class Heuristic_CTF_Agent(BaseAgentPolicy):
         self.defensiveness = defensiveness
         self.continuous = continuous
         self.flag_keepout = flag_keepout
-        self.base_attacker = attack_policy.BaseAttacker(
-            self.id,
-            env,
-            continuous,
-            mode,
-        )
-        self.base_defender = defend_policy.BaseDefender(
-            self.id,
-            env,
-            flag_keepout,
-            catch_radius,
-            continuous,
-            mode,
-        )
+        #self.base_attacker = attack_policy.BaseAttacker(
+        #    self.id,
+        #    env,
+        #    continuous,
+        #    mode,
+        #)
+        #self.base_defender = defend_policy.BaseDefender(
+        #    self.id,
+        #    env,
+        #    flag_keepout,
+        #    catch_radius,
+        #    continuous,
+        #    mode,
+        #)
 
         scrimmage_line = env.scrimmage_coords
         flag_line = np.array(
