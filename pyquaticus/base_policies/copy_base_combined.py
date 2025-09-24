@@ -44,7 +44,7 @@ import numpy as _np
 #try:
 from RollingHorizonEA.rhea import RollingHorizonEvolutionaryAlgorithm
 #except Exception:
-	# Try alternative import path if package layout differs #TODO this exception can be removed
+	# Try alternative import path if package layout differs #this exception can be removed
 #	from RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea import RollingHorizonEvolutionaryAlgorithm
 
 MODES = {"easy", "medium", "hard", "nothing", "rhea"}
