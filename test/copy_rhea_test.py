@@ -6,6 +6,7 @@ from pyquaticus import pyquaticus_v0
 #from pyquaticus.base_policies.base_attack import BaseAttacker
 #from pyquaticus.base_policies.base_defend import BaseDefender
 from pyquaticus.base_policies.copy_base_combined import Heuristic_CTF_Agent #changed it to copy_base_combined to create new difficulties/policies
+from pyquaticus.base_policies.rhea_policy import RHEA_CTF_Agent
 from pyquaticus.envs.pyquaticus import Team
 from collections import OrderedDict
 from pyquaticus.config import ACTION_MAP
@@ -31,9 +32,11 @@ temp_captures = env.state["captures"]
 temp_grabs = env.state["grabs"]
 temp_tags = env.state["tags"]
 
-H_one = Heuristic_CTF_Agent('agent_1', env, mode="rhea", continuous=True)
+H_one = RHEA_CTF_Agent('agent_1', env, continuous=True)
+#H_one = Heuristic_CTF_Agent('agent_1', env, mode="rhea", continuous=True)
 
-R_one = Heuristic_CTF_Agent('agent_0', env, mode="nothing", continuous=True) #changed to nothing for testing, hard was there before
+R_one = RHEA_CTF_Agent('agent_0', env, continuous=True)
+#R_one = Heuristic_CTF_Agent('agent_0', env, mode="nothing", continuous=True) #changed to nothing for testing, hard was there before
 
 step = 0
 while True:

@@ -46,21 +46,21 @@ class RollingHorizonEvolutionaryAlgorithm():
         # The next best action is the first action from the solution space
         return self._solution[0]
 
-    def compute_action(self, obs=None, info=None):
+    #def compute_action(self, obs=None, info=None):
         """
         Public wrapper to compute the next action. If the provided environment
         wrapper exposes set_start_state(obs, info), call it so rollouts start
         from the current simulator state/observation.
         """
         # Let the environment wrapper snapshot any required state for rollouts
-        if hasattr(self._environment, "set_start_state"):
-            try:
-                self._environment.set_start_state(obs, info)
-            except Exception:
+    #    if hasattr(self._environment, "set_start_state"):
+    #        try:
+    #            self._environment.set_start_state(obs, info)
+    #        except Exception:
                 # don't fail if the env wrapper doesn't need or can't use the data
-                pass
+    #             pass
 
-        return self._get_next_action()
+    #    return self._get_next_action()
 
     def _shift_and_append(self, solution):
         """
