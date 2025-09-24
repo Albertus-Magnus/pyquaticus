@@ -177,15 +177,20 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
 
         # compute next action should be already implemented by _get_next_action
         action = self.rhea._get_next_action()
+        if action is None:
+            print("RHEA returned None action, falling back to ultra defensive")
+        else:
+            return action
 
         #fallback to ultra defensive:
         return self.action_from_vector(None, 0)
 
-    """def random_defense_action(self, enem_positions): #Perhaps this reminder of base_combined can be deleted...
+    def random_defense_action(self, enem_positions): #Perhaps this reminder of base_combined can be deleted...
         """
-    #    Randomly compute an action that steers the agent to it's own side of the field and sometimes
-    #    towards its flag.
-    """
+        (--Remains from base_combined--)
+        Randomly compute an action that steers the agent to it's own side of the field and sometimes
+        towards its flag.
+        """
         if np.random.random() < 0.25:
             # go to random point on segment between my flag and scrimmage line
             t = np.random.random()
@@ -228,11 +233,11 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
         if self.mode == "hard":
             return self.action_from_vector(goal_vec, 1)
         else:
-            return self.action_from_vector(goal_vec, 0.5)"""
+            return self.action_from_vector(goal_vec, 0.5)
 
     def update_state(self, obs, info: dict[str, dict]) -> None:
         """
-        (Remains from base_combined)
+        (--Remains from base_combined--)
         Method to convert the gym obs and info into data more relative to the
         agent.
 
@@ -320,7 +325,9 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
 
     def action_from_vector(self, vector, desired_speed_normalized):
         """
-        (Remains from base_combined)
+        (--Remains from base_combined--)
+        Convert a desired vector in local rectangular coordinates and a desired speed
+        (0 to 1) into either a continuous or discrete action.
         """
         if desired_speed_normalized == 0:
             if self.continuous:
