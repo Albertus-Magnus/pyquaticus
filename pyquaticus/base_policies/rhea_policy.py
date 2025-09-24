@@ -186,169 +186,169 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
         #fallback to ultra defensive:
         return self.action_from_vector(None, 0)
 
-    def random_defense_action(self, enem_positions): #Perhaps this reminder of base_combined can be deleted...
-        """
-        (--Remains from base_combined--)
-        Randomly compute an action that steers the agent to it's own side of the field and sometimes
-        towards its flag.
-        """
-        if np.random.random() < 0.25:
-            # go to random point on segment between my flag and scrimmage line
-            t = np.random.random()
-            goal_vec = (1 - t) * self.my_flag_loc + t * self.midpoint_local
+    # def random_defense_action(self, enem_positions): #Perhaps this reminder of base_combined can be deleted...
+    #     """
+    #     (--Remains from base_combined--)
+    #     Randomly compute an action that steers the agent to it's own side of the field and sometimes
+    #     towards its flag.
+    #     """
+    #     if np.random.random() < 0.25:
+    #         # go to random point on segment between my flag and scrimmage line
+    #         t = np.random.random()
+    #         goal_vec = (1 - t) * self.my_flag_loc + t * self.midpoint_local
 
-        else:
-            near_enemy_dist = np.inf
-            nearest_enemy = None
-            for en in enem_positions:
-                temp_enem_dist = en[0]
-                if temp_enem_dist < near_enemy_dist:
-                    near_enemy_dist = temp_enem_dist
-                    nearest_enemy = en
-            assert nearest_enemy is not None
-            if np.random.random() < 0.5:
-                goal_vec = rel_bearing_to_local_unit_rect(nearest_enemy[1])
-            else:
-                own_flag_dist = self.my_flag_distance
-                if own_flag_dist > self.flag_keepout + 2.0:
-                    goal_vec = rel_bearing_to_local_unit_rect(self.my_flag_bearing)
-                else:
-                    # want random point on segment between my flag and scrimmage line, but at least <defensiveness> meters from scrimmage line
-                    t = np.random.random()
-                    unit_vec = unit_vect_between_points(
-                        self.midpoint_local, self.my_flag_loc
-                    )
-                    endpoint = (
-                        self.midpoint_local
-                        + min(
-                            self.defensiveness,
-                            dist(self.midpoint_local, self.my_flag_loc),
-                        )
-                        * unit_vec
-                    )
-                    goal_vec = (1 - t) * self.my_flag_loc + t * endpoint
+    #     else:
+    #         near_enemy_dist = np.inf
+    #         nearest_enemy = None
+    #         for en in enem_positions:
+    #             temp_enem_dist = en[0]
+    #             if temp_enem_dist < near_enemy_dist:
+    #                 near_enemy_dist = temp_enem_dist
+    #                 nearest_enemy = en
+    #         assert nearest_enemy is not None
+    #         if np.random.random() < 0.5:
+    #             goal_vec = rel_bearing_to_local_unit_rect(nearest_enemy[1])
+    #         else:
+    #             own_flag_dist = self.my_flag_distance
+    #             if own_flag_dist > self.flag_keepout + 2.0:
+    #                 goal_vec = rel_bearing_to_local_unit_rect(self.my_flag_bearing)
+    #             else:
+    #                 # want random point on segment between my flag and scrimmage line, but at least <defensiveness> meters from scrimmage line
+    #                 t = np.random.random()
+    #                 unit_vec = unit_vect_between_points(
+    #                     self.midpoint_local, self.my_flag_loc
+    #                 )
+    #                 endpoint = (
+    #                     self.midpoint_local
+    #                     + min(
+    #                         self.defensiveness,
+    #                         dist(self.midpoint_local, self.my_flag_loc),
+    #                     )
+    #                     * unit_vec
+    #                 )
+    #                 goal_vec = (1 - t) * self.my_flag_loc + t * endpoint
 
-        if not self.on_sides:
-            goal_vec = goal_vec + get_avoid_vect(self.opp_team_pos, avoid_threshold=15)
+    #     if not self.on_sides:
+    #         goal_vec = goal_vec + get_avoid_vect(self.opp_team_pos, avoid_threshold=15)
 
-        if self.mode == "hard":
-            return self.action_from_vector(goal_vec, 1)
-        else:
-            return self.action_from_vector(goal_vec, 0.5)
+    #     if self.mode == "hard":
+    #         return self.action_from_vector(goal_vec, 1)
+    #     else:
+    #         return self.action_from_vector(goal_vec, 0.5)
 
-    def update_state(self, obs, info: dict[str, dict]) -> None:
-        """
-        (--Remains from base_combined--)
-        Method to convert the gym obs and info into data more relative to the
-        agent.
+    # def update_state(self, obs, info: dict[str, dict]) -> None:
+    #     """
+    #     (--Remains from base_combined--)
+    #     Method to convert the gym obs and info into data more relative to the
+    #     agent.
 
-        Note: all rectangular positions are in the ego agent's local coordinate frame.
-        Note: all bearings are relative, measured in degrees clockwise from the ego agent's heading.
+    #     Note: all rectangular positions are in the ego agent's local coordinate frame.
+    #     Note: all bearings are relative, measured in degrees clockwise from the ego agent's heading.
 
-        Args:
-            obs: observation from gym
-            info: info from gym
-        """
+    #     Args:
+    #         obs: observation from gym
+    #         info: info from gym
+    #     """
 
-        global_state = info[self.id]["global_state"]
-        if not isinstance(global_state, dict):
-            global_state = self.state_normalizer.unnormalized(global_state)
+    #     global_state = info[self.id]["global_state"]
+    #     if not isinstance(global_state, dict):
+    #         global_state = self.state_normalizer.unnormalized(global_state)
 
-        self.on_sides = global_state[(self.id, "on_side")]
-        self.has_flag = global_state[(self.id, "has_flag")]
+    #     self.on_sides = global_state[(self.id, "on_side")]
+    #     self.has_flag = global_state[(self.id, "has_flag")]
 
-        # Copy the polar positions of each agent, separated by team and get their tag status
-        self.opp_team_pos = []
-        self.my_team_pos = []
-        self.opp_team_tag = []
-        self.opp_team_has_flag = False
-        for id in self.teammate_ids:
-            if id != self.id:
-                distance = dist(
-                    global_state[(self.id, "pos")], global_state[(id, "pos")]
-                )
-                bearing = angle180(
-                    global_rect_to_abs_bearing(
-                        global_state[(id, "pos")] - global_state[(self.id, "pos")]
-                    )
-                    - global_state[(self.id, "heading")]
-                )
-                self.my_team_pos.append(np.array((distance, bearing)))
-        for id in self.opponent_ids:
-            distance = dist(global_state[(self.id, "pos")], global_state[(id, "pos")])
-            bearing = angle180(
-                global_rect_to_abs_bearing(
-                    global_state[(id, "pos")] - global_state[(self.id, "pos")]
-                )
-                - global_state[(self.id, "heading")]
-            )
-            self.opp_team_pos.append(np.array((distance, bearing)))
-            self.opp_team_has_flag = (
-                self.opp_team_has_flag or global_state[(id, "has_flag")]
-            )
-            self.opp_team_tag.append(global_state[(id, "is_tagged")])
-        team_str = self.team.name.lower().split("_")[0]
-        opp_str = "red" if team_str == "blue" else "blue"
-        self.my_flag_distance = dist(
-            global_state[(self.id, "pos")], global_state[team_str + "_flag_pos"]
-        )
-        self.my_flag_bearing = angle180(
-            global_rect_to_abs_bearing(
-                global_state[team_str + "_flag_pos"] - global_state[(self.id, "pos")]
-            )
-            - global_state[(self.id, "heading")]
-        )
-        self.my_flag_loc = dist_rel_bearing_to_local_rect(
-            self.my_flag_distance, self.my_flag_bearing
-        )
-        self.opp_flag_distance = dist(
-            global_state[(self.id, "pos")], global_state[opp_str + "_flag_pos"]
-        )
-        self.opp_flag_bearing = angle180(
-            global_rect_to_abs_bearing(
-                global_state[opp_str + "_flag_pos"] - global_state[(self.id, "pos")]
-            )
-            - global_state[(self.id, "heading")]
-        )
-        self.opp_flag_loc = dist_rel_bearing_to_local_rect(
-            self.opp_flag_distance, self.opp_flag_bearing
-        )
+    #     # Copy the polar positions of each agent, separated by team and get their tag status
+    #     self.opp_team_pos = []
+    #     self.my_team_pos = []
+    #     self.opp_team_tag = []
+    #     self.opp_team_has_flag = False
+    #     for id in self.teammate_ids:
+    #         if id != self.id:
+    #             distance = dist(
+    #                 global_state[(self.id, "pos")], global_state[(id, "pos")]
+    #             )
+    #             bearing = angle180(
+    #                 global_rect_to_abs_bearing(
+    #                     global_state[(id, "pos")] - global_state[(self.id, "pos")]
+    #                 )
+    #                 - global_state[(self.id, "heading")]
+    #             )
+    #             self.my_team_pos.append(np.array((distance, bearing)))
+    #     for id in self.opponent_ids:
+    #         distance = dist(global_state[(self.id, "pos")], global_state[(id, "pos")])
+    #         bearing = angle180(
+    #             global_rect_to_abs_bearing(
+    #                 global_state[(id, "pos")] - global_state[(self.id, "pos")]
+    #             )
+    #             - global_state[(self.id, "heading")]
+    #         )
+    #         self.opp_team_pos.append(np.array((distance, bearing)))
+    #         self.opp_team_has_flag = (
+    #             self.opp_team_has_flag or global_state[(id, "has_flag")]
+    #         )
+    #         self.opp_team_tag.append(global_state[(id, "is_tagged")])
+    #     team_str = self.team.name.lower().split("_")[0]
+    #     opp_str = "red" if team_str == "blue" else "blue"
+    #     self.my_flag_distance = dist(
+    #         global_state[(self.id, "pos")], global_state[team_str + "_flag_pos"]
+    #     )
+    #     self.my_flag_bearing = angle180(
+    #         global_rect_to_abs_bearing(
+    #             global_state[team_str + "_flag_pos"] - global_state[(self.id, "pos")]
+    #         )
+    #         - global_state[(self.id, "heading")]
+    #     )
+    #     self.my_flag_loc = dist_rel_bearing_to_local_rect(
+    #         self.my_flag_distance, self.my_flag_bearing
+    #     )
+    #     self.opp_flag_distance = dist(
+    #         global_state[(self.id, "pos")], global_state[opp_str + "_flag_pos"]
+    #     )
+    #     self.opp_flag_bearing = angle180(
+    #         global_rect_to_abs_bearing(
+    #             global_state[opp_str + "_flag_pos"] - global_state[(self.id, "pos")]
+    #         )
+    #         - global_state[(self.id, "heading")]
+    #     )
+    #     self.opp_flag_loc = dist_rel_bearing_to_local_rect(
+    #         self.opp_flag_distance, self.opp_flag_bearing
+    #     )
 
-        self.my_team_density, self.opp_team_density = self.get_team_density(
-            self.my_team_pos, self.opp_team_pos
-        )
+    #     self.my_team_density, self.opp_team_density = self.get_team_density(
+    #         self.my_team_pos, self.opp_team_pos
+    #     )
 
-        self.midpoint_local = global_rect_to_local_rect(
-            self.midpoint_global,
-            global_state[(self.id, "pos")],
-            global_state[(self.id, "heading")],
-        )
+    #     self.midpoint_local = global_rect_to_local_rect(
+    #         self.midpoint_global,
+    #         global_state[(self.id, "pos")],
+    #         global_state[(self.id, "heading")],
+    #     )
 
-    def action_from_vector(self, vector, desired_speed_normalized):
-        """
-        (--Remains from base_combined--)
-        Convert a desired vector in local rectangular coordinates and a desired speed
-        (0 to 1) into either a continuous or discrete action.
-        """
-        if desired_speed_normalized == 0:
-            if self.continuous:
-                return (0, 0)
-            else:
-                return -1
-        rel_bearing = local_rect_to_rel_bearing(vector)
-        if self.continuous:
-            return (desired_speed_normalized * self.max_speed, rel_bearing)
-        elif desired_speed_normalized == 0.5:
-            if 1 >= rel_bearing >= -1:
-                return 12
-            elif rel_bearing < -1:
-                return 14
-            elif rel_bearing > 1:
-                return 10
-        elif desired_speed_normalized == 1:
-            if 1 >= rel_bearing >= -1:
-                return 4
-            elif rel_bearing < -1:
-                return 6
-            elif rel_bearing > 1:
-                return 2
+    # def action_from_vector(self, vector, desired_speed_normalized):
+    #     """
+    #     (--Remains from base_combined--)
+    #     Convert a desired vector in local rectangular coordinates and a desired speed
+    #     (0 to 1) into either a continuous or discrete action.
+    #     """
+    #     if desired_speed_normalized == 0:
+    #         if self.continuous:
+    #             return (0, 0)
+    #         else:
+    #             return -1
+    #     rel_bearing = local_rect_to_rel_bearing(vector)
+    #     if self.continuous:
+    #         return (desired_speed_normalized * self.max_speed, rel_bearing)
+    #     elif desired_speed_normalized == 0.5:
+    #         if 1 >= rel_bearing >= -1:
+    #             return 12
+    #         elif rel_bearing < -1:
+    #             return 14
+    #         elif rel_bearing > 1:
+    #             return 10
+    #     elif desired_speed_normalized == 1:
+    #         if 1 >= rel_bearing >= -1:
+    #             return 4
+    #         elif rel_bearing < -1:
+    #             return 6
+    #         elif rel_bearing > 1:
+    #             return 2
