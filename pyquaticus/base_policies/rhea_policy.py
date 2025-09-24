@@ -135,6 +135,7 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                             break
                     scores.append(total_reward)
                 import numpy as _np
+                print("Scores of evaluations:", scores)#TODO delete after testing
                 return _np.array(scores)
             def perform_action(self, action):
                 action_dict = {self._agent_id: action}
