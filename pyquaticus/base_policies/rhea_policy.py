@@ -173,8 +173,8 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
             action: if continuous, a tuple containing desired speed and heading error.
             if discrete, an action index corresponding to ACTION_MAP in config.py
         """
-        # Update the state based on this observation
-        self.update_state(obs, info)
+        # Update the state based on this observation (remain from base_combined, still purpose?)
+        #self.update_state(obs, info)
 
         # compute next action should be already implemented by _get_next_action
         action = self.rhea._get_next_action()
