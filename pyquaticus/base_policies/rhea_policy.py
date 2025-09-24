@@ -150,9 +150,9 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
             def get_current_score(self):
                 return 0.0
 
-        rollout_actions_length = 1000
-        mutation_probability = 0.5
-        num_evals = 16
+        rollout_actions_length = 100
+        mutation_probability = 0.2
+        num_evals = 1600
         self.rhea = RollingHorizonEvolutionaryAlgorithm(
             rollout_actions_length,
             SingleAgentRHEAEnv(env, self.id, continuous, self.max_speed),
