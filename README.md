@@ -130,3 +130,11 @@ action_space: type of action space for each agent ('discrete', 'continuous', or 
 * Actually seems like discrete vs continuous should not be an issue.
 * But other problem found: rhea action is not yet converted to pyquaticus action space. This needs some work.
 * Also the issue why the agents were not moving was that the rhea parameters were very large search spaces. So they would've moved when tested for far longer.
+* Attempting to put prints in the rhea.py code (from RollingHorizonEvolutionaryAlgorithm copied folders) made clear that the import didn't work properly.
+* Now the import seems to work.
+* There is still an error message that is printed with every action selected by an agent:
+```
+Warning! Action passed in for agent_0 ([  1. -45.]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_0
+```
+* This might be alright, perhaps simply a sign that the framework is autocorrecting the discrete/continuous format of the action. 1 -45 for example seems to be a correct discrete action.
