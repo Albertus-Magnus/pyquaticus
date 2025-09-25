@@ -82,9 +82,22 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                 Remove or null out non-picklable rendering objects (pygame.Surface, windows, renderers)
                 and return a dictionary with saved objects so they can be restored after deepcopy.
                 Call _restore_after_deepcopy(saved) once done.
+                Perhaps need to remove "renderer", "window", "screen", "clock", "pygame_background_img"?
                 """
-                img_store = env.pygame_background_img
+                img_store = {}
+                img_store.append(env.pygame_background_img)
+                if env.pygame_background_img is None:
+                    print("pygame_background_img is None")
+                    return -1
                 env.pygame_background_img = None
+                img_store.append(env.background_img)
+                env.background_img = None
+                img_store.append(env.screen)
+                env.screen = None
+                img_store.append(env.renderer)
+                env.renderer = None
+                img_store.append(env.window)
+                env.window = None
                 return img_store
                 """
                 saved = {"attrs": {}, "player_attrs": {}}
@@ -128,11 +141,32 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                 return saved
                 """
 
-            def _restore_after_deepcopy(self, envi, saved): #TODO delete if this doesnt work
+            def _restore_after_deepcopy(self, img_store): #TODO delete if this doesnt work
                 """Restore things saved by _prepare_for_deepcopy."""
-                envi.pygame_background_img = saved
+                env.pygame_background_img = img_store[0]
+                env.background_img = img_store[1]
+                env.screen = img_store[2]
+                env.renderer = img_store[3]
+                env.window = img_store[4]
                 return
                 """
+                img_store.append(env.pygame_background_img)
+                if env.pygame_background_img is None:
+                    print("pygame_background_img is None")
+                    return -1
+                env.pygame_background_img = None
+                img_store.append(env.background_img)
+                env.background_img = None
+                img_store.append(env.screen)
+                env.screen = None
+                img_store.append(env.renderer)
+                env.renderer = None
+                img_store.append(env.window)
+                env.window = None
+
+
+
+
                 if not saved:
                     return
                 for name, val in saved.get("attrs", {}).items():
