@@ -127,7 +127,6 @@ action_space: type of action space for each agent ('discrete', 'continuous', or 
 
         Note 3: Inputs to the step function for the 'afp' action space will be strings AQUATICUS_FIELD_POINTS (see config.py)
 ```
-* also interesting:
-```
-reward_config: a dictionary configuring the reward structure (see rewards.py)
-```
+* Actually seems like discrete vs continuous should not be an issue.
+* But other problem found: rhea action is not yet converted to pyquaticus action space. This needs some work.
+* Also the issue why the agents were not moving was that the rhea parameters were very large search spaces. So they would've moved when tested for far longer.
