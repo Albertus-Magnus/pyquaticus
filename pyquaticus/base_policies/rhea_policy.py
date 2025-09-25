@@ -1,3 +1,4 @@
+import random
 from typing import Union
 
 import numpy as np
@@ -50,6 +51,15 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
         env =  temp_env #changes everything (super happy about that, but why no self. here?)
         self.env = temp_env #doesnt change anything
         # End of initialize copyable env #TODO check if env.step is done or has to be added
+
+        #Adding action_map to this env for easy access:
+        self.action_map = []
+        for spd in [1.0, 0.5]:
+            for hdg in range(180, -180, -45):
+                self.action_map.append([spd, hdg])
+        # add a none action
+        self.action_map.append([0.0, 0.0])
+        #End of action_map
 
         self.state_normalizer = env.global_state_normalizer
         self.walls = env._walls[self.team.value]
@@ -116,20 +126,23 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                 except Exception:
                     self._start_env = self._py_env
             def get_random_action(self):
-                space = self._action_space or self._try_agent_action_space()
-                if space is not None:
-                    try:
-                        return space.sample()
-                    except Exception:
-                        pass
-                if self._continuous:
-                    import numpy as _np
-                    speed = _np.random.random() * self._max_speed
-                    heading = (_np.random.random() * 360.0) - 180.0
-                    return (speed, heading)
-                else:
-                    import numpy as _np
-                    return int(_np.random.randint(0, 15))
+                #return a random action based on the ACTION_MAP in config.py (available in self as well)
+                return copy(random.choice(self.action_map))
+            # def get_random_action(self):#old version, not specific to pyquaticus
+            #     space = self._action_space or self._try_agent_action_space()
+            #     if space is not None:
+            #         try:
+            #             return space.sample()
+            #         except Exception:
+            #             pass
+            #     if self._continuous:
+            #         import numpy as _np
+            #         speed = _np.random.random() * self._max_speed
+            #         heading = (_np.random.random() * 360.0) - 180.0
+            #         return (speed, heading)
+            #     else:
+            #         import numpy as _np
+            #         return int(_np.random.randint(0, 15))
             def evaluate_rollout(self, solutions, discount_factor=None, ignore_frames=0):
                 scores = []
                 for sol in solutions:
@@ -229,6 +242,7 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
             return action
         #fallback to ultra defensive:
         return self.action_from_vector(None, 0)
+
 
     def action_from_vector(self, vector, desired_speed_normalized):
         """
