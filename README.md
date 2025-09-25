@@ -109,3 +109,4 @@ Currently the rewards or evaluation function is too meaningless. Either the agen
 * All attempts to remove render mode and reapply it shortly before and after a deepcopy are not working so far.
 * There needs to be a different method to copy or a major change to the render mode initialization...
 * What if when initializing an agent we initiate a new env in render mode None and write a function to set all parameters so it will be a copy of original env in all other aspects?
+* Implemented that, now it runs without deepcopy picklable errors. But the agents are not moving now. This is progress! :D
