@@ -115,6 +115,7 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                         try:
                             obs, reward, terminated, truncated, info = sim_env.step(action_dict)
                         except Exception:
+                            print("Exception during RHEA env step, unable to get reward from .step()")
                             try:
                                 obs, reward, done, info = sim_env.step(action_dict)
                                 terminated = done.get(self._agent_id, False) if isinstance(done, dict) else done
@@ -122,11 +123,14 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                             except Exception:
                                 terminated = True
                                 truncated = True
+                                print("Reward 0.0 because .step() threw error.")
                                 reward = {self._agent_id: 0.0}
                         r = 0.0
                         if isinstance(reward, dict):
+                            print("marker 532")
                             r = float(reward.get(self._agent_id, 0.0))
                         else:
+                            print("marker 165")
                             r = float(reward)
                         total_reward += discount * r
                         if discount_factor is not None:
@@ -135,7 +139,7 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                             break
                     scores.append(total_reward)
                 import numpy as _np
-                print("Scores of evaluations:", scores)#TODO delete after testing
+                #print("Scores of evaluations:", scores)#TODO delete after testing
                 return _np.array(scores)
             def perform_action(self, action):
                 action_dict = {self._agent_id: action}
