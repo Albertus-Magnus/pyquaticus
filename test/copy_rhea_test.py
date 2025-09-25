@@ -37,8 +37,8 @@ temp_captures = env.state["captures"]
 temp_grabs = env.state["grabs"]
 temp_tags = env.state["tags"]
 
-img_store = env.pygame_background_img
-env.pygame_background_img = None
+#img_store = env.pygame_background_img
+#env.pygame_background_img = None
 
 H_one = RHEA_CTF_Agent('agent_1', env, continuous=True)
 #H_one = Heuristic_CTF_Agent('agent_1', env, mode="rhea", continuous=True)
@@ -46,7 +46,7 @@ H_one = RHEA_CTF_Agent('agent_1', env, continuous=True)
 R_one = RHEA_CTF_Agent('agent_0', env, continuous=True)
 #R_one = Heuristic_CTF_Agent('agent_0', env, mode="nothing", continuous=True) #changed to nothing for testing, hard was there before
 
-env.pygame_background_img = img_store
+#env.pygame_background_img = img_store
 # Can I set the render mode after env creation?
 #env.render_mode = 'human'
 #env.create_background_image()

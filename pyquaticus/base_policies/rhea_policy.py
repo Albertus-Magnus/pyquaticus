@@ -63,9 +63,11 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                 # Testing if I can make env conform to deepcopy by removing unpicklable grafics:
                 self._start_env.renderer = None
                 self._start_env.window = None
+                self._start_env.pygame_background_img = None
                 # (just to be safe, possible redundancy):
                 self._py_env.renderer = None
                 self._py_env.window = None
+                self._py_env.pygame_background_img = None #TODO does this affect the actual env?
                 # testing that...
                 if self._action_space is not None:
                     try:
