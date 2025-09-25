@@ -11,6 +11,7 @@ from pyquaticus.base_policies.rhea_policy import RHEA_CTF_Agent
 from pyquaticus.envs.pyquaticus import Team
 from collections import OrderedDict
 from pyquaticus.config import ACTION_MAP
+from RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea import RollingHorizonEvolutionaryAlgorithm
 
 config_dict = {}
 config_dict["max_time"] = 600.0
