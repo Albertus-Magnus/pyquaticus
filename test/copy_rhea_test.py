@@ -6,7 +6,7 @@ import pyquaticus
 from pyquaticus import pyquaticus_v0
 #from pyquaticus.base_policies.base_attack import BaseAttacker
 #from pyquaticus.base_policies.base_defend import BaseDefender
-from pyquaticus.utils.rewards import test_reward_func, caps_and_grabs
+from pyquaticus.utils.rewards import test_reward_func, caps_and_grabs, simplest_test
 from pyquaticus.base_policies.copy_base_combined import Heuristic_CTF_Agent #changed it to copy_base_combined to create new difficulties/policies
 from pyquaticus.base_policies.rhea_policy import RHEA_CTF_Agent
 from pyquaticus.envs.pyquaticus import Team
@@ -23,7 +23,7 @@ config_dict["sim_speedup_factor"] = 3
 #config_dict["reward_config"] = 3
 #reward_config = caps_and_grabs #{} something like this should exist somewhere
 
-env = pyquaticus_v0.PyQuaticusEnv(team_size=1, config_dict=config_dict, reward_config={ 'agent_0': test_reward_func, 'agent_1': test_reward_func },render_mode="human")#'human') #TODO change back to 'human' #Yes, this makes the copy work...
+env = pyquaticus_v0.PyQuaticusEnv(team_size=1, config_dict=config_dict, reward_config={ 'agent_0': simplest_test, 'agent_1': test_reward_func },render_mode="human")#'human') #TODO change back to 'human' #Yes, this makes the copy work...
 #print("env created")
 #env2 = deepcopy(env)
 #print("env and env2 created")
