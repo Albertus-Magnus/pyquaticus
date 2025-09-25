@@ -84,7 +84,7 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                 Call _restore_after_deepcopy(saved) once done.
                 Perhaps need to remove "renderer", "window", "screen", "clock", "pygame_background_img"?
                 """
-                img_store = {}
+                img_store = []
                 img_store.append(env.pygame_background_img)
                 if env.pygame_background_img is None:
                     print("pygame_background_img is None")
