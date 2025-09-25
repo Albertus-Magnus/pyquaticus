@@ -20,7 +20,6 @@ class RollingHorizonEvolutionaryAlgorithm():
         # Initialize the solution to a random sequence
         if self._use_shift_buffer:
             self._solution = self._random_solution()
-            print("Initial random solution:", self._solution)
 
     def _get_next_action(self):
         """
@@ -73,8 +72,9 @@ class RollingHorizonEvolutionaryAlgorithm():
 
     def _random_solution(self):
         """
-        Create a random set fo actions
+        Create a random set of actions
         """
+        print("random action generation test: ", self._environment.get_random_action())
         return np.array([self._environment.get_random_action() for _ in range(self._rollout_actions_length)])
 
     def _mutate(self, solution, mutation_probability):
