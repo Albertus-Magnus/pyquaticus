@@ -52,15 +52,6 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
         self.env = temp_env #doesnt change anything
         # End of initialize copyable env #TODO check if env.step is done or has to be added
 
-        #Adding action_map to this env for easy access:
-        self.action_map = []
-        for spd in [1.0, 0.5]:
-            for hdg in range(180, -180, -45):
-                self.action_map.append([spd, hdg])
-        # add a none action
-        self.action_map.append([0.0, 0.0])
-        #End of action_map
-
         self.state_normalizer = env.global_state_normalizer
         self.walls = env._walls[self.team.value]
         self.max_speed = env.max_speeds[env.players[self.id].idx]
@@ -78,6 +69,14 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
         # Wrapper class to make the pyquaticus env compatible with RHEA:
         class SingleAgentRHEAEnv: #TODO does this work? -preliminary answer no because it tries to copy 
             def __init__(self, py_env, agent_id, continuous, max_speed):
+                #Adding action_map to this env for easy access:
+                self.action_map = []
+                for spd in [1.0, 0.5]:
+                    for hdg in range(180, -180, -45):
+                        self.action_map.append([spd, hdg])
+                # add a none action
+                self.action_map.append([0.0, 0.0])
+                #End of action_map
                 self._py_env = py_env
                 self._agent_id = agent_id
                 self._continuous = continuous
