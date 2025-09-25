@@ -126,7 +126,7 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                     self._start_env = self._py_env
             def get_random_action(self):
                 #return a random action based on the ACTION_MAP in config.py (available in self as well)
-                return copy(random.choice(self.action_map))
+                return random.choice(self.action_map)
             # def get_random_action(self):#old version, not specific to pyquaticus
             #     space = self._action_space or self._try_agent_action_space()
             #     if space is not None:
