@@ -60,6 +60,13 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                 self._action_space = self._try_agent_action_space() #perhaps this could be changed into a descrete/continuous check?
                 #self._start_env = None #was wrong? set same as py_env for now, maybe is not needed as its own variable
                 self._start_env = py_env
+                # Testing if I can make env conform to deepcopy by removing unpicklable grafics:
+                self._start_env.renderer = None
+                self._start_env.window = None
+                # (just to be safe, possible redundancy):
+                self._py_env.renderer = None
+                self._py_env.window = None
+                # testing that...
                 if self._action_space is not None:
                     try:
                         self._other_action = self._action_space.sample()
