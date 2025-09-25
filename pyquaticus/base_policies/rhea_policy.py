@@ -3,6 +3,7 @@ from typing import Union
 import numpy as np
 
 import copy
+from pyquaticus import pyquaticus_v0
 import pyquaticus.base_policies.base_attack as attack_policy
 import pyquaticus.base_policies.base_defend as defend_policy
 from pyquaticus.base_policies.base_policy import BaseAgentPolicy
@@ -36,6 +37,22 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
         #defensiveness: float = 20.0,
     ):
         super().__init__(agent_id, env)
+        # Testing if I can turn a fresh initiate of env into a copy of the original env (but deepcopyable)
+        config_dict = {}
+        config_dict["max_time"] = 600.0
+        config_dict["max_score"] = 100
+        config_dict["render_agent_ids"] = True
+        config_dict["dynamics"] = ["si", "si"]#["si", "si", "si", "si", "si", "si"]
+        config_dict["sim_speedup_factor"] = 3
+        temp_env = pyquaticus_v0.PyQuaticusEnv(team_size=1, config_dict=config_dict,render_mode="human")#'human') #TODO change back to 'human' #Yes, this makes the copy work...
+        #print("env created")
+        #env2 = deepcopy(env)
+        #print("env and env2 created")
+        #env.close()
+        reset_opts = {'normalize_obs': False, 'normalize_state': False}
+        obs, info = temp_env.reset(options=reset_opts)
+        self.env = temp_env
+        # End of initialize copyable env #TODO check if env.step is done or has to be added
         self.state_normalizer = env.global_state_normalizer
         self.walls = env._walls[self.team.value]
         self.max_speed = env.max_speeds[env.players[self.id].idx]
@@ -202,9 +219,9 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                 return None
             def set_start_state(self, obs, info):
                 try:
-                    self._prepare_for_deepcopy(self._py_env)
+                    #self._prepare_for_deepcopy(self._py_env)
                     saved = self._start_env = copy.deepcopy(self._py_env)
-                    self._restore_after_deepcopy(self._py_env, saved)
+                    #self._restore_after_deepcopy(self._py_env, saved)
                     print(self._py_env)
                     print("marker 87")
                 except Exception:
@@ -228,9 +245,9 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                 scores = []
                 for sol in solutions:
                     try:
-                        saved = self._prepare_for_deepcopy(self._start_env)
+                        #saved = self._prepare_for_deepcopy(self._start_env)
                         sim_env = copy.deepcopy(self._start_env)
-                        self._restore_after_deepcopy(self._start_env, saved)
+                        #self._restore_after_deepcopy(self._start_env, saved)
                         #print(self._start_env) #is type None
                         #print(sim_env) #is type None
                         #return -1
@@ -238,9 +255,9 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                     except Exception:
                         # Is not usually thrown (testing result)
                         print("Exception during deepcopy of start_env, using current env as start_env.")
-                        saved = self._prepare_for_deepcopy(self._py_env)
+                        #saved = self._prepare_for_deepcopy(self._py_env)
                         sim_env = copy.deepcopy(self._py_env)
-                        self._restore_after_deepcopy(self._py_env, saved)
+                        #self._restore_after_deepcopy(self._py_env, saved)
                     total_reward = 0.0
                     discount = 1.0
                     for action in sol:
