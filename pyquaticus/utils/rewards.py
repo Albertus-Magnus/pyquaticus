@@ -236,3 +236,19 @@ def test_reward_func(
         reward += 1.0 #small change, so it wants to go out of bounds
 
     return reward
+
+def simplest_test(
+    agent_id: str,
+    team: Team,
+    agents: list,
+    agent_inds_of_team: dict,
+    state: dict,
+    prev_state: dict,
+    env_size: np.ndarray,
+    agent_radius: np.ndarray,
+    catch_radius: float,
+    scrimmage_coords: np.ndarray,
+    max_speeds: list,
+    tagging_cooldown: float
+):
+    return 1.0
