@@ -106,7 +106,8 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                 for sol in solutions:
                     try:
                         sim_env = copy.deepcopy(self._start_env)
-                        print(sim_env)
+                        print(self._start_env)
+                        #print(sim_env) #is type None
                         return -1
                         # usually no exception here (testing result)
                     except Exception:
