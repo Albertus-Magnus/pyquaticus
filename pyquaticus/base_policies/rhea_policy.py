@@ -8,7 +8,7 @@ from pyquaticus import pyquaticus_v0
 import pyquaticus.base_policies.base_attack as attack_policy
 import pyquaticus.base_policies.base_defend as defend_policy
 from pyquaticus.base_policies.base_policy import BaseAgentPolicy
-from pyquaticus.utils.rewards import example_reward, test_reward_func, simplest_test
+from pyquaticus.utils.rewards import example_reward, test_reward_func, simplest_test, caps_and_grabs
 from pyquaticus.base_policies.utils import (dist_rel_bearing_to_local_rect,
                                             get_avoid_vect,
                                             global_rect_to_abs_bearing,
@@ -63,7 +63,7 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
         config_dict["render_agent_ids"] = True
         config_dict["dynamics"] = ["si", "si"]#["si", "si", "si", "si", "si", "si"]
         config_dict["sim_speedup_factor"] = 3
-        temp_env = pyquaticus_v0.PyQuaticusEnv(team_size=1, config_dict=config_dict, reward_config={ 'agent_0': simplest_test, 'agent_1': test_reward_func },render_mode=None) #best idea I've ever had
+        temp_env = pyquaticus_v0.PyQuaticusEnv(team_size=1, config_dict=config_dict, reward_config={ 'agent_0': simplest_test, 'agent_1': caps_and_grabs },render_mode=None) #best idea I've ever had
         reset_opts = {'normalize_obs': False, 'normalize_state': False}
         obs, info = temp_env.reset(options=reset_opts)
         env =  temp_env #changes everything (super happy about that, but why no self. here?)
@@ -231,7 +231,7 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
 
         rollout_actions_length = 300#100
         mutation_probability = 0.2
-        num_evals = 20#3#1600
+        num_evals = 15#3#1600
         self.rhea = RollingHorizonEvolutionaryAlgorithm(
             rollout_actions_length,
             SingleAgentRHEAEnv(env, self.id, continuous, self.max_speed),
