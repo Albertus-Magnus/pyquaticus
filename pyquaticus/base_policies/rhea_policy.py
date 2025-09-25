@@ -101,20 +101,20 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                 else:
                     self._other_action = (0.0, 0.0) if continuous else -1
 
-            def _try_agent_action_space(self):
-                try:
-                    sp = getattr(self._py_env, "action_space", None)
-                    if sp is not None:
-                        try:
-                            return sp[self._agent_id]
-                        except Exception:
-                            return sp
-                    players = getattr(self._py_env, "players", None)
-                    if players is not None and self._agent_id in players:
-                        return getattr(players[self._agent_id], "action_space", None)
-                except Exception:
-                    pass
-                return None
+            # def _try_agent_action_space(self):
+            #     try:
+            #         sp = getattr(self._py_env, "action_space", None)
+            #         if sp is not None:
+            #             try:
+            #                 return sp[self._agent_id]
+            #             except Exception:
+            #                 return sp
+            #         players = getattr(self._py_env, "players", None)
+            #         if players is not None and self._agent_id in players:
+            #             return getattr(players[self._agent_id], "action_space", None)
+            #     except Exception:
+            #         pass
+            #     return None
             def set_start_state(self, obs, info):
                 try:
                     #self._prepare_for_deepcopy(self._py_env)
@@ -183,6 +183,7 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                             print("marker 532") #THEN HERE
                             r = float(reward.get(self._agent_id, 0.0))
                             print("r = ", r)
+                            print("reward = ", reward)
                         else:
                             print("marker 165")
                             r = float(reward)
