@@ -232,6 +232,7 @@ def test_reward_func(
     position = state['agent_position'][agents.index(agent_id)]
     prev_position = state['prev_agent_position'][agents.index(agent_id)]
     print(position)
+    print(prev_position)
 
     return reward
 
