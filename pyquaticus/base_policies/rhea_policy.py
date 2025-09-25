@@ -19,8 +19,24 @@ from pyquaticus.config import config_dict_std
 from pyquaticus.envs.pyquaticus import PyQuaticusEnv, Team
 from pyquaticus.moos_bridge.pyquaticus_moos_bridge import PyQuaticusMoosBridge
 from pyquaticus.utils.utils import angle180, dist, line_intersection
-from RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea import RollingHorizonEvolutionaryAlgorithm
-#RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea import RollingHorizonEvolutionaryAlgorithm
+#from RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea import RollingHorizonEvolutionaryAlgorithm
+from pyquaticus.utils.utils import angle180, dist, line_intersection
+#Start of special rhea import
+# try the normal absolute import first; if it fails, add project root and retry
+try:
+    from RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea import RollingHorizonEvolutionaryAlgorithm
+except ModuleNotFoundError:
+    import sys, os, importlib
+    # compute project root relative to this file (../../.. -> project root)
+    _this_dir = os.path.dirname(__file__)
+    _project_root = os.path.abspath(os.path.join(_this_dir, "..", "..", ".."))
+    if _project_root not in sys.path:
+        sys.path.insert(0, _project_root)
+    # retry import (let any exception propagate if it still fails)
+    RollingHorizonEvolutionaryAlgorithm = importlib.import_module(
+        "RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea"
+    ).RollingHorizonEvolutionaryAlgorithm
+#End of special rhea import
 
 #MODES = {"easy", "medium", "hard", "nothing"}
 
