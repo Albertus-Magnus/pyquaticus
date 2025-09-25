@@ -148,3 +148,6 @@ All headings are in nautical format
     # This can be converted the standard heading format that is counterclockwise
     # by using the heading_angle_conversion(deg) function found in utils.py
 ```
+* The reward function is not set properly. In pyquaticus.py it is called by:
+```self.reward_config[agent_id]```
+* Thus it will have to be added on the pyquaticus-environment level.
