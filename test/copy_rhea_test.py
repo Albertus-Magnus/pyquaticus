@@ -19,11 +19,11 @@ config_dict["render_agent_ids"] = True
 config_dict["dynamics"] = ["si", "si"]#["si", "si", "si", "si", "si", "si"]
 config_dict["sim_speedup_factor"] = 3
 
-env = pyquaticus_v0.PyQuaticusEnv(team_size=1, config_dict=config_dict,render_mode=None)#'human') #TODO change back to 'human'
+env = pyquaticus_v0.PyQuaticusEnv(team_size=1, config_dict=config_dict,render_mode=None)#'human') #TODO change back to 'human' #Yes, this makes the copy work...
 #print("env created")
 #env2 = deepcopy(env)
 #print("env and env2 created")
-env.close()
+#env.close()
 term_g = {'agent_0':False}
 truncated_g = {'agent_0':False}
 term = term_g
