@@ -213,3 +213,26 @@ def caps_and_grabs(
     return reward
 
 ### Add Custom Reward Functions Here ###
+
+def test_reward_func(
+    agent_id: str,
+    team: Team,
+    agents: list,
+    agent_inds_of_team: dict,
+    state: dict,
+    prev_state: dict,
+    env_size: np.ndarray,
+    agent_radius: np.ndarray,
+    catch_radius: float,
+    scrimmage_coords: np.ndarray,
+    max_speeds: list,
+    tagging_cooldown: float
+):
+    reward = 0.0
+    reward += tagging_cooldown #reward for having a high tagging cooldown so it wants to tag. (For testing purposes)
+    prev_num_oob = state['agent_oob'][agents.index(agent_id)]
+    num_oob = state['agent_oob'][agents.index(agent_id)]
+    if num_oob > prev_num_oob:
+        reward += 1.0 #small change, so it wants to go out of bounds
+
+    return reward
