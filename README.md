@@ -99,3 +99,8 @@ https://github.com/Bam4d/RollingHorizonEvolutionaryAlgorithm
 Currently the rewards or evaluation function is too meaningless. Either the agents need to be better at finding the route towards the next point (capturing a flag) via tweaking of parameters like mutation chance or a better reward needs to be implemented.
 
 <img width="1920" height="1080" alt="Screenshot from 2025-09-25 14-02-20" src="https://github.com/user-attachments/assets/53044600-bfc7-49e9-9e87-0bf9c3d1e1d5" />
+
+* Testing with different return and print labels showed that a lot of times when deepcopy is used it was used on None object instead of pyquaticus environment object.
+* set_start_state() exists but was never called, the _start_env variable thus remains None.
+* TypeError: cannot pickle 'pygame.surface.Surface' object
+* It seems the deepcopy of the environment is now failing to copy an environment due to the game grafics being included in it. We have to copy/wrap the environment without the grafics.
