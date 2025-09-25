@@ -91,11 +91,55 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                     pass
                 return None
             def set_start_state(self, obs, info):
+                # Safe deepcopy: temporarily remove non-picklable pygame surfaces/objects
                 try:
-                    self._start_env = copy.deepcopy(self._py_env)
-                    print(self._py_env)
-                    print("marker 87")
+                    saved_attrs = {}
+                    saved_player_surfaces = {}
+                    try:
+                        import pygame
+                    except Exception:
+                        pygame = None
+
+                    # helper to check pygame surface without importing failure
+                    def is_surface(obj):
+                        return pygame is not None and isinstance(obj, pygame.Surface)
+
+                    # remove top-level pygame surfaces/handles from env
+                    for name, val in list(vars(self._py_env).items()):
+                        try:
+                            if is_surface(val):
+                                saved_attrs[name] = val
+                                setattr(self._py_env, name, None)
+                        except Exception:
+                            # ignore attributes that raise on access
+                            pass
+
+                    # remove player surfaces (common place for pygame.Surface)
+                    for pid, player in getattr(self._py_env, "players", {}).items():
+                        try:
+                            if hasattr(player, "pygame_agent") and is_surface(getattr(player, "pygame_agent")):
+                                saved_player_surfaces[pid] = player.pygame_agent
+                                player.pygame_agent = None
+                        except Exception:
+                            pass
+
+                    # attempt deepcopy now
+                    try:
+                        self._start_env = copy.deepcopy(self._py_env)
+                    finally:
+                        # restore saved surfaces on original env regardless of deepcopy success
+                        for name, val in saved_attrs.items():
+                            try:
+                                setattr(self._py_env, name, val)
+                            except Exception:
+                                pass
+                        for pid, surf in saved_player_surfaces.items():
+                            try:
+                                self._py_env.players[pid].pygame_agent = surf
+                            except Exception:
+                                pass
                 except Exception:
+                    # fallback: use live env if deepcopy still fails
                     self._start_env = self._py_env
             def get_random_action(self):
                 space = self._action_space or self._try_agent_action_space()
