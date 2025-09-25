@@ -142,6 +142,7 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                             discount *= discount_factor
                         if terminated or truncated:
                             break
+                        break#TODO delete
                     scores.append(total_reward)
                 import numpy as _np
                 #print("Scores of evaluations:", scores)#TODO delete after testing
