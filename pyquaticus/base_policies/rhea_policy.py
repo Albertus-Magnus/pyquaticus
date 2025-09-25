@@ -231,7 +231,7 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
 
         rollout_actions_length = 400#100
         mutation_probability = 0.2
-        num_evals = 2000#3#1600
+        num_evals = 400#3#1600
         self.rhea = RollingHorizonEvolutionaryAlgorithm(
             rollout_actions_length,
             SingleAgentRHEAEnv(env, self.id, continuous, self.max_speed),
