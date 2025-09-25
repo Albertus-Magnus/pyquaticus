@@ -44,13 +44,14 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
         config_dict["render_agent_ids"] = True
         config_dict["dynamics"] = ["si", "si"]#["si", "si", "si", "si", "si", "si"]
         config_dict["sim_speedup_factor"] = 3
-        temp_env = pyquaticus_v0.PyQuaticusEnv(team_size=1, config_dict=config_dict,render_mode=None)#'human') #TODO change back to 'human' #Yes, this makes the copy work...
+        temp_env = pyquaticus_v0.PyQuaticusEnv(team_size=1, config_dict=config_dict,render_mode=None)
         #print("env created")
         #env2 = deepcopy(env)
         #print("env and env2 created")
         #env.close()
         reset_opts = {'normalize_obs': False, 'normalize_state': False}
         obs, info = temp_env.reset(options=reset_opts)
+        env =  temp_env
         self.env = temp_env
         # End of initialize copyable env #TODO check if env.step is done or has to be added
         self.state_normalizer = env.global_state_normalizer
