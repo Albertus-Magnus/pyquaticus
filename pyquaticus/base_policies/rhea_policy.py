@@ -83,6 +83,8 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                 import copy
                 try:
                     self._start_env = copy.deepcopy(self._py_env)
+                    print(self._py_env)
+                    print("marker 87")
                 except Exception:
                     self._start_env = self._py_env
             def get_random_action(self):
@@ -107,7 +109,7 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                     try:
                         sim_env = copy.deepcopy(self._start_env)
                         print(self._start_env)
-                        #print(sim_env) #is type None
+                        print(sim_env) #is type None
                         return -1
                         # usually no exception here (testing result)
                     except Exception:
