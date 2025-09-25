@@ -36,7 +36,7 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
         continuous: bool = False,
         #defensiveness: float = 20.0,
     ):
-        super().__init__(agent_id, env)
+        super().__init__(agent_id, env, continuous)
         # Testing if I can turn a fresh initiate of env into a copy of the original env (but deepcopyable)
         config_dict = {}
         config_dict["max_time"] = 600.0
@@ -44,16 +44,13 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
         config_dict["render_agent_ids"] = True
         config_dict["dynamics"] = ["si", "si"]#["si", "si", "si", "si", "si", "si"]
         config_dict["sim_speedup_factor"] = 3
-        temp_env = pyquaticus_v0.PyQuaticusEnv(team_size=1, config_dict=config_dict,render_mode=None)
-        #print("env created")
-        #env2 = deepcopy(env)
-        #print("env and env2 created")
-        #env.close()
+        temp_env = pyquaticus_v0.PyQuaticusEnv(team_size=1, config_dict=config_dict,render_mode=None) #best idea I've ever had
         reset_opts = {'normalize_obs': False, 'normalize_state': False}
         obs, info = temp_env.reset(options=reset_opts)
-        env =  temp_env
-        self.env = temp_env
+        env =  temp_env #changes everything (super happy about that, but why no self. here?)
+        self.env = temp_env #doesnt change anything
         # End of initialize copyable env #TODO check if env.step is done or has to be added
+
         self.state_normalizer = env.global_state_normalizer
         self.walls = env._walls[self.team.value]
         self.max_speed = env.max_speeds[env.players[self.id].idx]
@@ -94,115 +91,6 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                         self._other_action = (0.0, 0.0) if continuous else -1
                 else:
                     self._other_action = (0.0, 0.0) if continuous else -1
-
-            def _prepare_for_deepcopy(self, envi): #TODO delete if this doesnt work
-                """
-                Remove or null out non-picklable rendering objects (pygame.Surface, windows, renderers)
-                and return a dictionary with saved objects so they can be restored after deepcopy.
-                Call _restore_after_deepcopy(saved) once done.
-                Perhaps need to remove "renderer", "window", "screen", "clock", "pygame_background_img"?
-                """
-                img_store = []
-                img_store.append(envi.pygame_background_img)
-                if envi.pygame_background_img is None:
-                    print("pygame_background_img is None")
-                    return -1
-                envi.pygame_background_img = None
-                img_store.append(envi.background_img)
-                envi.background_img = None
-                img_store.append(envi.screen)
-                envi.screen = None
-                img_store.append(envi.renderer)
-                envi.renderer = None
-                img_store.append(envi.window)
-                envi.window = None
-                return img_store
-                """
-                saved = {"attrs": {}, "player_attrs": {}}
-                try:
-                    import pygame
-                    Surface = pygame.Surface
-                except Exception:
-                    Surface = None
-
-                # top-level attributes
-                for name, val in list(vars(envi).items()):
-                    try:
-                        if Surface is not None and isinstance(val, Surface):
-                            saved["attrs"][name] = val
-                            setattr(envi, name, None)
-                        # common render handles by name
-                        elif name in ("renderer", "window", "screen", "clock", "pygame_background_img"):
-                            saved["attrs"][name] = val
-                            setattr(envi, name, None)
-                    except Exception:
-                        pass
-
-                # player-level attributes
-                players = getattr(envi, "players", None) or {}
-                for pid, player in players.items():
-                    saved["player_attrs"].setdefault(pid, {})
-                    for attr in ("pygame_agent", "renderer", "window", "surface", "image"):
-                        try:
-                            if hasattr(player, attr):
-                                v = getattr(player, attr)
-                                if Surface is not None and isinstance(v, Surface):
-                                    saved["player_attrs"][pid][attr] = v
-                                    setattr(player, attr, None)
-                                elif attr in ("renderer", "window") and v is not None:
-                                    # save and null out generic renderer/window references
-                                    saved["player_attrs"][pid][attr] = v
-                                    setattr(player, attr, None)
-                        except Exception:
-                            pass
-
-                return saved
-                """
-
-            def _restore_after_deepcopy(self, envi, img_store): #TODO delete if this doesnt work
-                """Restore things saved by _prepare_for_deepcopy."""
-                envi.pygame_background_img = img_store[0]
-                envi.background_img = img_store[1]
-                envi.screen = img_store[2]
-                envi.renderer = img_store[3]
-                envi.window = img_store[4]
-                return
-                """
-                img_store.append(env.pygame_background_img)
-                if env.pygame_background_img is None:
-                    print("pygame_background_img is None")
-                    return -1
-                env.pygame_background_img = None
-                img_store.append(env.background_img)
-                env.background_img = None
-                img_store.append(env.screen)
-                env.screen = None
-                img_store.append(env.renderer)
-                env.renderer = None
-                img_store.append(env.window)
-                env.window = None
-
-
-
-
-                if not saved:
-                    return
-                for name, val in saved.get("attrs", {}).items():
-                    try:
-                        setattr(envi, name, val)
-                    except Exception:
-                        pass
-                players = getattr(envi, "players", None) or {}
-                for pid, attrs in saved.get("player_attrs", {}).items():
-                    player = players.get(pid, None)
-                    if player is None:
-                        continue
-                    for attr, val in attrs.items():
-                        try:
-                            setattr(player, attr, val)
-                        except Exception:
-                            pass
-                """
 
             def _try_agent_action_space(self):
                 try:
