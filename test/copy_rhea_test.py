@@ -1,3 +1,4 @@
+from copy import deepcopy
 import sys
 import os
 import os.path
@@ -19,6 +20,9 @@ config_dict["dynamics"] = ["si", "si"]#["si", "si", "si", "si", "si", "si"]
 config_dict["sim_speedup_factor"] = 3
 
 env = pyquaticus_v0.PyQuaticusEnv(team_size=1, config_dict=config_dict,render_mode='human')
+env2 = deepcopy(env)
+print("env and env2 created")
+env.close()
 term_g = {'agent_0':False}
 truncated_g = {'agent_0':False}
 term = term_g
