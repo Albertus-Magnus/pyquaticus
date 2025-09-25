@@ -51,7 +51,7 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
 
         # Add RHEA instance as property
         # Wrapper class to make the pyquaticus env compatible with RHEA:
-        class SingleAgentRHEAEnv: #TODO does this work?
+        class SingleAgentRHEAEnv: #TODO does this work? -preliminary answer no because it tries to copy 
             def __init__(self, py_env, agent_id, continuous, max_speed):
                 self._py_env = py_env
                 self._agent_id = agent_id
