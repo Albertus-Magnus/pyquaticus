@@ -104,3 +104,4 @@ Currently the rewards or evaluation function is too meaningless. Either the agen
 * set_start_state() exists but was never called, the _start_env variable thus remains None.
 * TypeError: cannot pickle 'pygame.surface.Surface' object
 * It seems the deepcopy of the environment is now failing to copy an environment due to the game grafics being included in it. We have to copy/wrap the environment without the grafics.
+* Some tinkering later this is not resolved. But when changing render_mode=None at the very first instance of env the program runs without this issue. Can the render mode be changed after the agents are created? Would that help?
