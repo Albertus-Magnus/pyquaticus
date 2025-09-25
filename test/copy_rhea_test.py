@@ -23,7 +23,7 @@ config_dict["sim_speedup_factor"] = 3
 #config_dict["reward_config"] = 3
 #reward_config = caps_and_grabs #{} something like this should exist somewhere
 
-env = pyquaticus_v0.PyQuaticusEnv(team_size=1, config_dict=config_dict, reward_config={ 'agent_0': simplest_test, 'agent_1': test_reward_func },render_mode="human")#'human') #TODO change back to 'human' #Yes, this makes the copy work...
+env = pyquaticus_v0.PyQuaticusEnv(team_size=1, config_dict=config_dict, reward_config={ 'agent_0': simplest_test, 'agent_1': caps_and_grabs },render_mode="human")#'human') #TODO change back to 'human' #Yes, this makes the copy work...
 #print("env created")
 #env2 = deepcopy(env)
 #print("env and env2 created")
