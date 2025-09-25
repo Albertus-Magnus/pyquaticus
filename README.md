@@ -145,4 +145,6 @@ All headings are in nautical format
     #          270 -- . -- 90
     #                 |
     #                180
+    # This can be converted the standard heading format that is counterclockwise
+    # by using the heading_angle_conversion(deg) function found in utils.py
 ```
