@@ -2,6 +2,7 @@ from typing import Union
 
 import numpy as np
 
+import copy
 import pyquaticus.base_policies.base_attack as attack_policy
 import pyquaticus.base_policies.base_defend as defend_policy
 from pyquaticus.base_policies.base_policy import BaseAgentPolicy
@@ -57,7 +58,8 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                 self._continuous = continuous
                 self._max_speed = max_speed
                 self._action_space = self._try_agent_action_space() #perhaps this could be changed into a descrete/continuous check?
-                self._start_env = None
+                #self._start_env = None #was wrong? set same as py_env for now, maybe is not needed as its own variable
+                self._start_env = py_env
                 if self._action_space is not None:
                     try:
                         self._other_action = self._action_space.sample()
@@ -80,7 +82,6 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                     pass
                 return None
             def set_start_state(self, obs, info):
-                import copy
                 try:
                     self._start_env = copy.deepcopy(self._py_env)
                     print(self._py_env)
@@ -103,14 +104,13 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                     import numpy as _np
                     return int(_np.random.randint(0, 15))
             def evaluate_rollout(self, solutions, discount_factor=None, ignore_frames=0):
-                import copy
                 scores = []
                 for sol in solutions:
                     try:
                         sim_env = copy.deepcopy(self._start_env)
-                        print(self._start_env)
-                        print(sim_env) #is type None
-                        return -1
+                        #print(self._start_env) #is type None
+                        #print(sim_env) #is type None
+                        #return -1
                         # usually no exception here (testing result)
                     except Exception:
                         # Is not usually thrown (testing result)
