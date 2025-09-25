@@ -12,7 +12,7 @@ pip install -e .[torch,ray]
 
 
 # Master Project Documentation Magnus Amann 
-## 22.8.2025 – ~~24.10.25~~30.9.2025
+## 22.8.2025 – 10.10.25~~30.9.2025~~
 
 
 
