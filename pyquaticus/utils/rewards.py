@@ -229,11 +229,9 @@ def test_reward_func(
     tagging_cooldown: float
 ):
     reward = 0.0
-    reward += tagging_cooldown #reward for having a high tagging cooldown so it wants to tag. (For testing purposes)
-    prev_num_oob = state['agent_oob'][agents.index(agent_id)]
-    num_oob = state['agent_oob'][agents.index(agent_id)]
-    if num_oob > prev_num_oob:
-        reward += 1.0 #small change, so it wants to go out of bounds
+    position = state['agent_position'][agents.index(agent_id)]
+    prev_position = state['prev_agent_position'][agents.index(agent_id)]
+    print(position)
 
     return reward
 
