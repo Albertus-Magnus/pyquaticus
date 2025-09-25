@@ -83,6 +83,10 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                 and return a dictionary with saved objects so they can be restored after deepcopy.
                 Call _restore_after_deepcopy(saved) once done.
                 """
+                img_store = env.pygame_background_img
+                env.pygame_background_img = None
+                return img_store
+                """
                 saved = {"attrs": {}, "player_attrs": {}}
                 try:
                     import pygame
@@ -122,9 +126,13 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                             pass
 
                 return saved
+                """
 
             def _restore_after_deepcopy(self, envi, saved): #TODO delete if this doesnt work
                 """Restore things saved by _prepare_for_deepcopy."""
+                envi.pygame_background_img = saved
+                return
+                """
                 if not saved:
                     return
                 for name, val in saved.get("attrs", {}).items():
@@ -142,6 +150,7 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                             setattr(player, attr, val)
                         except Exception:
                             pass
+                """
 
             def _try_agent_action_space(self):
                 try:
