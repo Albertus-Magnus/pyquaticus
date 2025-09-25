@@ -20,6 +20,7 @@ class RollingHorizonEvolutionaryAlgorithm():
         # Initialize the solution to a random sequence
         if self._use_shift_buffer:
             self._solution = self._random_solution()
+            print("Initial random solution:", self._solution)
 
     def _get_next_action(self):
         """
