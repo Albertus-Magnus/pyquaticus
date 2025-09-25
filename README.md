@@ -186,3 +186,5 @@ def caps_and_grabs(
 
     return reward
 ```
+* Right now the rhea thing appears to (maybe?) be working, but planning 300 steps ahead with mostly random moves does not get the agent anywhere close to securing points and thus not close to select an optimal action. Perhaps more branches would help.
+* Also the example reward function still does not seem right to me, perhaps something was lost in a past change there in the original repo?
