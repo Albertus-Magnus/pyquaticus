@@ -74,7 +74,7 @@ class RollingHorizonEvolutionaryAlgorithm():
         """
         Create a random set of actions
         """
-        print("DOES THIS GET CALLED?")
+        print("DOES THIS GET CALLED?") #still no confirmation??! TODO
         return np.array([self._environment.get_random_action() for _ in range(self._rollout_actions_length)])
 
     def _mutate(self, solution, mutation_probability):
