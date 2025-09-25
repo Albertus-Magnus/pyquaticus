@@ -106,7 +106,9 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                 for sol in solutions:
                     try:
                         sim_env = copy.deepcopy(self._start_env)
-                    except Exception:
+                    except Exception as e__:
+                        print("Exception during deepcopy of start_env, using current env as start_env.")
+                        print(e__)
                         sim_env = copy.deepcopy(self._py_env)
                     total_reward = 0.0
                     discount = 1.0
@@ -114,14 +116,14 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                         action_dict = {self._agent_id: action}
                         try:
                             obs, reward, terminated, truncated, info = sim_env.step(action_dict)
-                        except Exception as e:
+                        except Exception as e: #'NoneType' object has no attribute 'step'
                             print(e)
                             print("Exception during RHEA env step, unable to get reward from .step()") #HERE
                             try:
                                 obs, reward, done, info = sim_env.step(action_dict)
                                 terminated = done.get(self._agent_id, False) if isinstance(done, dict) else done
                                 truncated = False
-                            except Exception as e_:
+                            except Exception as e_: #'NoneType' object has no attribute 'step'
                                 terminated = True
                                 truncated = True
                                 print(e_)
