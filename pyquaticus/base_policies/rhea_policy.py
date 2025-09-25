@@ -81,7 +81,8 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                 self._agent_id = agent_id
                 self._continuous = continuous
                 self._max_speed = max_speed
-                self._action_space = self._try_agent_action_space() #perhaps this could be changed into a descrete/continuous check?
+                self._action_space = py_env.action_space
+                #self._try_agent_action_space() #perhaps this could be changed into a descrete/continuous check?
                 #self._start_env = None #was wrong? set same as py_env for now, maybe is not needed as its own variable
                 self._start_env = py_env
                 # Testing if I can make env conform to deepcopy by removing unpicklable grafics:
