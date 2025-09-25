@@ -110,3 +110,24 @@ Currently the rewards or evaluation function is too meaningless. Either the agen
 * There needs to be a different method to copy or a major change to the render mode initialization...
 * What if when initializing an agent we initiate a new env in render mode None and write a function to set all parameters so it will be a copy of original env in all other aspects?
 * Implemented that, now it runs without deepcopy picklable errors. But the agents are not moving now. This is progress! :D
+* There seems to be wrong interaction between agent and env in the sense of different values for the continuous/discrete option. I thought continuous was correct but perhaps discrete works?
+* Reading up PyQuaticusEnv readme on the topic:
+```
+action_space: type of action space for each agent ('discrete', 'continuous', or 'afp')
+        (1) 'discrete': discrete action space with all combinations of max speed, half speed; and 45 degree relative heading intervals
+        (2) 'continuous': continuous action space for speed [0, max speed] and desired relative heading [0, 359]
+        (3) 'afp': discrete action space of target positions from AQUATICUS_FIELD_POINTS (see config.py)
+
+        Note 1: If different action spaces are desired for different agents, provide a list / tuple / array of length 2*team_size like:
+                ['discrete', 'discrete', 'continuous', 'afp']
+                Each action space type will be applied to the agent at the corresponding index in self.agents.
+
+        Note 2: All agents can take each type of action input to the step function regardless of the type action space specified.
+                This parameter is just used to set the PettingZoo standard action_spaces attribute.
+
+        Note 3: Inputs to the step function for the 'afp' action space will be strings AQUATICUS_FIELD_POINTS (see config.py)
+```
+* also interesting:
+```
+reward_config: a dictionary configuring the reward structure (see rewards.py)
+```
