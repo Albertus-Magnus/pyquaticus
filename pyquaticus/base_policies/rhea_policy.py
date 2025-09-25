@@ -85,19 +85,19 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                 Perhaps need to remove "renderer", "window", "screen", "clock", "pygame_background_img"?
                 """
                 img_store = []
-                img_store.append(env.pygame_background_img)
-                if env.pygame_background_img is None:
+                img_store.append(envi.pygame_background_img)
+                if envi.pygame_background_img is None:
                     print("pygame_background_img is None")
                     return -1
-                env.pygame_background_img = None
-                img_store.append(env.background_img)
-                env.background_img = None
-                img_store.append(env.screen)
-                env.screen = None
-                img_store.append(env.renderer)
-                env.renderer = None
-                img_store.append(env.window)
-                env.window = None
+                envi.pygame_background_img = None
+                img_store.append(envi.background_img)
+                envi.background_img = None
+                img_store.append(envi.screen)
+                envi.screen = None
+                img_store.append(envi.renderer)
+                envi.renderer = None
+                img_store.append(envi.window)
+                envi.window = None
                 return img_store
                 """
                 saved = {"attrs": {}, "player_attrs": {}}
@@ -141,13 +141,13 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                 return saved
                 """
 
-            def _restore_after_deepcopy(self, img_store): #TODO delete if this doesnt work
+            def _restore_after_deepcopy(self, envi, img_store): #TODO delete if this doesnt work
                 """Restore things saved by _prepare_for_deepcopy."""
-                env.pygame_background_img = img_store[0]
-                env.background_img = img_store[1]
-                env.screen = img_store[2]
-                env.renderer = img_store[3]
-                env.window = img_store[4]
+                envi.pygame_background_img = img_store[0]
+                envi.background_img = img_store[1]
+                envi.screen = img_store[2]
+                envi.renderer = img_store[3]
+                envi.window = img_store[4]
                 return
                 """
                 img_store.append(env.pygame_background_img)
