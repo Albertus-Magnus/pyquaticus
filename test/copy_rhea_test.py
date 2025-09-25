@@ -43,6 +43,9 @@ H_one = RHEA_CTF_Agent('agent_1', env, continuous=True)
 R_one = RHEA_CTF_Agent('agent_0', env, continuous=True)
 #R_one = Heuristic_CTF_Agent('agent_0', env, mode="nothing", continuous=True) #changed to nothing for testing, hard was there before
 
+# Can I set the render mode after env creation?
+env.render_mode = 'human'
+
 step = 0
 while True:
     zero = R_one.compute_action(obs, info)
