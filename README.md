@@ -151,3 +151,38 @@ All headings are in nautical format
 * The reward function is not set properly. In pyquaticus.py it is called by:
 ```self.reward_config[agent_id]```
 * Thus it will have to be added on the pyquaticus-environment level.
+* Now the reward seems to be defined at the correct place, but a different reward might be necessary to test if it is applied correctly.
+* The example reward function does not make sense to me. Are there not two identical values compared to each other?
+```
+def caps_and_grabs(
+    agent_id: str,
+    team: Team,
+    agents: list,
+    agent_inds_of_team: dict,
+    state: dict,
+    prev_state: dict,
+    env_size: np.ndarray,
+    agent_radius: np.ndarray,
+    catch_radius: float,
+    scrimmage_coords: np.ndarray,
+    max_speeds: list,
+    tagging_cooldown: float
+):
+    reward = 0.0
+    prev_num_oob = state['agent_oob'][agents.index(agent_id)]
+    num_oob = state['agent_oob'][agents.index(agent_id)]
+    if num_oob > prev_num_oob:
+        reward += -1.0
+    for t in state['grabs']:
+        prev_num_grabs = state['grabs'][t]
+        num_grabs = state['grabs'][t]
+        if num_grabs > prev_num_grabs:
+            reward += 0.25 if t == team else -0.25
+
+        prev_num_caps = state['captures'][t]
+        num_caps = state['captures'][t]
+        if num_caps > prev_num_caps:
+            reward += 1.0 if t == team else -1.0
+
+    return reward
+```
