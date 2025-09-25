@@ -106,10 +106,10 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                 for sol in solutions:
                     try:
                         sim_env = copy.deepcopy(self._start_env)
-                        return -1
                     except Exception:
                         print("Exception during deepcopy of start_env, using current env as start_env.")
                         sim_env = copy.deepcopy(self._py_env)
+                        return -1
                     total_reward = 0.0
                     discount = 1.0
                     for action in sol:
