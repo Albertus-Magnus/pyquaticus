@@ -138,3 +138,11 @@ Warning! Action passed in for agent_0 ([  1. -45.]) is not contained in agent's 
 Auto-detecting action space for agent_0
 ```
 * This might be alright, perhaps simply a sign that the framework is autocorrecting the discrete/continuous format of the action. 1 -45 for example seems to be a correct discrete action.
+```
+All headings are in nautical format
+    #                 0
+    #                 |
+    #          270 -- . -- 90
+    #                 |
+    #                180
+```
