@@ -96,3 +96,6 @@ https://github.com/Bam4d/RollingHorizonEvolutionaryAlgorithm
 
 ![plan_tuesday](https://github.com/user-attachments/assets/c81034a8-84bd-4990-b6cf-d6e455de826e)
 
+Currently the rewards or evaluation function is too meaningless. Either the agents need to be better at finding the route towards the next point (capturing a flag) via tweaking of parameters like mutation chance or a better reward needs to be implemented.
+
+<img width="1920" height="1080" alt="Screenshot from 2025-09-25 14-02-20" src="https://github.com/user-attachments/assets/53044600-bfc7-49e9-9e87-0bf9c3d1e1d5" />
