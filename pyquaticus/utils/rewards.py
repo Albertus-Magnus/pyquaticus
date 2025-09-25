@@ -232,8 +232,12 @@ def test_reward_func(
     position = state['agent_position'][agents.index(agent_id)]
     prev_position = state['prev_agent_position'][agents.index(agent_id)]
     print(position)
-    print(prev_position)
-
+    print(prev_position) #timesteps do not work correctly. These two are the same
+    
+    position2 = np.array([109.76052919, 39.93446417])
+    if np.array_equal(position, position2):
+        reward += 1.0
+    
     return reward
 
 def simplest_test(
