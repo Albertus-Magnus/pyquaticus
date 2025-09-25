@@ -114,23 +114,24 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                         action_dict = {self._agent_id: action}
                         try:
                             obs, reward, terminated, truncated, info = sim_env.step(action_dict)
-                        except Exception:
-                            print(Exception)
+                        except Exception as e:
+                            print(e)
                             print("Exception during RHEA env step, unable to get reward from .step()") #HERE
                             try:
                                 obs, reward, done, info = sim_env.step(action_dict)
                                 terminated = done.get(self._agent_id, False) if isinstance(done, dict) else done
                                 truncated = False
-                            except Exception:
+                            except Exception as e_:
                                 terminated = True
                                 truncated = True
-                                print(Exception)
+                                print(e_)
                                 print("Reward 0.0 because .step() threw error.") #THEN HERE
                                 reward = {self._agent_id: 0.0}
                         r = 0.0
                         if isinstance(reward, dict):
                             print("marker 532") #THEN HERE
                             r = float(reward.get(self._agent_id, 0.0))
+                            print("r = ", r)
                         else:
                             print("marker 165")
                             r = float(reward)
