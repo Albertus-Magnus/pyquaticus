@@ -105,3 +105,6 @@ Currently the rewards or evaluation function is too meaningless. Either the agen
 * TypeError: cannot pickle 'pygame.surface.Surface' object
 * It seems the deepcopy of the environment is now failing to copy an environment due to the game grafics being included in it. We have to copy/wrap the environment without the grafics.
 * Some tinkering later this is not resolved. But when changing render_mode=None at the very first instance of env the program runs without this issue. Can the render mode be changed after the agents are created? Would that help?
+* Without grafics it runs, but changing the render mode after initialization requires further changes.
+* All attempts to remove render mode and reapply it shortly before and after a deepcopy are not working so far.
+* There needs to be a different method to copy or a major change to the render mode initialization...
