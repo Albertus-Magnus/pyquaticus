@@ -8,6 +8,7 @@ from pyquaticus import pyquaticus_v0
 import pyquaticus.base_policies.base_attack as attack_policy
 import pyquaticus.base_policies.base_defend as defend_policy
 from pyquaticus.base_policies.base_policy import BaseAgentPolicy
+from pyquaticus.utils.rewards import example_reward
 from pyquaticus.base_policies.utils import (dist_rel_bearing_to_local_rect,
                                             get_avoid_vect,
                                             global_rect_to_abs_bearing,
@@ -19,6 +20,7 @@ from pyquaticus.config import config_dict_std
 from pyquaticus.envs.pyquaticus import PyQuaticusEnv, Team
 from pyquaticus.moos_bridge.pyquaticus_moos_bridge import PyQuaticusMoosBridge
 from pyquaticus.utils.utils import angle180, dist, line_intersection
+from pyquaticus.utils.rewards import caps_and_grabs
 #from RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea import RollingHorizonEvolutionaryAlgorithm
 from pyquaticus.utils.utils import angle180, dist, line_intersection
 #Start of special rhea import
@@ -61,7 +63,7 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
         config_dict["render_agent_ids"] = True
         config_dict["dynamics"] = ["si", "si"]#["si", "si", "si", "si", "si", "si"]
         config_dict["sim_speedup_factor"] = 3
-        temp_env = pyquaticus_v0.PyQuaticusEnv(team_size=1, config_dict=config_dict,render_mode=None) #best idea I've ever had
+        temp_env = pyquaticus_v0.PyQuaticusEnv(team_size=1, config_dict=config_dict, reward_config=caps_and_grabs,render_mode=None) #best idea I've ever had
         reset_opts = {'normalize_obs': False, 'normalize_state': False}
         obs, info = temp_env.reset(options=reset_opts)
         env =  temp_env #changes everything (super happy about that, but why no self. here?)
