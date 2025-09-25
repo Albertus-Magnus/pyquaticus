@@ -63,7 +63,7 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
         config_dict["render_agent_ids"] = True
         config_dict["dynamics"] = ["si", "si"]#["si", "si", "si", "si", "si", "si"]
         config_dict["sim_speedup_factor"] = 3
-        temp_env = pyquaticus_v0.PyQuaticusEnv(team_size=1, config_dict=config_dict, reward_config=caps_and_grabs,render_mode=None) #best idea I've ever had
+        temp_env = pyquaticus_v0.PyQuaticusEnv(team_size=1, config_dict=config_dict, reward_config={'agent_0': caps_and_grabs, 'agent_1': caps_and_grabs},render_mode=None) #best idea I've ever had
         reset_opts = {'normalize_obs': False, 'normalize_state': False}
         obs, info = temp_env.reset(options=reset_opts)
         env =  temp_env #changes everything (super happy about that, but why no self. here?)
