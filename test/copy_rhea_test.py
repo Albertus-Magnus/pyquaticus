@@ -53,7 +53,9 @@ R_one = RHEA_CTF_Agent('agent_0', env, continuous=True)
 
 step = 0
 while True:
+    print("Step:", step)
     zero = R_one.compute_action(obs, info)
+    print("RHEA action:", zero)
     one = H_one.compute_action(obs, info)
 
     
