@@ -106,9 +106,9 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                 for sol in solutions:
                     try:
                         sim_env = copy.deepcopy(self._start_env)
-                    except Exception as e__:
+                        return -1
+                    except Exception:
                         print("Exception during deepcopy of start_env, using current env as start_env.")
-                        print(e__)
                         sim_env = copy.deepcopy(self._py_env)
                     total_reward = 0.0
                     discount = 1.0
@@ -142,7 +142,6 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                             discount *= discount_factor
                         if terminated or truncated:
                             break
-                        break#TODO delete
                     scores.append(total_reward)
                 import numpy as _np
                 #print("Scores of evaluations:", scores)#TODO delete after testing
