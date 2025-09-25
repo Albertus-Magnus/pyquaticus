@@ -223,9 +223,6 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
         # compute next action should be already implemented by _get_next_action
         action = self.rhea._get_next_action()
         print("RHEA action:", action)
-        return action
-        while True:
-            continue
         if action is None:
             print("RHEA returned None action, falling back to ultra defensive")
         else:
