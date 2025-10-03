@@ -68,7 +68,8 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
         obs, info = temp_env.reset(options=reset_opts)
         env =  temp_env #changes everything (super happy about that, but why no self. here?)
         self.env = temp_env #doesnt change anything
-        # End of initialize copyable env #TODO check if env.step is done or has to be added
+        # End of initialize copyable env 
+        # #TODO check if env.step is done or has to be added
 
         self.state_normalizer = env.global_state_normalizer
         self.walls = env._walls[self.team.value]
@@ -104,13 +105,13 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                 #self._start_env = None #was wrong? set same as py_env for now, maybe is not needed as its own variable
                 self._start_env = py_env
                 # Testing if I can make env conform to deepcopy by removing unpicklable grafics:
-                self._start_env.renderer = None
-                self._start_env.window = None
-                self._start_env.pygame_background_img = None
+                #self._start_env.renderer = None
+                #self._start_env.window = None
+                #self._start_env.pygame_background_img = None
                 # (just to be safe, possible redundancy):
-                self._py_env.renderer = None
-                self._py_env.window = None
-                self._py_env.pygame_background_img = None #TODO does this affect the actual env?
+                #self._py_env.renderer = None
+                #self._py_env.window = None
+                #self._py_env.pygame_background_img = None #TODO does this affect the actual env?
                 # testing that...
                 if self._action_space is not None:
                     try:
@@ -120,20 +121,7 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                 else:
                     self._other_action = (0.0, 0.0) if continuous else -1
 
-            # def _try_agent_action_space(self):
-            #     try:
-            #         sp = getattr(self._py_env, "action_space", None)
-            #         if sp is not None:
-            #             try:
-            #                 return sp[self._agent_id]
-            #             except Exception:
-            #                 return sp
-            #         players = getattr(self._py_env, "players", None)
-            #         if players is not None and self._agent_id in players:
-            #             return getattr(players[self._agent_id], "action_space", None)
-            #     except Exception:
-            #         pass
-            #     return None
+            
             def set_start_state(self, obs, info):
                 try:
                     #self._prepare_for_deepcopy(self._py_env)
@@ -143,24 +131,11 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                     print("marker 87")
                 except Exception:
                     self._start_env = self._py_env
+
             def get_random_action(self):
                 #return a random action based on the ACTION_MAP in config.py (available in self as well)
                 return random.choice(self.action_map)
-            # def get_random_action(self):#old version, not specific to pyquaticus
-            #     space = self._action_space or self._try_agent_action_space()
-            #     if space is not None:
-            #         try:
-            #             return space.sample()
-            #         except Exception:
-            #             pass
-            #     if self._continuous:
-            #         import numpy as _np
-            #         speed = _np.random.random() * self._max_speed
-            #         heading = (_np.random.random() * 360.0) - 180.0
-            #         return (speed, heading)
-            #     else:
-            #         import numpy as _np
-            #         return int(_np.random.randint(0, 15))
+                
             def evaluate_rollout(self, solutions, discount_factor=None, ignore_frames=0):
                 scores = []
                 for sol in solutions:
@@ -195,7 +170,7 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
                                 terminated = True
                                 truncated = True
                                 print(e_)
-                                print("Reward 0.0 because .step() threw error.") #THEN HERE
+                                print("Reward 0.0 because .step() threw error.")
                                 reward = {self._agent_id: 0.0}
                         r = 0.0
                         if isinstance(reward, dict):
@@ -229,9 +204,9 @@ class RHEA_CTF_Agent(BaseAgentPolicy):
             def get_current_score(self):
                 return 0.0
 
-        rollout_actions_length = 300#100
-        mutation_probability = 0.2
-        num_evals = 15#3#1600
+        rollout_actions_length = 1000#100
+        mutation_probability = 0.4
+        num_evals = 5#3#1600
         self.rhea = RollingHorizonEvolutionaryAlgorithm(
             rollout_actions_length,
             SingleAgentRHEAEnv(env, self.id, continuous, self.max_speed),
