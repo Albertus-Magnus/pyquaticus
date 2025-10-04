@@ -1,19 +1,9 @@
-# Pyquaticus
-This is a [PettingZoo](https://pettingzoo.farama.org/) environment for maritime Capture the Flag with uncrewed surface vehicles (USVs).
-
-## Motivation
-This PettingZoo is a _lightweight_ environment for developing algorithms to play multi-agent Capture-the-Flag with surface vehicle dynamics.
-## Example
-* Supports standard PettingZoo interface for multi-agent RL
-* Pure-Python implementation without many dependencies
-```
-pip install -e .[torch,ray]
-```
-
-
 # Master Project Documentation Magnus Amann 
 ## 22.8.2025 – 10.10.25~~30.9.2025~~
 
+
+## Pyquaticus with added heuristics
+This is a [PettingZoo](https://pettingzoo.farama.org/) environment for maritime Capture the Flag with uncrewed surface vehicles (USVs). It contains the [Pyquaticus](https://github.com/mit-ll-trusted-autonomy/pyquaticus) framework as basis and some adjustments, namely an ultra defensive agent policy and an integration of a RHEA implementation.
 
 
 https://github.com/user-attachments/assets/973542d5-bfdf-4421-a0fc-4254b58026bb
