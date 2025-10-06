@@ -43,7 +43,11 @@ except ModuleNotFoundError:
 
 
 class RHEA_Agent(BaseAgentPolicy):
-    """Capture The Flag agent policy utilizing the RHE Algorithm to compute the next action."""
+    """
+    Capture The Flag agent policy utilizing the 
+    RHE Algorithm to compute the next action.
+    Implements the BaseAgentPolicy interface.
+    """
 
     def __init__(
         self,
@@ -54,7 +58,7 @@ class RHEA_Agent(BaseAgentPolicy):
         continuous: bool = False,
         #defensiveness: float = 20.0,
     ):
-        super().__init__(agent_id, env, continuous)
+        super().__init__(agent_id, env, continuous) #TODO create new environment wrapper and check if it needs the below new init...
         # Testing if I can turn a fresh initiate of env into a copy of the original env (but deepcopyable)
         config_dict = {}
         config_dict["max_time"] = 600.0
