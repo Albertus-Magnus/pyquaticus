@@ -23,7 +23,7 @@ from pyquaticus.utils.utils import angle180, dist, line_intersection
 from pyquaticus.utils.rewards import caps_and_grabs
 #from RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea import RollingHorizonEvolutionaryAlgorithm
 #Start of special rhea import
-from RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea import RollingHorizonEvolutionaryAlgorithm #untested as of now, is this import working or do I need the code below?
+from rhea import RollingHorizonEvolutionaryAlgorithm #untested as of now, is this import working or do I need the code below?
 # try the normal absolute import first; if it fails, add project root and retry
 # try:
 #     from RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea import RollingHorizonEvolutionaryAlgorithm
