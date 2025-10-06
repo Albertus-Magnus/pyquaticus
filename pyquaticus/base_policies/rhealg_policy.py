@@ -22,7 +22,6 @@ from pyquaticus.moos_bridge.pyquaticus_moos_bridge import PyQuaticusMoosBridge
 from pyquaticus.utils.utils import angle180, dist, line_intersection
 from pyquaticus.utils.rewards import caps_and_grabs
 #from RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea import RollingHorizonEvolutionaryAlgorithm
-from pyquaticus.utils.utils import angle180, dist, line_intersection
 #Start of special rhea import
 from RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea import RollingHorizonEvolutionaryAlgorithm #untested as of now, is this import working or do I need the code below?
 # try the normal absolute import first; if it fails, add project root and retry
