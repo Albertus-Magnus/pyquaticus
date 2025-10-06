@@ -72,7 +72,7 @@ class RHEA_Agent(BaseAgentPolicy):
 
         self.state_normalizer = env.global_state_normalizer
         self.walls = env._walls[self.team.value]
-        self.max_speed = env.max_speeds[env.players[self.id].idx]
+        #self.max_speed = env.max_speeds[env.players[self.id].idx]
         #self.defensiveness = defensiveness
         self.continuous = continuous
         self.flag_keepout = flag_keepout
