@@ -4,7 +4,6 @@ from typing import Union
 import numpy as np
 
 import copy
-import RollingHorizonEvolutionaryAlgorithm
 from pyquaticus import pyquaticus_v0
 import pyquaticus.base_policies.base_attack as attack_policy
 import pyquaticus.base_policies.base_defend as defend_policy
@@ -24,6 +23,7 @@ from pyquaticus.utils.utils import angle180, dist, line_intersection
 from pyquaticus.utils.rewards import caps_and_grabs
 #from RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea import RollingHorizonEvolutionaryAlgorithm
 #Start of special rhea import
+import RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea
 from RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea import RollingHorizonEvolutionaryAlgorithm #untested as of now, is this import working or do I need the code below?
 # try the normal absolute import first; if it fails, add project root and retry
 # try:
