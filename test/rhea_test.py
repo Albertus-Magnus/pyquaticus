@@ -46,9 +46,9 @@ temp_tags = env.state["tags"]
 H_one = Heuristic_CTF_Agent('agent_3', env, mode=MODE, continuous=True)
 H_two = Heuristic_CTF_Agent('agent_4', env, mode=MODE, continuous=True)
 H_three = Heuristic_CTF_Agent('agent_5', env, mode=MODE, continuous=True)
-# Ultra-defensive agents
+# Ultra-defensive agents and RHEA agent
 R_one = UltraDefender('agent_0', env, continuous=True)
-R_two = RHEA_Agent('agent_1', env, continuous=True)
+R_two = RHEA_Agent('agent_1', env, continuous=True) # RHEA agent here
 R_three = UltraDefender('agent_2', env, continuous=True)
 
 step = 0
