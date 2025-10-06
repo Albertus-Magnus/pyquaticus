@@ -23,21 +23,20 @@ from pyquaticus.utils.utils import angle180, dist, line_intersection
 from pyquaticus.utils.rewards import caps_and_grabs
 #from RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea import RollingHorizonEvolutionaryAlgorithm
 #Start of special rhea import
-from rhea import RollingHorizonEvolutionaryAlgorithm
 # try the normal absolute import first; if it fails, add project root and retry
-# try:
-#     from RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea import RollingHorizonEvolutionaryAlgorithm
-# except ModuleNotFoundError:
-#     import sys, os, importlib
-#     # compute project root relative to this file (../../.. -> project root)
-#     _this_dir = os.path.dirname(__file__)
-#     _project_root = os.path.abspath(os.path.join(_this_dir, "..", "..", ".."))
-#     if _project_root not in sys.path:
-#         sys.path.insert(0, _project_root)
-#     # retry import (let any exception propagate if it still fails)
-#     RollingHorizonEvolutionaryAlgorithm = importlib.import_module(
-#         "RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea"
-#     ).RollingHorizonEvolutionaryAlgorithm
+try:
+    from RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea import RollingHorizonEvolutionaryAlgorithm
+except ModuleNotFoundError:
+    import sys, os, importlib
+    # compute project root relative to this file (../../.. -> project root)
+    _this_dir = os.path.dirname(__file__)
+    _project_root = os.path.abspath(os.path.join(_this_dir, "..", "..", ".."))
+    if _project_root not in sys.path:
+        sys.path.insert(0, _project_root)
+    # retry import (let any exception propagate if it still fails)
+    RollingHorizonEvolutionaryAlgorithm = importlib.import_module(
+        "RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea"
+    ).RollingHorizonEvolutionaryAlgorithm
 # #End of special rhea import
 
 #MODES = {"easy", "medium", "hard", "nothing"}
