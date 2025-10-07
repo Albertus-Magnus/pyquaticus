@@ -57,7 +57,7 @@ while True:
     three = H_one.compute_action(obs, info)
     four = H_two.compute_action(obs, info)
     five = H_three.compute_action(obs, info)
-    # Ultra-defensive agents
+    # Ultra-defensive agents and RHEA agent
     zero = R_one.compute_action(obs, info)
     one = R_two.compute_action(obs, info)
     two = R_three.compute_action(obs, info)
