@@ -56,7 +56,6 @@ class RHEA_Agent(BaseAgentPolicy):
         flag_keepout: float = config_dict_std["flag_keepout"],
         catch_radius: float = config_dict_std["catch_radius"],
         continuous: bool = False,
-        #defensiveness: float = 20.0,
     ):
         super().__init__(agent_id, env, continuous) #TODO create new environment wrapper and check if it needs the below new init...
         # Testing if I can turn a fresh initiate of env into a copy of the original env (but deepcopyable)
@@ -104,18 +103,7 @@ class RHEA_Agent(BaseAgentPolicy):
                 self._continuous = continuous
                 self._max_speed = max_speed
                 self._action_space = py_env.action_space
-                #self._try_agent_action_space() #perhaps this could be changed into a descrete/continuous check?
-                #self._start_env = None #was wrong? set same as py_env for now, maybe is not needed as its own variable
                 self._start_env = py_env
-                # Testing if I can make env conform to deepcopy by removing unpicklable grafics:
-                #self._start_env.renderer = None
-                #self._start_env.window = None
-                #self._start_env.pygame_background_img = None
-                # (just to be safe, possible redundancy):
-                #self._py_env.renderer = None
-                #self._py_env.window = None
-                #self._py_env.pygame_background_img = None #TODO does this affect the actual env?
-                # testing that...
                 if self._action_space is not None:
                     try:
                         self._other_action = self._action_space.sample()
@@ -127,9 +115,7 @@ class RHEA_Agent(BaseAgentPolicy):
             
             def set_start_state(self, obs, info):
                 try:
-                    #self._prepare_for_deepcopy(self._py_env)
                     saved = self._start_env = copy.deepcopy(self._py_env)
-                    #self._restore_after_deepcopy(self._py_env, saved)
                     print(self._py_env)
                     print("marker 87")
                 except Exception:
@@ -143,19 +129,10 @@ class RHEA_Agent(BaseAgentPolicy):
                 scores = []
                 for sol in solutions:
                     try:
-                        #saved = self._prepare_for_deepcopy(self._start_env)
                         sim_env = copy.deepcopy(self._start_env)
-                        #self._restore_after_deepcopy(self._start_env, saved)
-                        #print(self._start_env) #is type None
-                        #print(sim_env) #is type None
-                        #return -1
-                        # usually no exception here (testing result)
                     except Exception:
-                        # Is not usually thrown (testing result)
                         print("Exception during deepcopy of start_env, using current env as start_env.")
-                        #saved = self._prepare_for_deepcopy(self._py_env)
                         sim_env = copy.deepcopy(self._py_env)
-                        #self._restore_after_deepcopy(self._py_env, saved)
                     total_reward = 0.0
                     discount = 1.0
                     for action in sol:
@@ -207,9 +184,9 @@ class RHEA_Agent(BaseAgentPolicy):
             def get_current_score(self):
                 return 0.0
 
-        rollout_actions_length = 1000#100
-        mutation_probability = 0.4
-        num_evals = 5#3#1600
+        rollout_actions_length = 100
+        mutation_probability = 0.3
+        num_evals = 100
         self.rhea = RollingHorizonEvolutionaryAlgorithm(
             rollout_actions_length,
             SingleAgentRHEAEnv(env, self.id, continuous, self.max_speed),
