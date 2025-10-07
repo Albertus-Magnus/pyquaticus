@@ -1,0 +1,249 @@
+import random
+from typing import Union
+
+import numpy as np
+
+import copy
+from pyquaticus import pyquaticus_v0
+import pyquaticus.base_policies.base_attack as attack_policy
+import pyquaticus.base_policies.base_defend as defend_policy
+from pyquaticus.base_policies.base_policy import BaseAgentPolicy
+from pyquaticus.utils.rewards import example_reward, test_reward_func, simplest_test, caps_and_grabs
+from pyquaticus.base_policies.utils import (dist_rel_bearing_to_local_rect,
+                                            get_avoid_vect,
+                                            global_rect_to_abs_bearing,
+                                            global_rect_to_local_rect,
+                                            local_rect_to_rel_bearing,
+                                            rel_bearing_to_local_unit_rect,
+                                            unit_vect_between_points)
+from pyquaticus.config import config_dict_std
+from pyquaticus.envs.pyquaticus import PyQuaticusEnv, Team
+from pyquaticus.moos_bridge.pyquaticus_moos_bridge import PyQuaticusMoosBridge
+from pyquaticus.utils.utils import angle180, dist, line_intersection
+from pyquaticus.utils.rewards import caps_and_grabs
+#from RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea import RollingHorizonEvolutionaryAlgorithm
+#Start of special rhea import
+# try the normal absolute import first; if it fails, add project root and retry
+try:
+    from RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea import RollingHorizonEvolutionaryAlgorithm
+except ModuleNotFoundError:
+    import sys, os, importlib
+    # compute project root relative to this file (../../.. -> project root)
+    _this_dir = os.path.dirname(__file__)
+    _project_root = os.path.abspath(os.path.join(_this_dir, "..", "..", ".."))
+    if _project_root not in sys.path:
+        sys.path.insert(0, _project_root)
+    # retry import (let any exception propagate if it still fails)
+    RollingHorizonEvolutionaryAlgorithm = importlib.import_module(
+        "RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea"
+    ).RollingHorizonEvolutionaryAlgorithm
+# #End of special rhea import
+
+#MODES = {"easy", "medium", "hard", "nothing"}
+
+
+class RHEA_Agent(BaseAgentPolicy):
+    """
+    Capture The Flag agent policy utilizing the 
+    RHE Algorithm to compute the next action.
+    Implements the BaseAgentPolicy interface.
+    """
+
+    def __init__(
+        self,
+        agent_id: str,
+        env: Union[PyQuaticusEnv, PyQuaticusMoosBridge],
+        flag_keepout: float = config_dict_std["flag_keepout"],
+        catch_radius: float = config_dict_std["catch_radius"],
+        continuous: bool = False,
+    ):
+        super().__init__(agent_id, env, continuous) #TODO create new environment wrapper and check if it needs the below new init...
+        # # Testing if I can turn a fresh initiate of env into a copy of the original env (but deepcopyable)
+        # config_dict = {}
+        # config_dict["max_time"] = 600.0       #OLD COPY OF ENV
+        # config_dict["max_score"] = 100
+        # config_dict["render_agent_ids"] = True
+        # config_dict["dynamics"] = ["si", "si"]#["si", "si", "si", "si", "si", "si"]
+        # config_dict["sim_speedup_factor"] = 3
+        # temp_env = pyquaticus_v0.PyQuaticusEnv(team_size=1, config_dict=config_dict, reward_config={ 'agent_0': simplest_test, 'agent_1': caps_and_grabs },render_mode=None) #best idea I've ever had
+        # reset_opts = {'normalize_obs': False, 'normalize_state': False}
+        # obs, info = temp_env.reset(options=reset_opts)
+        # env =  temp_env #changes everything (super happy about that, but why no self. here?)
+        # self.env = temp_env #doesnt change anything
+        # End of initialize copyable env 
+        # #TODO check if env.step is done or has to be added
+
+        self.state_normalizer = env.global_state_normalizer
+        self.walls = env._walls[self.team.value]
+        self.max_speed = env.max_speeds[env.players[self.id].idx]
+        #self.defensiveness = defensiveness
+        self.continuous = continuous
+        self.flag_keepout = flag_keepout
+
+        scrimmage_line = env.scrimmage_coords
+        flag_line = np.array(
+            (env.flag_homes[Team.RED_TEAM], env.flag_homes[Team.BLUE_TEAM])
+        )
+        self.midpoint_global = line_intersection(scrimmage_line, flag_line)
+
+        # Add RHEA instance as property
+        # Wrapper class to make the pyquaticus env compatible with RHEA:
+        class SingleAgentRHEAEnv: #TODO does this work? -preliminary answer no because it tries to copy 
+            def __init__(self, py_env, agent_id, continuous, max_speed):
+                #Adding action_map to this env for easy access:
+                self.action_map = []
+                for spd in [1.0, 0.5]:
+                    for hdg in range(180, -180, -45):
+                        self.action_map.append([spd, hdg])
+                # add a none action
+                self.action_map.append([0.0, 0.0])
+                #End of action_map
+                self._py_env = py_env
+                self._agent_id = agent_id
+                self._continuous = continuous
+                self._max_speed = max_speed
+                self._action_space = py_env.action_space
+                self._start_env = py_env
+                if self._action_space is not None:
+                    try:
+                        self._other_action = self._action_space.sample()
+                    except Exception:
+                        self._other_action = (0.0, 0.0) if continuous else -1
+                else:
+                    self._other_action = (0.0, 0.0) if continuous else -1
+
+            
+            def set_start_state(self, obs, info):
+                try:
+                    saved = self._start_env = copy.deepcopy(self._py_env)
+                    print(self._py_env)
+                    print("marker 87")
+                except Exception:
+                    self._start_env = self._py_env
+
+            def get_random_action(self):
+                #return a random action based on the ACTION_MAP in config.py (available in self as well)
+                return random.choice(self.action_map)
+                
+            def evaluate_rollout(self, solutions, discount_factor=None, ignore_frames=0):
+                scores = []
+                for sol in solutions:
+                    try:
+                        sim_env = copy.deepcopy(self._start_env)
+                    except Exception:
+                        print("Exception during deepcopy of start_env, using current env as start_env.")
+                        sim_env = copy.deepcopy(self._py_env)
+                    total_reward = 0.0
+                    discount = 1.0
+                    for action in sol:
+                        action_dict = {self._agent_id: action}
+                        try:
+                            obs, reward, terminated, truncated, info = sim_env.step(action_dict)
+                        except Exception as e: #'NoneType' object has no attribute 'step'
+                            print(e)
+                            print("Exception during RHEA env step, unable to get reward from .step()") #HERE
+                            try:
+                                obs, reward, done, info = sim_env.step(action_dict)
+                                terminated = done.get(self._agent_id, False) if isinstance(done, dict) else done
+                                truncated = False
+                            except Exception as e_: #'NoneType' object has no attribute 'step'
+                                terminated = True
+                                truncated = True
+                                print(e_)
+                                print("Reward 0.0 because .step() threw error.")
+                                reward = {self._agent_id: 0.0}
+                        r = 0.0
+                        if isinstance(reward, dict):
+                            print("marker 532") #THEN HERE
+                            r = float(reward.get(self._agent_id, 0.0))
+                            print("r = ", r)
+                            print("reward = ", reward)
+                        else:
+                            print("marker 165")
+                            r = float(reward)
+                        total_reward += discount * r
+                        if discount_factor is not None:
+                            discount *= discount_factor
+                        if terminated or truncated:
+                            break
+                    scores.append(total_reward)
+                import numpy as _np
+                #print("Scores of evaluations:", scores)#TODO delete after testing
+                return _np.array(scores)
+            def perform_action(self, action):
+                action_dict = {self._agent_id: action}
+                try:
+                    self._py_env.step(action_dict)
+                except Exception:
+                    pass
+            def is_game_over(self):
+                try:
+                    return getattr(self._py_env, "game_over", False)
+                except Exception:
+                    return False
+            def get_current_score(self):
+                return 0.0
+
+        rollout_actions_length = 100
+        mutation_probability = 0.3
+        num_evals = 100
+        self.rhea = RollingHorizonEvolutionaryAlgorithm(
+            rollout_actions_length,
+            SingleAgentRHEAEnv(env, self.id, continuous, self.max_speed),
+            mutation_probability,
+            num_evals
+        )
+
+    def compute_action(self, obs, info): #TODO implement rhea
+        """
+        Compute an action from the given observation and global state.
+
+        Args:
+            obs: observation from the gym
+            info: info from the gym
+
+        Returns
+        -------
+            action: if continuous, a tuple containing desired speed and heading error.
+            if discrete, an action index corresponding to ACTION_MAP in config.py
+        """
+        # compute next action should be already implemented by _get_next_action
+        action = self.rhea._get_next_action()
+        print("RHEA action:", action)
+        if action is None:
+            print("RHEA returned None action, falling back to ultra defensive")
+        else:
+            return action
+        #fallback to ultra defensive:
+        return self.action_from_vector(None, 0)
+
+
+    def action_from_vector(self, vector, desired_speed_normalized):
+        """
+        (--Remains from base_combined--)
+        Convert a desired vector in local rectangular coordinates and a desired speed
+        (0 to 1) into either a continuous or discrete action.
+        """
+        if desired_speed_normalized == 0:
+            if self.continuous:
+                return (0, 0)
+            else:
+                return -1
+        rel_bearing = local_rect_to_rel_bearing(vector)
+        if self.continuous:
+            return (desired_speed_normalized * self.max_speed, rel_bearing)
+        elif desired_speed_normalized == 0.5:
+            if 1 >= rel_bearing >= -1:
+                return 12
+            elif rel_bearing < -1:
+                return 14
+            elif rel_bearing > 1:
+                return 10
+        elif desired_speed_normalized == 1:
+            if 1 >= rel_bearing >= -1:
+                return 4
+            elif rel_bearing < -1:
+                return 6
+            elif rel_bearing > 1:
+                return 2
+
