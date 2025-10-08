@@ -7,7 +7,7 @@ from RollingHorizonEvolAlg.environment import Environment
 from RollingHorizonEvolAlg.rhea import RollingHorizonEvolutionaryAlgorithm
 # (special rhea import is thus no longer needed)
 from pyquaticus import pyquaticus_v0
-from pyquaticus.envs.pyquaticus import PyQuaticusEnv, Team
+from pyquaticus.envs.pyquaticus import PyQuaticusEnv#, Team
 from pyquaticus.moos_bridge.pyquaticus_moos_bridge import PyQuaticusMoosBridge
 from pyquaticus.base_policies.base_policy import BaseAgentPolicy
 #Start of special rhea import
