@@ -1,3 +1,4 @@
+from copy import deepcopy
 import random
 from typing import Any, Union
 import numpy as np
@@ -124,6 +125,7 @@ class RHEA_Environment(Environment):
         # action contains multiple actions, but step is already taking care of it.
         self.env.step(action)
 
+    # I may need to change the input to x solutions and y solution. Then adjust rhea algorithm to handle the opponent moves itself.
     def evaluate_rollout(self, solutions, discount_factor=0, ignore_frames=0):
         """
         Used in rhea.py as:
@@ -148,9 +150,9 @@ class RHEA_Environment(Environment):
 
         return self._score_states(state_copies)
         """
-        n_evals = solutions.shape[0]
+        n_evals = solutions.shape[0]#numpy list/array shape function?
         # I need to make copies of the environment, this is my version of game state:
-        state_copies = [copy.deepcopy(self.env) for _ in range(n_evals)] #TODO test if deepcopy works for Pyquaticus env
+        state_copies = [deepcopy(self.env) for _ in range(n_evals)] #TODO test if deepcopy works for Pyquaticus env
         # Then I need to apply the solutions to the copies.:
         scores = np.zeros(n_evals)
         i = 0
@@ -158,13 +160,20 @@ class RHEA_Environment(Environment):
             #do I need to do this multiple times for each opponent?:
             for action in solution:
                 state_copy[action[0]] += action[1]
+                # Provisional solution for testing: Just one random solution per opponent, as in RHGA with low budget...
+                zero = None
+                one = solutions
+                two = None
+                three = np.array([self.get_random_action() for _ in range(rollout_actions_length)])
+                four = np.array([self.get_random_action() for _ in range(rollout_actions_length)])
+                five = np.array([self.get_random_action() for _ in range(rollout_actions_length)])
                 #TODO I may need to compute action for every other agent in the game here so the plan always uses correct other agents. Though for the competition it would be unfair to have an agent know what the other agents do... So how do We implement this? - also rhea would be best, but now doing a deadlock...
-                # F*ck...                                   #one is the rhea agent, zero and two are None (too expensive). The rest are rhea estimates of enemies :/
-                obs, reward, term, trunc, info = env.step({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three, 'agent_4':four, 'agent_5':five}) #TODO we have only one action so far, what do the other agents do in our plan?
+                # F*ck... -we move this to rhea TODO        #one is the rhea agent, zero and two are None (too expensive). The rest are rhea estimates of enemies :/
+                obs, reward, term, trunc, info = self.env.step({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three, 'agent_4':four, 'agent_5':five}) #TODO we have only one action so far, what do the other agents do in our plan?
                 scores[i] += reward #This is assuming the reward is per step. If the reward is a score that keeps its pos/neg values from previous steps only the last score needs to be remembered/added.
             i += 1
         # The final(?)/summed(?) reward of the solution has to be stored in a list and returned:
-        #return self._score_states(state_copies)#TODO
+        return scores #currently a sum of all steps
 
 
     def get_random_action(self):
