@@ -222,11 +222,11 @@ def test_reward_func(
     state: dict,
     prev_state: dict,
     env_size: np.ndarray,
-    # agent_radius: np.ndarray,
-    # catch_radius: float,
-    # scrimmage_coords: np.ndarray,
-    # max_speeds: list,
-    # tagging_cooldown: float
+    agent_radius: np.ndarray,
+    catch_radius: float,
+    scrimmage_coords: np.ndarray,
+    max_speeds: list,
+    tagging_cooldown: float
 ):
     reward = 0.0
     idx = agents.index(agent_id)
