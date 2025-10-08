@@ -243,8 +243,8 @@ def test_reward_func(
     if opponent_team is None:
         # fallback: no opponent found
         return 0.0
-    print(flag_homes)
-    print(team)
+    # print(flag_homes)
+    # print(team)
     if team == 'BLUE_TEAM':
         team_home = numpy.array(flag_homes[0])
     else:
