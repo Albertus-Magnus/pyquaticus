@@ -256,7 +256,7 @@ def test_reward_func(
     if dist_to_flag <= total_dist_between_flags:
         reward += 1.0 - (dist_to_flag / total_dist_between_flags)
     else:
-        reward += 0.0
+        reward += -0.1
 
     # Reward part 2: be far from opponents when on enemy half (max 0.5)
     on_enemy_half = not bool(state['agent_on_sides'][idx])
