@@ -28,9 +28,9 @@ from pyquaticus.base_policies.base_policy import BaseAgentPolicy
 # #End of special rhea import
 
 # RHEA parameters (adjust here globally)
-rollout_actions_length = 30#100
+rollout_actions_length = 20#100
 mutation_probability = 0.3
-num_evals = 5#100
+num_evals = 8#100
 # End of RHEA parameters
 
 class RHEA_Agent(BaseAgentPolicy):
@@ -92,7 +92,7 @@ class RHEA_Environment(Environment):
         self.action_map = []
         # for spd in [1.0, 0.5]: #speed will always be 1.0. Less speed is always never optimal and this counters computational expense
         spd = 1.0
-        for hdg in range(180, -180, -45):
+        for hdg in range(180, -180, -45): #8 different directions possible
             self.action_map.append([spd, hdg])
         # add a none action
         self.action_map.append([0.0, 0])
