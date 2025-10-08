@@ -30,7 +30,7 @@ from pyquaticus.base_policies.base_policy import BaseAgentPolicy
 # #End of special rhea import
 
 # RHEA parameters (adjust here globally)
-rollout_actions_length = 1#100
+rollout_actions_length = 10#100
 mutation_probability = 0.3
 num_evals = 4#100
 # End of RHEA parameters
@@ -119,7 +119,7 @@ class RHEA_Environment(Environment):
         # add a none action
         self.action_map.append([0.0, 0])
         # End of action_map
-        
+
         # temp_captures = env.state["captures"]
         # temp_grabs = env.state["grabs"]
         # temp_tags = env.state["tags"]
