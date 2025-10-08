@@ -246,13 +246,13 @@ def test_reward_func(
     # print(flag_homes)
     # print(team)
     if team == 'BLUE_TEAM':
-        t = 0
-    else:
         t = 1
+    else:
+        t = 0
         # team_home = flag_homes[0]#numpy.array(flag_homes[0])
         # opp_home = flag_homes[1]#numpy.array(flag_homes[1])
-    team_home = flag_homes[(t + 1) % 2]#numpy.array(flag_homes[1])
-    opp_home = flag_homes[t]#numpy.array(flag_homes[0])
+    team_home = flag_homes[t]#numpy.array(flag_homes[1])
+    opp_home = flag_homes[(t + 1) % 2]#numpy.array(flag_homes[0])
     #team_home = numpy.array(flag_homes[team.name])
     #opp_home = numpy.array(flag_homes[opponent_team])
     # total_dist_between_flags = numpy.linalg.norm(team_home - opp_home)
