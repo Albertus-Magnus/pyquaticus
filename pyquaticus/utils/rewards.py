@@ -281,7 +281,7 @@ def test_reward_func(
             min_dist = min(dists)
             # normalized by the same total distance between flags, capped at 1.0
             reward += 0.5 * min(1.0, min_dist / total_dist_between_flags)
-    print("reward is " + reward)
+    print("reward is ",reward)
     return float(reward)
 # End of test_reward_func()
 
