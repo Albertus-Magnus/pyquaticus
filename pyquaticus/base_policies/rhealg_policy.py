@@ -161,9 +161,9 @@ class RHEA_Environment(Environment):
             for action in solution:
                 #state_copy[action[0]] += action[1] probably old code from the example, delete
                 # Provisional solution for testing: Just one random solution per opponent, as in RHGA with low budget...
-                zero = None
+                zero = [0.0, 0]
                 one = solutions
-                two = None
+                two = [0.0, 0]
                 three = np.array([self.get_random_action() for _ in range(rollout_actions_length)])
                 four = np.array([self.get_random_action() for _ in range(rollout_actions_length)])
                 five = np.array([self.get_random_action() for _ in range(rollout_actions_length)])
