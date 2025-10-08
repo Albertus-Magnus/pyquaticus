@@ -42,7 +42,7 @@ temp_captures = env.state["captures"]
 temp_grabs = env.state["grabs"]
 temp_tags = env.state["tags"]
 
-# initialize rhea environment
+# initialize rhea environment #TODO correct input
 rhea_env = RHEA_Environment(self.id, self.team, obs, info, self.teammate_ids, self.opponent_ids)
 # give this to the agent below
 
