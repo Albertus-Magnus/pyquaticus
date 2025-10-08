@@ -27,9 +27,9 @@ from pyquaticus.base_policies.base_policy import BaseAgentPolicy
 # #End of special rhea import
 
 # RHEA parameters (adjust here globally)
-rollout_actions_length = 100
+rollout_actions_length = 3#100
 mutation_probability = 0.3
-num_evals = 100
+num_evals = 2#100
 # End of RHEA parameters
 
 class RHEA_Agent(BaseAgentPolicy):
@@ -120,10 +120,11 @@ class RHEA_Environment(Environment):
         # End of __init__
 
     def perform_action(self, action):
-        # this is only necessary if rhea.run() is used, which it isn't in the current context
-        raise NotImplementedError #TODO
+        # I implement this to keep the environment up to date at each real-environment step.
+        # action contains multiple actions, but step is already taking care of it.
+        self.env.step(action)
 
-    def evaluate_rollout(self, solution, discount_factor=0, ignore_frames=0):
+    def evaluate_rollout(self, solutions, discount_factor=0, ignore_frames=0):
         """
         Used in rhea.py as:
         mutated_scores = self._environment.evaluate_rollout(
@@ -131,8 +132,24 @@ class RHEA_Environment(Environment):
             self._discount_factor,
             self._ignore_frames
         )
+        Should return a numpy array of scores (reward maxing?).
+        Input is multiple solutions? Yes, probably.
+
+
+        --- Example implementation (different game): ---
+
+        n_evals = solutions.shape[0]
+
+        state_copies = np.repeat(np.expand_dims(self._game_state, 0), n_evals, axis=0)
+
+        for state_copy, solution in zip(state_copies, solutions):
+            for action in solution:
+                state_copy[action[0]] += action[1]
+
+        return self._score_states(state_copies)
         """
-        raise NotImplementedError #TODO
+        raise NotImplementedError
+        
 
     def get_random_action(self):
         #return a random action based on the ACTION_MAP in config.py (available in self as well)
