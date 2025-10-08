@@ -233,33 +233,33 @@ def test_reward_func(
     position = numpy.array(state['agent_position'][idx])
 
     # Determine flag homes and total distance between teams' flag homes
-    flag_homes = numpy.array(state['flag_home'])
+    flag_homes = state['flag_home']#numpy.array(state['flag_home'])
     # pick an opponent team (first team index not equal to agent's team)
-    opponent_team = None
-    for t in range(len(flag_homes)):
-        if t != team:
-            opponent_team = t
-            break
-    if opponent_team is None:
-        # fallback: no opponent found
-        return 0.0
+    # opponent_team = None #this seems redundant
+    # for t in range(len(flag_homes)):
+    #     if t != team:
+    #         opponent_team = t
+    #         break
+    # if opponent_team is None:
+    #     # fallback: no opponent found
+    #     return 0.0
     # print(flag_homes)
     # print(team)
     if team == 'BLUE_TEAM':
-        team_home = numpy.array(flag_homes[1])
-        opp_home = numpy.array(flag_homes[0])
+        team_home = flag_homes[1]#numpy.array(flag_homes[1])
+        opp_home = flag_homes[0]#numpy.array(flag_homes[0])
     else:
-        team_home = numpy.array(flag_homes[0])
-        opp_home = numpy.array(flag_homes[1])
+        team_home = flag_homes[0]#numpy.array(flag_homes[0])
+        opp_home = flag_homes[1]#numpy.array(flag_homes[1])
     #team_home = numpy.array(flag_homes[team.name])
     #opp_home = numpy.array(flag_homes[opponent_team])
-    total_dist_between_flags = float(numpy.linalg.norm(team_home - opp_home))
+    total_dist_between_flags = numpy.linalg.norm(team_home - opp_home)
     if total_dist_between_flags <= 0.0:
         # fallback to map diagonal if flags coincide
-        total_dist_between_flags = float(math.hypot(env_size[0], env_size[1]))
+        total_dist_between_flags = math.hypot(env_size[0], env_size[1])
 
     # Reward part 1: proximity to the relevant flag (max 1.0)
-    print("state agent has flag: ",state['agent_has_flag'])
+    # print("state agent has flag: ",state['agent_has_flag'])
     has_flag = bool(state['agent_has_flag'][idx])
     # If carrying an opponent flag aim for own home, otherwise aim for opponent's flag home
     target_flag_pos = team_home if has_flag else opp_home
