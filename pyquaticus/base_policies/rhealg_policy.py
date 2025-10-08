@@ -117,13 +117,18 @@ class RHEA_Environment(Environment):
         # End of __init__
 
     def perform_action(self, action):
-        """
-        Actions are implemented in env by env.step().
-        How do I implement this here?
-        """
+        # this is only necessary if rhea.run() is used, which it isn't in the current context
         raise NotImplementedError #TODO
 
     def evaluate_rollout(self, solution, discount_factor=0, ignore_frames=0):
+        """
+        Used in rhea.py as:
+        mutated_scores = self._environment.evaluate_rollout(
+            candidate_solutions, 
+            self._discount_factor,
+            self._ignore_frames
+        )
+        """
         raise NotImplementedError #TODO
 
     def get_random_action(self):
@@ -131,18 +136,17 @@ class RHEA_Environment(Environment):
         return random.choice(self.action_map)
 
     def is_game_over(self):
-        # try: #implement when pyquatic environment is done
-        #     return getattr(self._py_env, "game_over", False)
-        # except Exception:
-        #     return False
+        # this is only necessary if rhea.run() is used, which it isn't in the current context
         if self.env.__getattribute__("term") or self.env.__getattribute__("trunc"):
             return True
         return False
 
     def get_current_score(self):
-        raise NotImplementedError #TODO (might not need it)
+        # this is only necessary if rhea.run() is used, which it isn't in the current context
+        raise NotImplementedError #TODO (might still need it?)
 
     def ignore_frame(self):
-        raise NotImplementedError #TODO (might not need it)
+        # this is only necessary if rhea.run() is used, which it isn't in the current context
+        raise NotImplementedError 
     
     # End of RHEA_Environment
