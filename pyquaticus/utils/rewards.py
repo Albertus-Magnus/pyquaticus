@@ -294,6 +294,24 @@ def test_reward_func(
     # print("reward is ",reward)
     # print("distance is ",dist_to_flag)
     # print("reward2 is ",reward2)
+
+    # Trying capsngrabs reward added here (capturing flags is necessary to add as reward)
+    prev_num_oob = prev_state['agent_oob'][agents.index(agent_id)]#remove prev_
+    num_oob = state['agent_oob'][agents.index(agent_id)]
+    if num_oob > prev_num_oob:
+        reward += -1.0
+    for t in state['grabs']:
+        prev_num_grabs = prev_state['grabs'][t]#remove prev_
+        num_grabs = state['grabs'][t]
+        if num_grabs > prev_num_grabs:
+            reward += 0.25 if t == team else -0.25
+
+        prev_num_caps = prev_state['captures'][t]#remove prev_
+        num_caps = state['captures'][t]
+        if num_caps > prev_num_caps:
+            reward += 1.0 if t == team else -1.0
+    # End of Trying capsngrabs
+
     return reward
 # End of test_reward_func()
 
