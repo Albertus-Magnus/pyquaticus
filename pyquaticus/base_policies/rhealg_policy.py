@@ -1,26 +1,29 @@
 import random
 from typing import Any, Union
 import numpy as np
-from RollingHorizonEA.environment import Environment #if doesnt work add to special import
+# I Copied rhea code into a subfolder of the current folder for easy access in imports
+from RollingHorizonEvolAlg.environment import Environment
+from RollingHorizonEvolAlg.rhea import RollingHorizonEvolutionaryAlgorithm
+# (special rhea import is thus no longer needed)
 from pyquaticus import pyquaticus_v0
 from pyquaticus.envs.pyquaticus import PyQuaticusEnv, Team
 from pyquaticus.moos_bridge.pyquaticus_moos_bridge import PyQuaticusMoosBridge
 from pyquaticus.base_policies.base_policy import BaseAgentPolicy
 #Start of special rhea import
 # try the normal absolute import first; if it fails, add project root and retry
-try:
-    from RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea import RollingHorizonEvolutionaryAlgorithm
-except ModuleNotFoundError:
-    import sys, os, importlib
-    # compute project root relative to this file (../../.. -> project root)
-    _this_dir = os.path.dirname(__file__)
-    _project_root = os.path.abspath(os.path.join(_this_dir, "..", "..", ".."))
-    if _project_root not in sys.path:
-        sys.path.insert(0, _project_root)
-    # retry import (let any exception propagate if it still fails)
-    RollingHorizonEvolutionaryAlgorithm = importlib.import_module(
-        "RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea"
-    ).RollingHorizonEvolutionaryAlgorithm
+# try:
+#     from RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea import RollingHorizonEvolutionaryAlgorithm
+# except ModuleNotFoundError:
+#     import sys, os, importlib
+#     # compute project root relative to this file (../../.. -> project root)
+#     _this_dir = os.path.dirname(__file__)
+#     _project_root = os.path.abspath(os.path.join(_this_dir, "..", "..", ".."))
+#     if _project_root not in sys.path:
+#         sys.path.insert(0, _project_root)
+#     # retry import (let any exception propagate if it still fails)
+#     RollingHorizonEvolutionaryAlgorithm = importlib.import_module(
+#         "RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea"
+#     ).RollingHorizonEvolutionaryAlgorithm
 # #End of special rhea import
 
 # RHEA parameters (adjust here globally)
