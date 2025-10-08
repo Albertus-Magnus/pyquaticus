@@ -295,6 +295,7 @@ def test_reward_func(
     # print("distance is ",dist_to_flag)
     # print("reward2 is ",reward2)
 
+    print("state['grabs'] :",state['grabs'])
     # Trying capsngrabs reward added here (capturing flags is necessary to add as reward)
     num_grabs = state['grabs'][t]
     num_caps = state['captures'][t]
