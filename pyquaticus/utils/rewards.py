@@ -234,10 +234,13 @@ def test_reward_func(
 
     # Determine flag homes and total distance between teams' flag homes
     flag_homes = state['flag_home']#numpy.array(state['flag_home'])
-    if team == 'BLUE_TEAM':
-        t = 1
-    else:
-        t = 0
+    if isinstance(team, Team):
+        t = team.value
+    else:#old way
+        if team == 'BLUE_TEAM':
+            t = 1
+        else:
+            t = 0
     team_home = flag_homes[t]#numpy.array(flag_homes[1])
     opp_home = flag_homes[(t + 1) % 2]#numpy.array(flag_homes[0])
     diff = team_home - opp_home
@@ -253,10 +256,15 @@ def test_reward_func(
     target_flag_pos = team_home if has_flag else opp_home
     diff = position - target_flag_pos
     dist_to_flag = numpy.sqrt(np.sum(diff**2))
-    if dist_to_flag <= 2*total_dist_between_flags:
-        reward += 1.0 - (dist_to_flag / (2*total_dist_between_flags))
-    else:
-        reward += -0.1
+    # distance to flag should be reward for improvement not distance itself:
+    prev_pos = prev_state['agent_position'][idx]
+    prev_diff = prev_pos - target_flag_pos
+    prev_dist = numpy.linalg.norm(prev_diff)
+    reward += (prev_dist - dist_to_flag) / total_dist_between_flags
+    # if dist_to_flag <= 2*total_dist_between_flags:
+    #     reward += 1.0 - (dist_to_flag / (2*total_dist_between_flags))
+    # else:
+    #     reward += -0.1
 
     # Reward part 2: be far from opponents when on enemy half (max 0.5)
     on_enemy_half = not bool(state['agent_on_sides'][idx])
