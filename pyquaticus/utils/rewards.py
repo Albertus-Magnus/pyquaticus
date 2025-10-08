@@ -254,7 +254,11 @@ def test_reward_func(
     diff = position - target_flag_pos
     dist_to_flag = numpy.sqrt(np.sum(diff**2))
     if dist_to_flag <= total_dist_between_flags:
-        reward += 1.0 - (dist_to_flag / total_dist_between_flags)
+        #unelegantly increase the reward for distance when there is already a large reward through grabs: #TODO remove if it didnt work
+        if state['grabs'][t] > 1:
+            reward += state['grabs'][t] - (dist_to_flag / total_dist_between_flags)
+        else:
+            reward += 1.0 - (dist_to_flag / total_dist_between_flags)
     else:
         reward += 0.0
 
@@ -281,10 +285,10 @@ def test_reward_func(
     num_caps = state['captures'][t]
     prev_num_grabs = prev_state['grabs'][t]
     prev_num_caps = prev_state['captures'][t]
-    print("num_grabs",num_grabs)
-    print("num_caps",num_caps)
-    print("state :",state['grabs'])
-    print("prev_state :",prev_state['grabs'])
+    # print("num_grabs",num_grabs)
+    # print("num_caps",num_caps)
+    # print("state :",state['grabs'])
+    # print("prev_state :",prev_state['grabs'])
     reward += 10 * (num_caps - prev_num_caps) + 5 * (num_grabs - prev_num_grabs)
     #deletebelow
     # prev_num_oob = prev_state['agent_oob'][agents.index(agent_id)]#remove prev_
