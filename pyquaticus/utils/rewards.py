@@ -308,6 +308,8 @@ def test_reward_func(
 
         prev_num_caps = prev_state['captures'][t]#remove prev_
         num_caps = state['captures'][t]
+        print("prev_num_caps",prev_num_caps)
+        print("num_caps",num_caps)
         if num_caps > prev_num_caps:
             reward += 1.0 if t == team else -1.0
     # End of Trying capsngrabs
