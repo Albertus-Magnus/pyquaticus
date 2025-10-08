@@ -8,7 +8,8 @@ from pyquaticus.base_policies.base_defend import BaseDefender
 from pyquaticus.base_policies.base_combined import Heuristic_CTF_Agent
 from pyquaticus.base_policies.ultra_def_policy import UltraDefender
 from pyquaticus.base_policies.rhealg_policy import RHEA_Agent, RHEA_Environment
-from pyquaticus.envs.pyquaticus import Team
+#from pyquaticus.envs.pyquaticus import Team
+from pyquaticus.utils.rewards import test_reward_func, caps_and_grabs, simplest_test
 
 """
 This was copied from heuristic_test.py and modified to 
@@ -28,7 +29,7 @@ config_dict["render_agent_ids"] = True
 config_dict["dynamics"] = ["si", "si", "si", "si", "si", "si"]
 config_dict["sim_speedup_factor"] = 3
 
-env = pyquaticus_v0.PyQuaticusEnv(team_size=3, config_dict=config_dict,render_mode='human')
+env = pyquaticus_v0.PyQuaticusEnv(team_size=3, config_dict=config_dict, reward_config={'agent_1': test_reward_func}, render_mode='human')
 term_g = {'agent_0':False,'agent_1':False,'agent_2':False}
 truncated_g = {'agent_0':False,'agent_1':False,'agent_2':False}
 term = term_g
