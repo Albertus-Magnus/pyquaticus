@@ -67,7 +67,7 @@ class RollingHorizonEvolutionaryAlgorithm():
         Remove the first element and add a random action on the end
         """
         new_solution = np.copy(solution[1:])
-        new_solution = np.vstack([new_solution , self._environment.get.get_random_action()])
+        new_solution = np.vstack([new_solution , self._environment.get_random_action()])
         return new_solution
 
     def _random_solution(self):
