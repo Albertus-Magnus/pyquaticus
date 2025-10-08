@@ -90,17 +90,6 @@ class RHEA_Environment(Environment):
         # self.team = team
         # self.obs = obs
         # self.info = info
-        #Adding action_map to this env for easy access:
-        self.action_map = []
-        # for spd in [1.0, 0.5]: #speed will always be 1.0. Less speed is always never optimal and this counters computational expense
-        spd = 1.0
-        spd = self.env.max_speeds[0]
-        print("max speed: ",spd)
-        for hdg in range(180, -180, -45): #8 different directions possible
-            self.action_map.append([spd, hdg])
-        # add a none action
-        self.action_map.append([0.0, 0])
-        # End of action_map
         """ Initialize a copy of the pyquaticus environment """
         config_dict = {}
         config_dict["max_time"] = 600.0
@@ -119,6 +108,18 @@ class RHEA_Environment(Environment):
         #obs, info = 
         self.env.reset(options=reset_opts) #is this necessary? maybe it is just done to get obs, info but the False above make it so it doesn't do anything...
 
+        #Adding action_map to this env for easy access:
+        self.action_map = []
+        # for spd in [1.0, 0.5]: #speed will always be 1.0. Less speed is always never optimal and this counters computational expense
+        spd = 1.0
+        spd = self.env.max_speeds[0]
+        print("max speed: ",spd)
+        for hdg in range(180, -180, -45): #8 different directions possible
+            self.action_map.append([spd, hdg])
+        # add a none action
+        self.action_map.append([0.0, 0])
+        # End of action_map
+        
         # temp_captures = env.state["captures"]
         # temp_grabs = env.state["grabs"]
         # temp_tags = env.state["tags"]
