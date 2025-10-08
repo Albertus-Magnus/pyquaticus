@@ -254,11 +254,7 @@ def test_reward_func(
     diff = position - target_flag_pos
     dist_to_flag = numpy.sqrt(np.sum(diff**2))
     if dist_to_flag <= total_dist_between_flags:
-        #unelegantly increase the reward for distance when there is already a large reward through grabs: #TODO remove if it didnt work
-        if state['grabs'][t] > 1:
-            reward += state['grabs'][t] - (dist_to_flag / total_dist_between_flags)
-        else:
-            reward += 1.0 - (dist_to_flag / total_dist_between_flags)
+        reward += 1.0 - (dist_to_flag / total_dist_between_flags)
     else:
         reward += 0.0
 
@@ -277,9 +273,7 @@ def test_reward_func(
             min_dist = min(dists)
             # normalized by the same total distance between flags, capped at 1.0
             reward += 0.2 * min(1.0, min_dist / total_dist_between_flags)
-    print("reward is ",reward)
 
-    print("state['grabs'] :",state['grabs'])
     # Trying capsngrabs reward added here (capturing flags is necessary to add as reward)
     num_grabs = state['grabs'][t]
     num_caps = state['captures'][t]
@@ -309,6 +303,7 @@ def test_reward_func(
     #         reward += 1.0 if t == team else -1.0
     # End of Trying capsngrabs
 
+    print("reward is ",reward)
     return reward
 # End of test_reward_func()
 
