@@ -243,7 +243,8 @@ def test_reward_func(
     if opponent_team is None:
         # fallback: no opponent found
         return 0.0
-
+    print(flag_homes)
+    print(team)
     team_home = numpy.array(flag_homes[team.name])
     opp_home = numpy.array(flag_homes[opponent_team])
     total_dist_between_flags = float(numpy.linalg.norm(team_home - opp_home))
