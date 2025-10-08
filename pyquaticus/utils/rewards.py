@@ -220,7 +220,7 @@ def test_reward_func(
     agents: list,
     agent_inds_of_team: dict,
     state: dict,
-    # prev_state: dict,
+    prev_state: dict,
     env_size: np.ndarray,
     # agent_radius: np.ndarray,
     # catch_radius: float,
