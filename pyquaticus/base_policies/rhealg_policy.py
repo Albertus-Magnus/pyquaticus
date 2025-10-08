@@ -148,8 +148,23 @@ class RHEA_Environment(Environment):
 
         return self._score_states(state_copies)
         """
-        raise NotImplementedError
-        
+        n_evals = solutions.shape[0]
+        # I need to make copies of the environment, this is my version of game state:
+        state_copies = [copy.deepcopy(self.env) for _ in range(n_evals)] #TODO test if deepcopy works for Pyquaticus env
+        # Then I need to apply the solutions to the copies.:
+        scores = np.zeros(n_evals)
+        i = 0
+        for state_copy, solution in zip(state_copies, solutions):
+            for action in solution:
+                state_copy[action[0]] += action[1]
+                #TODO I may need to compute action for every other agent in the game here so the plan always uses correct other agents. Though for the competition it would be unfair to have an agent know what the other agents do... So how do We implement this? - also rhea would be best, but now doing a deadlock...
+                # F*ck...
+                obs, reward, term, trunc, info = env.step({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three, 'agent_4':four, 'agent_5':five}) #TODO we have only one action so far, what do the other agents do in our plan?
+                scores[i] += reward #This is assuming the reward is per step. If the reward is a score that keeps its pos/neg values from previous steps only the last score needs to be remembered/added.
+            i += 1
+        # The final(?)/summed(?) reward of the solution has to be stored in a list and returned:
+        #return self._score_states(state_copies)#TODO
+
 
     def get_random_action(self):
         #return a random action based on the ACTION_MAP in config.py (available in self as well)
