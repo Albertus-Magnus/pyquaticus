@@ -259,10 +259,11 @@ def test_reward_func(
         total_dist_between_flags = float(math.hypot(env_size[0], env_size[1]))
 
     # Reward part 1: proximity to the relevant flag (max 1.0)
+    print("state agent has flag: ",state['agent_has_flag'])
     has_flag = bool(state['agent_has_flag'][idx])
     # If carrying an opponent flag aim for own home, otherwise aim for opponent's flag home
     target_flag_pos = team_home if has_flag else opp_home
-    dist_to_flag = float(numpy.linalg.norm(position - target_flag_pos))
+    dist_to_flag = numpy.linalg.norm(position - target_flag_pos)#float(numpy.linalg.norm(position - target_flag_pos))
     if dist_to_flag <= total_dist_between_flags:
         reward += 1.0 - (dist_to_flag / total_dist_between_flags)
     else:
