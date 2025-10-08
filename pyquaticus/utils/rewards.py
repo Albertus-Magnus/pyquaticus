@@ -296,22 +296,28 @@ def test_reward_func(
     # print("reward2 is ",reward2)
 
     # Trying capsngrabs reward added here (capturing flags is necessary to add as reward)
-    prev_num_oob = prev_state['agent_oob'][agents.index(agent_id)]#remove prev_
-    num_oob = state['agent_oob'][agents.index(agent_id)]
-    if num_oob > prev_num_oob:
-        reward += -1.0
-    for t in state['grabs']:
-        prev_num_grabs = prev_state['grabs'][t]#remove prev_
-        num_grabs = state['grabs'][t]
-        if num_grabs > prev_num_grabs:
-            reward += 0.25 if t == team else -0.25
+    num_grabs = state['grabs'][t]
+    num_caps = state['captures'][t]
+    print("num_grabs",num_grabs)
+    print("num_caps",num_caps)
+    reward += num_caps + num_grabs
+    #deletebelow
+    # prev_num_oob = prev_state['agent_oob'][agents.index(agent_id)]#remove prev_
+    # num_oob = state['agent_oob'][agents.index(agent_id)]
+    # if num_oob > prev_num_oob:
+    #     reward += -1.0
+    # for t in state['grabs']:
+    #     prev_num_grabs = prev_state['grabs'][t]#remove prev_
+    #     num_grabs = state['grabs'][t]
+    #     if num_grabs > prev_num_grabs:
+    #         reward += 0.25 if t == team else -0.25
 
-        prev_num_caps = prev_state['captures'][t]#remove prev_
-        num_caps = state['captures'][t]
-        print("prev_num_caps",prev_num_caps)
-        print("num_caps",num_caps)
-        if num_caps > prev_num_caps:
-            reward += 1.0 if t == team else -1.0
+    #     prev_num_caps = prev_state['captures'][t]#remove prev_
+    #     num_caps = state['captures'][t]
+    #     print("prev_num_caps",prev_num_caps)
+    #     print("num_caps",num_caps)
+    #     if num_caps > prev_num_caps:
+    #         reward += 1.0 if t == team else -1.0
     # End of Trying capsngrabs
 
     return reward
