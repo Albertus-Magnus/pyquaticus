@@ -247,10 +247,12 @@ def test_reward_func(
     # print(team)
     if team == 'BLUE_TEAM':
         team_home = numpy.array(flag_homes[0])
+        opp_home = numpy.array(flag_homes[1])
     else:
         team_home = numpy.array(flag_homes[1])
+        opp_home = numpy.array(flag_homes[0])
     #team_home = numpy.array(flag_homes[team.name])
-    opp_home = numpy.array(flag_homes[opponent_team])
+    #opp_home = numpy.array(flag_homes[opponent_team])
     total_dist_between_flags = float(numpy.linalg.norm(team_home - opp_home))
     if total_dist_between_flags <= 0.0:
         # fallback to map diagonal if flags coincide
@@ -258,7 +260,7 @@ def test_reward_func(
 
     # Reward part 1: proximity to the relevant flag (max 1.0)
     has_flag = bool(state['agent_has_flag'][idx])
-    # If carrying an opponent flag -> aim for own home, otherwise aim for opponent's flag home
+    # If carrying an opponent flag aim for own home, otherwise aim for opponent's flag home
     target_flag_pos = team_home if has_flag else opp_home
     dist_to_flag = float(numpy.linalg.norm(position - target_flag_pos))
     if dist_to_flag <= total_dist_between_flags:
@@ -267,7 +269,7 @@ def test_reward_func(
         reward += 0.0
 
     # Reward part 2: be far from opponents when on enemy half (max 0.5)
-    reward2 = reward
+    # reward2 = reward
     on_enemy_half = not bool(state['agent_on_sides'][idx])
     if on_enemy_half:
         # collect opponent agent positions using agent_inds_of_team
@@ -281,9 +283,10 @@ def test_reward_func(
             dists = [float(numpy.linalg.norm(position - p)) for p in opp_positions]
             min_dist = min(dists)
             # normalized by the same total distance between flags, capped at 1.0
-            reward2 += 0.2 * min(1.0, min_dist / total_dist_between_flags)
+            reward += 0.2 * min(1.0, min_dist / total_dist_between_flags)
     print("reward is ",reward)
-    print("reward2 is ",reward2)
+    print("distance is ",dist_to_flag)
+    # print("reward2 is ",reward2)
     return float(reward)
 # End of test_reward_func()
 
