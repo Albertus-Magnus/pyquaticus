@@ -159,7 +159,7 @@ class RHEA_Environment(Environment):
         for state_copy, solution in zip(state_copies, solutions):
             #do I need to do this multiple times for each opponent?:
             for action in solution:
-                state_copy[action[0]] += action[1]
+                #state_copy[action[0]] += action[1] probably old code from the example, delete
                 # Provisional solution for testing: Just one random solution per opponent, as in RHGA with low budget...
                 zero = None
                 one = solutions
