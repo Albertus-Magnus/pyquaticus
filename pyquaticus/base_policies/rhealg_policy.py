@@ -3,8 +3,8 @@ import random
 from typing import Any, Union
 import numpy as np
 # I Copied rhea code into a subfolder of the current folder for easy access in imports
-from RollingHorizonEvolAlg.environment import Environment
-from RollingHorizonEvolAlg.rhea import RollingHorizonEvolutionaryAlgorithm
+from .RollingHorizonEvolAlg.environment import Environment
+from .RollingHorizonEvolAlg.rhea import RollingHorizonEvolutionaryAlgorithm
 # (special rhea import is thus no longer needed)
 from pyquaticus import pyquaticus_v0
 from pyquaticus.envs.pyquaticus import PyQuaticusEnv#, Team
