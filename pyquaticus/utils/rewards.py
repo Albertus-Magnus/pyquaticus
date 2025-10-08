@@ -270,22 +270,22 @@ def test_reward_func(
 
     # Reward part 2: be far from opponents when on enemy half (max 0.5)
     # reward2 = reward
-    # on_enemy_half = not bool(state['agent_on_sides'][idx])
-    # if on_enemy_half:
-    #     # collect opponent agent positions using agent_inds_of_team
-    #     opp_positions = []
-    #     for t, inds in agent_inds_of_team.items():
-    #         if t == team:
-    #             continue
-    #         for i in inds:
-    #             opp_positions.append(numpy.array(state['agent_position'][i]))
-    #     if len(opp_positions) > 0:
-    #         dists = [float(numpy.linalg.norm(position - p)) for p in opp_positions]
-    #         min_dist = min(dists)
-    #         # normalized by the same total distance between flags, capped at 1.0
-    #         reward += 0.2 * min(1.0, min_dist / total_dist_between_flags)
-    print("reward is ",reward)
-    print("distance is ",dist_to_flag)
+    on_enemy_half = not bool(state['agent_on_sides'][idx])
+    if on_enemy_half:
+        # collect opponent agent positions using agent_inds_of_team
+        opp_positions = []
+        for t, inds in agent_inds_of_team.items():
+            if t == team:
+                continue
+            for i in inds:
+                opp_positions.append(numpy.array(state['agent_position'][i]))
+        if len(opp_positions) > 0:
+            dists = [float(numpy.linalg.norm(position - p)) for p in opp_positions]
+            min_dist = min(dists)
+            # normalized by the same total distance between flags, capped at 1.0
+            reward += 0.2 * min(1.0, min_dist / total_dist_between_flags)
+    # print("reward is ",reward)
+    # print("distance is ",dist_to_flag)
     # print("reward2 is ",reward2)
     return reward
 # End of test_reward_func()

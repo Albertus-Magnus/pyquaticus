@@ -180,7 +180,7 @@ class RHEA_Environment(Environment):
                 # F*ck... -we move this to rhea TODO        #one is the rhea agent, zero and two are None (too expensive). The rest are rhea estimates of enemies :/
                 #obs, reward, term, trunc, info = self.env.step({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three, 'agent_4':four, 'agent_5':five}) #TODO we have only one action so far, what do the other agents do in our plan?
                 obs, reward, term, trunc, info = state_copy.step({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three, 'agent_4':four, 'agent_5':five}) #TODO we have only one action so far, what do the other agents do in our plan?
-                print("Reward returned: ",reward['agent_1'])
+                # print("Reward returned: ",reward['agent_1'])
                 scores[i] += reward['agent_1'] #This is assuming the reward is per step. If the reward is a score that keeps its pos/neg values from previous steps only the last score needs to be remembered/added.
             i += 1
         # The final(?)/summed(?) reward of the solution has to be stored in a list and returned:
