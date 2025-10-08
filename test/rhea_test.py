@@ -7,7 +7,7 @@ from pyquaticus.base_policies.base_attack import BaseAttacker
 from pyquaticus.base_policies.base_defend import BaseDefender
 from pyquaticus.base_policies.base_combined import Heuristic_CTF_Agent
 from pyquaticus.base_policies.ultra_def_policy import UltraDefender
-from pyquaticus.base_policies.rhealg_policy import RHEA_Agent
+from pyquaticus.base_policies.rhealg_policy import RHEA_Agent, RHEA_Environment
 from pyquaticus.envs.pyquaticus import Team
 
 """
@@ -42,13 +42,17 @@ temp_captures = env.state["captures"]
 temp_grabs = env.state["grabs"]
 temp_tags = env.state["tags"]
 
+# initialize rhea environment
+rhea_env = RHEA_Environment(self.id, self.team, obs, info, self.teammate_ids, self.opponent_ids)
+# give this to the agent below
+
 # Base_combine agents
 H_one = Heuristic_CTF_Agent('agent_3', env, mode=MODE, continuous=True)
 H_two = Heuristic_CTF_Agent('agent_4', env, mode=MODE, continuous=True)
 H_three = Heuristic_CTF_Agent('agent_5', env, mode=MODE, continuous=True)
 # Ultra-defensive agents and RHEA agent
 R_one = UltraDefender('agent_0', env, continuous=True)
-R_two = RHEA_Agent('agent_1', env, continuous=True) # RHEA agent here
+R_two = RHEA_Agent('agent_1', rhea_env, env, continuous=True) # RHEA agent here
 R_three = UltraDefender('agent_2', env, continuous=True)
 
 step = 0

@@ -2,6 +2,7 @@ import random
 from typing import Any, Union
 import numpy as np
 from RollingHorizonEA.environment import Environment #if doesnt work add to special import
+from pyquaticus import pyquaticus_v0
 from pyquaticus.envs.pyquaticus import PyQuaticusEnv, Team
 from pyquaticus.moos_bridge.pyquaticus_moos_bridge import PyQuaticusMoosBridge
 from pyquaticus.base_policies.base_policy import BaseAgentPolicy
@@ -36,24 +37,24 @@ class RHEA_Agent(BaseAgentPolicy):
     def __init__(
         self,
         agent_id: str,
+        rhea_env,#: RHEA_Environment,#Union[PyQuaticusEnv, PyQuaticusMoosBridge],
         env: Union[PyQuaticusEnv, PyQuaticusMoosBridge],
         suppress_numpy_warnings=True,
         continuous: bool = False,
     ):
-        super().__init__(agent_id, env, suppress_numpy_warnings, continuous) #This should execute the BaseAgent init lines
-        # initialize rhea environment
-        rhea_env = RHEA_Environment(self.id, self.team, obs, info, self.teammate_ids, self.opponent_ids)
+        super().__init__(agent_id, rhea_env, env, suppress_numpy_warnings, continuous)
         # initialize rhea heuristic class
         self.rhea = RollingHorizonEvolutionaryAlgorithm(
             rollout_actions_length, 
             rhea_env, 
             mutation_probability, 
             num_evals, 
-            use_shift_buffer=True, 
+            use_shift_buffer=True,
             flip_at_least_one=True, 
             discount_factor=None, 
             ignore_frames=0
-        )
+        ) # If this RHEA is adjusted properly for multiple teammates it might need to be initialized centrally.
+        self.rhea_env = rhea_env
         # End of __init__
 
     def compute_action(self, obs, info: dict[str, dict]) -> Any:
@@ -78,21 +79,48 @@ This Class inherits from the Rolling Horizon Evolutionary Algorithm Environment 
 """
 class RHEA_Environment(Environment):
     
-    def __init__(self, agent_id, team, obs, info):
-        self.agent_id = agent_id
-        self.team = team
-        self.obs = obs
-        self.info = info
+    def __init__(self, env):#agent_id, team, obs, info):
+        # self.agent_id = agent_id #old stuff, delete later?
+        # self.team = team
+        # self.obs = obs
+        # self.info = info
         #Adding action_map to this env for easy access:
         self.action_map = []
         for spd in [1.0, 0.5]:
             for hdg in range(180, -180, -45):
                 self.action_map.append([spd, hdg])
         # add a none action
-        self.action_map.append([0.0, 0.0])
-        #End of action_map
+        self.action_map.append([0.0, 0])
+        # End of action_map
+        """ Initialize a copy of the pyquaticus environment """
+        config_dict = {}
+        config_dict["max_time"] = 600.0
+        config_dict["max_score"] = 100
+        #config_dict["render_agent_ids"] = True
+        config_dict["dynamics"] = ["si", "si", "si", "si", "si", "si"]
+        config_dict["sim_speedup_factor"] = 3
+
+        self.env = pyquaticus_v0.PyQuaticusEnv(team_size=3, config_dict=config_dict,render_mode=None)
+        # term_g = {'agent_0':False,'agent_1':False,'agent_2':False}
+        # truncated_g = {'agent_0':False,'agent_1':False,'agent_2':False}
+        # term = term_g
+        # trunc = truncated_g
+        # The following line assumes the env is brand new and also just reset.
+        reset_opts = {'normalize_obs': False, 'normalize_state': False}
+        #obs, info = 
+        self.env.reset(options=reset_opts) #is this necessary? maybe it is just done to get obs, info but the False above make it so it doesn't do anything...
+
+        # temp_captures = env.state["captures"]
+        # temp_grabs = env.state["grabs"]
+        # temp_tags = env.state["tags"]
+        # End of env copy init
+        # End of __init__
 
     def perform_action(self, action):
+        """
+        Actions are implemented in env by env.step().
+        How do I implement this here?
+        """
         raise NotImplementedError #TODO
 
     def evaluate_rollout(self, solution, discount_factor=0, ignore_frames=0):
@@ -107,12 +135,14 @@ class RHEA_Environment(Environment):
         #     return getattr(self._py_env, "game_over", False)
         # except Exception:
         #     return False
-        raise NotImplementedError #TODO
+        if self.env.__getattribute__("term") or self.env.__getattribute__("trunc"):
+            return True
+        return False
 
     def get_current_score(self):
-        raise NotImplementedError #TODO
+        raise NotImplementedError #TODO (might not need it)
 
     def ignore_frame(self):
-        raise NotImplementedError #TODO
+        raise NotImplementedError #TODO (might not need it)
     
     # End of RHEA_Environment
