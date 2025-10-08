@@ -235,9 +235,9 @@ def test_reward_func(
     # Determine flag homes and total distance between teams' flag homes
     flag_homes = state['flag_home']#numpy.array(state['flag_home'])
     if team == 'BLUE_TEAM':
-        t = 1
+        t = 0#1
     else:
-        t = 0
+        t = 1#0
     team_home = flag_homes[t]#numpy.array(flag_homes[1])
     opp_home = flag_homes[(t + 1) % 2]#numpy.array(flag_homes[0])
     diff = team_home - opp_home
