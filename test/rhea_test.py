@@ -69,6 +69,8 @@ while True:
     
     obs, reward, term, trunc, info = env.step({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three, 'agent_4':four, 'agent_5':five})
     k =  list(term.keys())
+    # In order to keep the simulated environment start state up to date with the "real" one we do the step here (alternative is copying the real one at every step.)
+    R_two.rhea_env.perform_action({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three, 'agent_4':four, 'agent_5':five})
 
     step += 1
     if term[k[0]] == True or trunc[k[0]]==True:
