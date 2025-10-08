@@ -287,7 +287,7 @@ def test_reward_func(
     print("reward is ",reward)
     print("distance is ",dist_to_flag)
     # print("reward2 is ",reward2)
-    return float(reward)
+    return reward
 # End of test_reward_func()
 
 def simplest_test(
