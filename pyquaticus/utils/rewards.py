@@ -229,16 +229,56 @@ def test_reward_func(
     tagging_cooldown: float
 ):
     reward = 0.0
-    position = state['agent_position'][agents.index(agent_id)]
-    prev_position = state['prev_agent_position'][agents.index(agent_id)]
-    print(position)
-    print(prev_position) #timesteps do not work correctly. These two are the same
-    
-    position2 = np.array([109.76052919, 39.93446417])
-    if np.array_equal(position, position2):
-        reward += 1.0
-    
-    return reward
+    idx = agents.index(agent_id)
+    position = numpy.array(state['agent_position'][idx])
+
+    # Determine flag homes and total distance between teams' flag homes
+    flag_homes = numpy.array(state['flag_home'])
+    # pick an opponent team (first team index not equal to agent's team)
+    opponent_team = None
+    for t in range(len(flag_homes)):
+        if t != team:
+            opponent_team = t
+            break
+    if opponent_team is None:
+        # fallback: no opponent found
+        return 0.0
+
+    team_home = numpy.array(flag_homes[team])
+    opp_home = numpy.array(flag_homes[opponent_team])
+    total_dist_between_flags = float(numpy.linalg.norm(team_home - opp_home))
+    if total_dist_between_flags <= 0.0:
+        # fallback to map diagonal if flags coincide
+        total_dist_between_flags = float(math.hypot(env_size[0], env_size[1]))
+
+    # Reward part 1: proximity to the relevant flag (max 1.0)
+    has_flag = bool(state['agent_has_flag'][idx])
+    # If carrying an opponent flag -> aim for own home, otherwise aim for opponent's flag home
+    target_flag_pos = team_home if has_flag else opp_home
+    dist_to_flag = float(numpy.linalg.norm(position - target_flag_pos))
+    if dist_to_flag <= total_dist_between_flags:
+        reward += 1.0 - (dist_to_flag / total_dist_between_flags)
+    else:
+        reward += 0.0
+
+    # Reward part 2: be far from opponents when on enemy half (max 0.5)
+    on_enemy_half = not bool(state['agent_on_sides'][idx])
+    if on_enemy_half:
+        # collect opponent agent positions using agent_inds_of_team
+        opp_positions = []
+        for t, inds in agent_inds_of_team.items():
+            if t == team:
+                continue
+            for i in inds:
+                opp_positions.append(numpy.array(state['agent_position'][i]))
+        if len(opp_positions) > 0:
+            dists = [float(numpy.linalg.norm(position - p)) for p in opp_positions]
+            min_dist = min(dists)
+            # normalized by the same total distance between flags, capped at 1.0
+            reward += 0.5 * min(1.0, min_dist / total_dist_between_flags)
+
+    return float(reward)
+# End of test_reward_func()
 
 def simplest_test(
     agent_id: str,
