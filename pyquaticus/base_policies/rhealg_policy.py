@@ -46,7 +46,7 @@ class RHEA_Agent(BaseAgentPolicy):
         suppress_numpy_warnings=True,
         continuous: bool = False,
     ):
-        super().__init__(agent_id, rhea_env, env, suppress_numpy_warnings, continuous)
+        super().__init__(agent_id, env)
         # initialize rhea heuristic class
         self.rhea = RollingHorizonEvolutionaryAlgorithm(
             rollout_actions_length, 
