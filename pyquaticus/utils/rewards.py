@@ -283,6 +283,7 @@ def test_reward_func(
     prev_num_caps = prev_state['captures'][t]
     print("num_grabs",num_grabs)
     print("num_caps",num_caps)
+    print("prev_state :",prev_state)
     reward += 10 * (num_caps - prev_num_caps) + 5 * (num_grabs - prev_num_grabs)
     #deletebelow
     # prev_num_oob = prev_state['agent_oob'][agents.index(agent_id)]#remove prev_
