@@ -246,11 +246,13 @@ def test_reward_func(
     # print(flag_homes)
     # print(team)
     if team == 'BLUE_TEAM':
-        team_home = flag_homes[1]#numpy.array(flag_homes[1])
-        opp_home = flag_homes[0]#numpy.array(flag_homes[0])
+        t = 0
     else:
-        team_home = flag_homes[0]#numpy.array(flag_homes[0])
-        opp_home = flag_homes[1]#numpy.array(flag_homes[1])
+        t = 1
+        # team_home = flag_homes[0]#numpy.array(flag_homes[0])
+        # opp_home = flag_homes[1]#numpy.array(flag_homes[1])
+    team_home = flag_homes[(t + 1) % 2]#numpy.array(flag_homes[1])
+    opp_home = flag_homes[t]#numpy.array(flag_homes[0])
     #team_home = numpy.array(flag_homes[team.name])
     #opp_home = numpy.array(flag_homes[opponent_team])
     # total_dist_between_flags = numpy.linalg.norm(team_home - opp_home)
@@ -281,8 +283,8 @@ def test_reward_func(
     if on_enemy_half:
         # collect opponent agent positions using agent_inds_of_team
         opp_positions = []
-        for t, inds in agent_inds_of_team.items():
-            if t == team:
+        for te, inds in agent_inds_of_team.items():
+            if te == team:
                 continue
             for i in inds:
                 opp_positions.append(numpy.array(state['agent_position'][i]))
