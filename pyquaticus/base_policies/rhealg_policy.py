@@ -90,9 +90,10 @@ class RHEA_Environment(Environment):
         # self.info = info
         #Adding action_map to this env for easy access:
         self.action_map = []
-        for spd in [1.0, 0.5]:
-            for hdg in range(180, -180, -45):
-                self.action_map.append([spd, hdg])
+        # for spd in [1.0, 0.5]: #speed will always be 1.0. Less speed is always never optimal and this counters computational expense
+        spd = 1.0
+        for hdg in range(180, -180, -45):
+            self.action_map.append([spd, hdg])
         # add a none action
         self.action_map.append([0.0, 0])
         # End of action_map
