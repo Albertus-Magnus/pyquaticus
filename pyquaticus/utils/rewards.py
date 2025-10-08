@@ -234,28 +234,12 @@ def test_reward_func(
 
     # Determine flag homes and total distance between teams' flag homes
     flag_homes = state['flag_home']#numpy.array(state['flag_home'])
-    # pick an opponent team (first team index not equal to agent's team)
-    # opponent_team = None #this seems redundant
-    # for t in range(len(flag_homes)):
-    #     if t != team:
-    #         opponent_team = t
-    #         break
-    # if opponent_team is None:
-    #     # fallback: no opponent found
-    #     return 0.0
-    # print(flag_homes)
-    # print(team)
     if team == 'BLUE_TEAM':
         t = 1
     else:
         t = 0
-        # team_home = flag_homes[0]#numpy.array(flag_homes[0])
-        # opp_home = flag_homes[1]#numpy.array(flag_homes[1])
     team_home = flag_homes[t]#numpy.array(flag_homes[1])
     opp_home = flag_homes[(t + 1) % 2]#numpy.array(flag_homes[0])
-    #team_home = numpy.array(flag_homes[team.name])
-    #opp_home = numpy.array(flag_homes[opponent_team])
-    # total_dist_between_flags = numpy.linalg.norm(team_home - opp_home)
     diff = team_home - opp_home
     total_dist_between_flags = numpy.sqrt(np.sum(diff**2))#math.hypot(diff[0], diff[1])  # or np.sqrt(np.sum(diff**2))
 
@@ -264,12 +248,9 @@ def test_reward_func(
         total_dist_between_flags = math.hypot(env_size[0], env_size[1])
 
     # Reward part 1: proximity to the relevant flag (max 1.0)
-    # print("state agent has flag: ",state['agent_has_flag'])
     has_flag = bool(state['agent_has_flag'][idx])
-    # has_flag = True #for testing, delete line
     # If carrying an opponent flag aim for own home, otherwise aim for opponent's flag home
     target_flag_pos = team_home if has_flag else opp_home
-    # dist_to_flag = numpy.linalg.norm(position - target_flag_pos)#float(numpy.linalg.norm(position - target_flag_pos))
     diff = position - target_flag_pos
     dist_to_flag = numpy.sqrt(np.sum(diff**2))
     if dist_to_flag <= total_dist_between_flags:
@@ -278,7 +259,6 @@ def test_reward_func(
         reward += 0.0
 
     # Reward part 2: be far from opponents when on enemy half (max 0.5)
-    # reward2 = reward
     on_enemy_half = not bool(state['agent_on_sides'][idx])
     if on_enemy_half:
         # collect opponent agent positions using agent_inds_of_team
@@ -293,17 +273,17 @@ def test_reward_func(
             min_dist = min(dists)
             # normalized by the same total distance between flags, capped at 1.0
             reward += 0.2 * min(1.0, min_dist / total_dist_between_flags)
-    # print("reward is ",reward)
-    # print("distance is ",dist_to_flag)
-    # print("reward2 is ",reward2)
+    print("reward is ",reward)
 
     print("state['grabs'] :",state['grabs'])
     # Trying capsngrabs reward added here (capturing flags is necessary to add as reward)
     num_grabs = state['grabs'][t]
     num_caps = state['captures'][t]
+    prev_num_grabs = prev_state['grabs'][t]
+    prev_num_caps = prev_state['captures'][t]
     print("num_grabs",num_grabs)
     print("num_caps",num_caps)
-    reward += num_caps + num_grabs
+    reward += (num_caps - prev_num_caps) + (num_grabs - prev_num_grabs)
     #deletebelow
     # prev_num_oob = prev_state['agent_oob'][agents.index(agent_id)]#remove prev_
     # num_oob = state['agent_oob'][agents.index(agent_id)]
