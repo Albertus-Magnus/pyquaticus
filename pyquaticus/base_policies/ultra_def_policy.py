@@ -33,6 +33,8 @@ from pyquaticus.base_policies.base_policy import BaseAgentPolicy
 from pyquaticus.envs.pyquaticus import PyQuaticusEnv, Team
 from pyquaticus.moos_bridge.pyquaticus_moos_bridge import PyQuaticusMoosBridge
 from pyquaticus.base_policies.utils import (local_rect_to_rel_bearing)
+import warnings
+warnings.filterwarnings("ignore")
 
 
 class UltraDefender(BaseAgentPolicy):

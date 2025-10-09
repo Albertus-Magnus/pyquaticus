@@ -11,6 +11,8 @@ from pyquaticus.base_policies.rhealg_policy import RHEA_Agent, RHEA_Environment
 #from pyquaticus.base_policies.rhealg_policy2 import RHEA_Agent, RHEA_Environment
 #from pyquaticus.envs.pyquaticus import Team
 from pyquaticus.utils.rewards import test_reward_func, caps_and_grabs, aggressive_rew
+import warnings
+warnings.filterwarnings("ignore")
 
 """
 This was copied from heuristic_test.py and modified to 
