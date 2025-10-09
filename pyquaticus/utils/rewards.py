@@ -261,7 +261,7 @@ def test_reward_func(
     prev_pos = prev_state['agent_position'][idx]
     prev_diff = prev_pos - target_flag_pos
     prev_dist = numpy.linalg.norm(prev_diff)
-    reward += (prev_dist - dist_to_flag) / total_dist_between_flags
+    reward += (prev_dist - dist_to_flag) #/ total_dist_between_flags
     # if dist_to_flag <= 2*total_dist_between_flags:
     #     reward += 1.0 - (dist_to_flag / (2*total_dist_between_flags))
     # else:
