@@ -16,8 +16,8 @@ create a test of 3x ultra-defensive policy agents versus
 """
 
 # Adjust the mode here to change difficulty of the Heuristic_CTF_Agents
-MODE = "hard"
-#MODE = "medium"
+# MODE = "hard"
+MODE = "medium"
 #MODE = "easy"
 
 config_dict = {}

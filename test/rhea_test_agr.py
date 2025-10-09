@@ -7,7 +7,10 @@ from pyquaticus.base_policies.base_attack import BaseAttacker
 from pyquaticus.base_policies.base_defend import BaseDefender
 from pyquaticus.base_policies.base_combined import Heuristic_CTF_Agent
 from pyquaticus.base_policies.ultra_def_policy import UltraDefender
-from pyquaticus.envs.pyquaticus import Team
+from pyquaticus.base_policies.rhealg_policy import RHEA_Agent, RHEA_Environment
+#from pyquaticus.base_policies.rhealg_policy2 import RHEA_Agent, RHEA_Environment
+#from pyquaticus.envs.pyquaticus import Team
+from pyquaticus.utils.rewards import test_reward_func, caps_and_grabs, aggressive_rew
 
 """
 This was copied from heuristic_test.py and modified to 
@@ -21,13 +24,14 @@ MODE = "hard"
 #MODE = "easy"
 
 config_dict = {}
-config_dict["max_time"] = 600.0
+config_dict["max_time"] = 5.0#600.0
 config_dict["max_score"] = 100
 config_dict["render_agent_ids"] = True
 config_dict["dynamics"] = ["si", "si", "si", "si", "si", "si"]
 config_dict["sim_speedup_factor"] = 3
 
-env = pyquaticus_v0.PyQuaticusEnv(team_size=3, config_dict=config_dict,render_mode=None)#'human')
+env = pyquaticus_v0.PyQuaticusEnv(team_size=3, config_dict=config_dict, reward_config={'agent_1': aggressive_rew}, 
+ render_mode=None)#'human')
 term_g = {'agent_0':False,'agent_1':False,'agent_2':False}
 truncated_g = {'agent_0':False,'agent_1':False,'agent_2':False}
 term = term_g
@@ -41,29 +45,38 @@ temp_captures = env.state["captures"]
 temp_grabs = env.state["grabs"]
 temp_tags = env.state["tags"]
 
+# initialize rhea environment #TODO correct input
+rhea_env = RHEA_Environment(env)     #(self.id, self.team, obs, info, self.teammate_ids, self.opponent_ids)
+# give this to the agent below
+
 # Base_combine agents
 H_one = Heuristic_CTF_Agent('agent_3', env, mode=MODE, continuous=True)
 H_two = Heuristic_CTF_Agent('agent_4', env, mode=MODE, continuous=True)
 H_three = Heuristic_CTF_Agent('agent_5', env, mode=MODE, continuous=True)
-# Ultra-defensive agents
+# Ultra-defensive agents and RHEA agent
 R_one = UltraDefender('agent_0', env, continuous=True)
-R_two = UltraDefender('agent_1', env, continuous=True)
+R_two = RHEA_Agent('agent_1', rhea_env, env, continuous=True) # RHEA agent here
 R_three = UltraDefender('agent_2', env, continuous=True)
 
 step = 0
+rewardcurve = []
 while True:
     # Base_combine agents
     three = H_one.compute_action(obs, info)
     four = H_two.compute_action(obs, info)
     five = H_three.compute_action(obs, info)
-    # Ultra-defensive agents
+    # Ultra-defensive agents and RHEA agent
     zero = R_one.compute_action(obs, info)
     one = R_two.compute_action(obs, info)
     two = R_three.compute_action(obs, info)
 
     
     obs, reward, term, trunc, info = env.step({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three, 'agent_4':four, 'agent_5':five})
+    rewardcurve.append(reward[1])
+
     k =  list(term.keys())
+    # In order to keep the simulated environment start state up to date with the "real" one we do the step here (alternative is copying the real one at every step.)
+    R_two.rhea_env.perform_action({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three, 'agent_4':four, 'agent_5':five}, env.state)
 
     step += 1
     if term[k[0]] == True or trunc[k[0]]==True:

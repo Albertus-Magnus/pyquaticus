@@ -19,8 +19,8 @@ create a test of 3x ultra-defensive policy agents versus
 """
 
 # Adjust the mode here to change difficulty of the Heuristic_CTF_Agents
-MODE = "hard"
-#MODE = "medium"
+# MODE = "hard"
+MODE = "medium"
 #MODE = "easy"
 
 config_dict = {}
@@ -30,8 +30,8 @@ config_dict["render_agent_ids"] = True
 config_dict["dynamics"] = ["si", "si", "si", "si", "si", "si"]
 config_dict["sim_speedup_factor"] = 3
 
-env = pyquaticus_v0.PyQuaticusEnv(team_size=3, config_dict=config_dict, #reward_config={'agent_1': test_reward_func}, 
- render_mode='human')
+env = pyquaticus_v0.PyQuaticusEnv(team_size=3, config_dict=config_dict, reward_config={'agent_1': caps_and_grabs}, 
+ render_mode=None)#'human')
 term_g = {'agent_0':False,'agent_1':False,'agent_2':False}
 truncated_g = {'agent_0':False,'agent_1':False,'agent_2':False}
 term = term_g
@@ -59,6 +59,7 @@ R_two = RHEA_Agent('agent_1', rhea_env, env, continuous=True) # RHEA agent here
 R_three = UltraDefender('agent_2', env, continuous=True)
 
 step = 0
+rewardcurve = []
 while True:
     # Base_combine agents
     three = H_one.compute_action(obs, info)
@@ -71,6 +72,8 @@ while True:
 
     
     obs, reward, term, trunc, info = env.step({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three, 'agent_4':four, 'agent_5':five})
+    rewardcurve.append(reward[1])
+
     k =  list(term.keys())
     # In order to keep the simulated environment start state up to date with the "real" one we do the step here (alternative is copying the real one at every step.)
     R_two.rhea_env.perform_action({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three, 'agent_4':four, 'agent_5':five}, env.state)
