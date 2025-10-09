@@ -201,7 +201,7 @@ def caps_and_grabs(
     num_oob = state['agent_oob'][agents.index(agent_id)]
     if num_oob > prev_num_oob:
         reward += -1.0
-    for t in state['grabs']:
+    for t in [0,1]:
         prev_num_grabs = prev_state['grabs'][t]#remove prev_
         num_grabs = state['grabs'][t]
         if num_grabs > prev_num_grabs:
