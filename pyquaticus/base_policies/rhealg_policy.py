@@ -3,7 +3,7 @@ import random
 from typing import Any, Union
 import numpy as np
 
-from pyquaticus.utils.rewards import test_reward_func, simplest_test
+from pyquaticus.utils.rewards import test_reward_func, aggressive_rew, caps_and_grabs
 # I Copied rhea code into a subfolder of the current folder for easy access in imports
 from .RollingHorizonEvolAlg.environment import Environment
 from .RollingHorizonEvolAlg.rhea import RollingHorizonEvolutionaryAlgorithm
@@ -31,7 +31,7 @@ from pyquaticus.base_policies.base_policy import BaseAgentPolicy
 
 # RHEA parameters (adjust here globally)
 rollout_actions_length = 5#100
-mutation_probability = 0.3
+mutation_probability = 0.5
 num_evals = 8#100
 # End of RHEA parameters
 
@@ -98,7 +98,7 @@ class RHEA_Environment(Environment):
         config_dict["dynamics"] = ["si", "si", "si", "si", "si", "si"]
         config_dict["sim_speedup_factor"] = 3
 
-        self.env = pyquaticus_v0.PyQuaticusEnv(team_size=3, config_dict=config_dict, reward_config={'agent_1': simplest_test},render_mode=None)
+        self.env = pyquaticus_v0.PyQuaticusEnv(team_size=3, config_dict=config_dict, reward_config={'agent_1': aggressive_rew},render_mode=None)
         # term_g = {'agent_0':False,'agent_1':False,'agent_2':False}
         # truncated_g = {'agent_0':False,'agent_1':False,'agent_2':False}
         # term = term_g
@@ -126,10 +126,16 @@ class RHEA_Environment(Environment):
         # End of env copy init
         # End of __init__
 
-    def perform_action(self, action):
+    def perform_action(self, action, statee):
         # I implement this to keep the environment up to date at each real-environment step.
         # action contains multiple actions, but step is already taking care of it.
-        self.env.step(action)
+        self.env.step(action) #should i remove this line? No. then its (maybe) worse
+        # print(self.env.state['agent_position'])
+        self.env.state = deepcopy(statee) #this is the important line, probably the only one I need?
+        #THE 3 LINES BELOW ARE NECESSARY TO UPDATE STATE:
+        self.env._set_player_attributes_from_state()
+        self.env._set_flag_attributes_from_state()
+        self.env._set_game_events_from_state()
 
     # I may need to change the input to x solutions and y solution. Then adjust rhea algorithm to handle the opponent moves itself.
     def evaluate_rollout(self, solutions, discount_factor=0, ignore_frames=0):
@@ -158,7 +164,7 @@ class RHEA_Environment(Environment):
         """
         n_evals = solutions.shape[0]#numpy list/array shape function?
         # I need to make copies of the environment, this is my version of game state:
-        state_copies = [deepcopy(self.env) for _ in range(n_evals)] #TODO test if deepcopy works for Pyquaticus env
+        state_copies = [deepcopy(self.env) for _ in range(n_evals)]
         # Then I need to apply the solutions to the copies.:
         scores = np.zeros(n_evals)
         i = 0
