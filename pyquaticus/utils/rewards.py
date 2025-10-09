@@ -317,17 +317,55 @@ def test_reward_func(
 # End of test_reward_func()
 
 def simplest_test(
-    agent_id: str,
-    team: Team,
-    agents: list,
-    agent_inds_of_team: dict,
-    state: dict,
-    prev_state: dict,
-    env_size: np.ndarray,
-    agent_radius: np.ndarray,
-    catch_radius: float,
-    scrimmage_coords: np.ndarray,
-    max_speeds: list,
-    tagging_cooldown: float
+    agent_id, team, agents, agent_inds_of_team,
+    state, prev_state, env_size, agent_radius,
+    catch_radius, scrimmage_coords, max_speeds, tagging_cooldown
 ):
-    return 1.0
+    reward = 0.0
+    idx = agents.index(agent_id)
+    position = np.array(state['agent_position'][idx])
+    prev_position = np.array(prev_state['agent_position'][idx])
+
+    # Determine flag homes
+    flag_homes = np.array(state['flag_home'])
+    if isinstance(team, Team):
+        t = team.value  # correct team index
+    else:
+        t = 0 if str(team).lower() == 'blue_team' else 1
+
+    team_home = flag_homes[t]
+    opp_home = flag_homes[(t + 1) % 2]
+
+    # Distance metrics
+    total_dist_between_flags = np.linalg.norm(team_home - opp_home)
+    total_dist_between_flags = max(total_dist_between_flags, np.hypot(*env_size))
+
+    # Determine which flag to aim for
+    has_flag = bool(state['agent_has_flag'][idx])
+    target_flag_pos = team_home if has_flag else opp_home
+
+    # Reward movement toward target
+    prev_dist = np.linalg.norm(prev_position - target_flag_pos)
+    curr_dist = np.linalg.norm(position - target_flag_pos)
+    reward += (prev_dist - curr_dist) / total_dist_between_flags  # positive if moving closer
+
+    # Reward keeping distance from enemies when on enemy half
+    on_enemy_half = not bool(state['agent_on_sides'][idx])
+    if on_enemy_half:
+        opp_positions = [
+            np.array(state['agent_position'][i])
+            for te, inds in agent_inds_of_team.items()
+            if te != team for i in inds
+        ]
+        if opp_positions:
+            min_dist = min(np.linalg.norm(position - p) for p in opp_positions)
+            reward += 0.3 * min(1.0, min_dist / total_dist_between_flags)
+
+    # Capture and grab bonuses
+    num_grabs = state['grabs'][t]
+    num_caps = state['captures'][t]
+    prev_num_grabs = prev_state['grabs'][t]
+    prev_num_caps = prev_state['captures'][t]
+    reward += 10 * (num_caps - prev_num_caps) + 5 * (num_grabs - prev_num_grabs)
+
+    return float(reward)
