@@ -13,3 +13,5 @@ _version.py
 *.mp4
 *.avi
 __mapcache__/
+rhea_test*.log
+ultra_def_test*.log
