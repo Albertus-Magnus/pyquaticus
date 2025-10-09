@@ -19,6 +19,8 @@
 
 # SPDX-License-Identifier: BSD-3-Clause
 
+# Modified as part of the Masters Project Oct 2025
+
 """
 #Configureable Rewards
     # -- NOTE --
@@ -212,7 +214,7 @@ def caps_and_grabs(
 
     return reward
 
-### Add Custom Reward Functions Here ###
+### Added Custom Reward Functions Here ###
 
 def test_reward_func(
     agent_id: str,
@@ -231,100 +233,64 @@ def test_reward_func(
     reward = 0.0
     idx = agents.index(agent_id)
     position = state['agent_position'][idx]#numpy.array(state['agent_position'][idx])
+    # # End of Trying capsngrabs
 
-    # Determine flag homes and total distance between teams' flag homes
-    flag_homes = state['flag_home']#numpy.array(state['flag_home'])
-    if isinstance(team, Team):
-        t = team.value
-    else:#old way
-        if team == 'BLUE_TEAM':
-            t = 1
-        else:
-            t = 0
-    team_home = flag_homes[t]#numpy.array(flag_homes[1])
-    opp_home = flag_homes[(t + 1) % 2]#numpy.array(flag_homes[0])
-    diff = team_home - opp_home
-    total_dist_between_flags = numpy.sqrt(np.sum(diff**2))#math.hypot(diff[0], diff[1])  # or np.sqrt(np.sum(diff**2))
-
-    if total_dist_between_flags <= 0.0:
-        # fallback to map diagonal if flags coincide
-        print("WARNING: total_dist_between_flags <= 0.0")
-        total_dist_between_flags = math.hypot(env_size[0], env_size[1])
-
-    # Reward part 1: proximity to the relevant flag (max 1.0)
-    has_flag = bool(state['agent_has_flag'][idx])
-    # If carrying an opponent flag aim for own home, otherwise aim for opponent's flag home
-    target_flag_pos = team_home if has_flag else opp_home
-    diff = position - target_flag_pos
-    dist_to_flag = numpy.sqrt(np.sum(diff**2))
-    # distance to flag should be reward for improvement not distance itself:
-    prev_pos = prev_state['agent_position'][idx]
-    prev_diff = prev_pos - target_flag_pos
-    prev_dist = numpy.linalg.norm(prev_diff)
-    reward += (prev_dist - dist_to_flag) #/ total_dist_between_flags
-    # if dist_to_flag <= 2*total_dist_between_flags:
-    #     reward += 1.0 - (dist_to_flag / (2*total_dist_between_flags))
-    # else:
-    #     reward += -0.1
-
-    # Reward part 2: be far from opponents when on enemy half (max 0.5)
-    on_enemy_half = not bool(state['agent_on_sides'][idx])
-    if on_enemy_half:
-        # collect opponent agent positions using agent_inds_of_team
-        opp_positions = []
-        for te, inds in agent_inds_of_team.items():
-            if te == team:
-                continue
-            for i in inds:
-                opp_positions.append(numpy.array(state['agent_position'][i]))
-        if len(opp_positions) > 0:
-            dists = [float(numpy.linalg.norm(position - p)) for p in opp_positions]
-            min_dist = min(dists)
-            # normalized by the same total distance between flags, capped at 1.0
-            reward += 0.4*min(1.0, min_dist)#0.6 * min(1.0, min_dist / total_dist_between_flags)
-
-    # Trying capsngrabs reward added here (capturing flags is necessary to add as reward)
-    num_grabs = state['grabs'][t]
-    num_caps = state['captures'][t]
-    prev_num_grabs = prev_state['grabs'][t]
-    prev_num_caps = prev_state['captures'][t]
-    # print("num_grabs",num_grabs)
-    # print("num_caps",num_caps)
-    # print("state :",state['grabs'])
-    # print("prev_state :",prev_state['grabs'])
-    reward += 10 * (num_caps - prev_num_caps) + 5 * (num_grabs - prev_num_grabs)
-    #deletebelow
-    # prev_num_oob = prev_state['agent_oob'][agents.index(agent_id)]#remove prev_
-    # num_oob = state['agent_oob'][agents.index(agent_id)]
-    # if num_oob > prev_num_oob:
-    #     reward += -1.0
-    # for t in state['grabs']:
-    #     prev_num_grabs = prev_state['grabs'][t]#remove prev_
-    #     num_grabs = state['grabs'][t]
-    #     if num_grabs > prev_num_grabs:
-    #         reward += 0.25 if t == team else -0.25
-
-    #     prev_num_caps = prev_state['captures'][t]#remove prev_
-    #     num_caps = state['captures'][t]
-    #     print("prev_num_caps",prev_num_caps)
-    #     print("num_caps",num_caps)
-    #     if num_caps > prev_num_caps:
-    #         reward += 1.0 if t == team else -1.0
-    # End of Trying capsngrabs
-
-    print("reward is ",reward)
+    print("reward function is outdated, use aggressive_rew or other")
     return reward
 # End of test_reward_func()
 
-def simplest_test(#this alternative way to write the above function also does not work much better
-    agent_id, team, agents, agent_inds_of_team,
-    state, prev_state, env_size, agent_radius,
-    catch_radius, scrimmage_coords, max_speeds, tagging_cooldown
+# New attempt to create above function, by elitism copy pasting we create a cleaner and better working solution (hopefully):
+def aggressive_rew(
+    agent_id: str,
+    team: Team,
+    agents: list,
+    agent_inds_of_team: dict,
+    state: dict,
+    prev_state: dict,
+    env_size: np.ndarray,
+    agent_radius: np.ndarray,
+    catch_radius: float,
+    scrimmage_coords: np.ndarray,
+    max_speeds: list,
+    tagging_cooldown: float
 ):
     reward = 0.0
     idx = agents.index(agent_id)
+    #print("idx: ",idx)
     position = np.array(state['agent_position'][idx])
+    print("position=",position) #<-Position appears to be incorrect. Perhaps wrong agent tracked?
     prev_position = np.array(prev_state['agent_position'][idx])
+    # If tagged, return minus one
+    # print("taggedness: ", state['agent_is_tagged'])
+    """
+    The tagged-counterreward would work better if it worked correctly in pyquaticus. (?)
+    It appears in testing that the state['tagged'] is sometimes True when the agent 
+    is NOT tagged and is False when the agent is not currently in the first frame of 
+    being tagged.
+    Similarly out of bounds is not always correctly shown in state[oob]. Sometimes it
+    is the agents fault though for not being able to find a path that doesn't lead to
+    the minus 10 counterreward... <-oob appears to be a count in the example function, 
+    so this might be an outdated stat? Now it seems to be True/False for each agent...
+    UPDATE: This was likely due to asynchron position. Since the env is not copyable 
+    and renderable at the same time the copy has to be updated at every step. An own 
+    step is not sufficient for this, deepcopying the state is not sufficient, some
+    additional functions have to be called to update some variables using the state...
+    """
+    if state['agent_is_tagged'][idx]:
+        # print("agent tagged, return -1")
+        # print("reward is: ",-10.0)
+        return -5.0 #only little counterreward because tagged appears to be True more often than it should?
+    # If out of bounds, return minus one
+    # if state['agent_oob'][idx]: #not trusting pyquaticus info. Computing oob myself...
+    if position[0] > 160.0 or position[1] > 80.0 or position[0] < 0.0 or position[1] < 0.0: #my own implementation also doesn't work. Wtf?
+    #     # print("agent_oob, return -1")
+    #     # print("reward is: ",-1.0)
+        return -10.0
+    # prev_num_oob = prev_state['agent_oob'][idx]#remove prev_
+    # num_oob = state['agent_oob'][idx]
+    # print("agent_oob: ",state['agent_oob'])
+    # if num_oob > prev_num_oob:
+    #     reward += -10.0
 
     # Determine flag homes
     flag_homes = np.array(state['flag_home'])
@@ -335,37 +301,50 @@ def simplest_test(#this alternative way to write the above function also does no
 
     team_home = flag_homes[t]
     opp_home = flag_homes[(t + 1) % 2]
+    #print("team_home: ",team_home,", t=",t,", opp_home: ",opp_home)
 
-    # Distance metrics
-    total_dist_between_flags = np.linalg.norm(team_home - opp_home)
-    total_dist_between_flags = max(total_dist_between_flags, np.hypot(*env_size))
+    # Distance metrics i dont want the total flag distance anymore
+    #total_dist_between_flags = np.linalg.norm(team_home - opp_home)
+    #total_dist_between_flags = max(total_dist_between_flags, np.hypot(*env_size))
 
     # Determine which flag to aim for
     has_flag = bool(state['agent_has_flag'][idx])
+    #print("has_flag: ",has_flag)
+    # Go to the enemy flag, if grabbed flag then go to own base.
     target_flag_pos = team_home if has_flag else opp_home
 
     # Reward movement toward target
-    prev_dist = np.linalg.norm(prev_position - target_flag_pos)
-    curr_dist = np.linalg.norm(position - target_flag_pos)
-    reward += (prev_dist - curr_dist) / total_dist_between_flags  # positive if moving closer
-
+    prev_diff = prev_position - target_flag_pos#np.linalg.norm(prev_position - target_flag_pos)
+    curr_diff = position - target_flag_pos#np.linalg.norm(position - target_flag_pos)
+    #reward += (prev_dist - curr_dist) / total_dist_between_flags  # positive if moving closer
+    rewardable_movement = numpy.sqrt(np.sum(prev_diff**2)) - numpy.sqrt(np.sum(curr_diff**2))
+    if rewardable_movement > max_speeds[0]:
+        reward += 1.0
+        # print("reward + 1.0")
+    else:
+        reward += rewardable_movement / max_speeds[0]
+        # print("reward + ",rewardable_movement / max_speeds[0])
+    # this is a cursed line (highlighted by vscodums python syntax highlighter, but for no reason)
     # Reward keeping distance from enemies when on enemy half
-    on_enemy_half = not bool(state['agent_on_sides'][idx])
-    if on_enemy_half:
-        opp_positions = [
-            np.array(state['agent_position'][i])
-            for te, inds in agent_inds_of_team.items()
-            if te != team for i in inds
-        ]
-        if opp_positions:
-            min_dist = min(np.linalg.norm(position - p) for p in opp_positions)
-            reward += 0.3 * min(1.0, min_dist / total_dist_between_flags)
+    # on_enemy_half = not bool(state['agent_on_sides'][idx])
+    # if on_enemy_half:
+    #     opp_positions = [ 
+    #         np.array(state['agent_position'][i])
+    #         for te, inds in agent_inds_of_team.items()
+    #         if te != team for i in inds
+    #     ]
+    #     if opp_positions:
+    #         min_dist = min(np.linalg.norm(position - p) for p in opp_positions)
+    #         reward += 0.3 * min(1.0, min_dist / total_dist_between_flags)
 
     # Capture and grab bonuses
     num_grabs = state['grabs'][t]
     num_caps = state['captures'][t]
     prev_num_grabs = prev_state['grabs'][t]
     prev_num_caps = prev_state['captures'][t]
-    reward += 10 * (num_caps - prev_num_caps) + 5 * (num_grabs - prev_num_grabs)
+    reward += 5 * (num_caps - prev_num_caps) + 5 * (num_grabs - prev_num_grabs)
+    # if not num_caps == prev_num_caps or not num_grabs == prev_num_grabs:
+    #     print("reward + ",(5 * (num_caps - prev_num_caps) + 5 * (num_grabs - prev_num_grabs)))
+    # print("reward is: ",reward)
 
-    return float(reward)
+    return reward

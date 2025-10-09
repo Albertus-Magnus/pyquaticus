@@ -26,7 +26,7 @@ class RollingHorizonEvolutionaryAlgorithm():
         Get the next best action by evaluating a bunch of mutated solutions
         """
 
-        if self._use_shift_buffer: #and self._environment.env.state['agent_is_tagged'][agent id] : #possible location to implement reshuffle after being tagged
+        if self._use_shift_buffer:
             solution = self._shift_and_append(self._solution)
         else:
             solution = self._random_solution()
