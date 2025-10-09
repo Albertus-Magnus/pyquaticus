@@ -4,6 +4,7 @@ import os
 import time
 import json
 from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Paths to the experiment scripts
 EXPERIMENTS = [
@@ -89,18 +90,24 @@ def run_experiment(script_path, extra_args=None):
 
 def main():
     summary = []
-    for script in EXPERIMENTS:
-        # is 5 experiments per script ok?
-        res = run_experiment(script)
-        summary.append(res)
-        res = run_experiment(script)
-        summary.append(res)
-        res = run_experiment(script)
-        summary.append(res)
-        res = run_experiment(script)
-        summary.append(res)
-        res = run_experiment(script)
-        summary.append(res)
+    for i in range(5):#5 experiments per script?
+        with ThreadPoolExecutor(max_workers=7) as executor:  # 8 cores on laptop, use 7?
+            futures = {executor.submit(run_experiment, script): script for script in EXPERIMENTS}
+            for future in as_completed(futures):
+                res = future.result()
+                summary.append(res)
+    # for script in EXPERIMENTS: #old way to do this, for speed we do it parallel /\
+    #     # is 5 experiments per script ok?
+    #     res = run_experiment(script)
+    #     summary.append(res)
+    #     res = run_experiment(script)
+    #     summary.append(res)
+    #     res = run_experiment(script)
+    #     summary.append(res)
+    #     res = run_experiment(script)
+    #     summary.append(res)
+    #     res = run_experiment(script)
+    #     summary.append(res)
 
     # Save summary
     summary_file = os.path.join(RESULTS_DIR, "summary.json")
