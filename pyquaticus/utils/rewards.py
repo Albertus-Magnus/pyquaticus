@@ -316,7 +316,7 @@ def test_reward_func(
     return reward
 # End of test_reward_func()
 
-def simplest_test(
+def simplest_test(#this alternative way to write the above function also does not work much better
     agent_id, team, agents, agent_inds_of_team,
     state, prev_state, env_size, agent_radius,
     catch_radius, scrimmage_coords, max_speeds, tagging_cooldown
