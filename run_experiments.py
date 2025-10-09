@@ -22,22 +22,22 @@ RESULTS_DIR = "experiment_results"
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
 # Add a regex pattern that matches PyQuaticus action-space warnings
-WARNING_FILTERS = [
-    re.compile(r"Warning! Action passed in for .* is not contained in agent's action space"),
-    re.compile(r"Auto-detecting action space for .*"),
-]
+# WARNING_FILTERS = [
+#     re.compile(r"Warning! Action passed in for .* is not contained in agent's action space"),
+#     re.compile(r"Auto-detecting action space for .*"),
+# ]
 
-def clean_output(output: str) -> str:
-    """
-    Remove known noisy warnings from experiment log.
-    """
-    lines = output.splitlines()
-    cleaned = []
-    for line in lines:
-        if any(p.search(line) for p in WARNING_FILTERS):
-            continue  # skip warning line
-        cleaned.append(line)
-    return "\n".join(cleaned)
+# def clean_output(output: str) -> str:
+#     """
+#     Remove known noisy warnings from experiment log.
+#     """
+#     lines = output.splitlines()
+#     cleaned = []
+#     for line in lines:
+#         if any(p.search(line) for p in WARNING_FILTERS):
+#             continue  # skip warning line
+#         cleaned.append(line)
+#     return "\n".join(cleaned)
 
 def run_experiment(script_path, extra_args=None):
     """
@@ -59,9 +59,9 @@ def run_experiment(script_path, extra_args=None):
     except Exception as e:
         return {"script": script_path, "error": str(e)}
     
-    # Remove the cluttering warning lines
-    stdout_clean = clean_output(result.stdout)
-    stderr_clean = clean_output(result.stderr)
+    # # Remove the cluttering warning lines
+    # stdout_clean = clean_output(result.stdout)
+    # stderr_clean = clean_output(result.stderr)
 
     end_time = time.time()
 
