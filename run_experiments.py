@@ -8,14 +8,14 @@ from datetime import datetime
 # Paths to the experiment scripts
 EXPERIMENTS = [
     "rhea_test_agr.py",
-│   "rhea_test_agr_easy.py",
-│   "rhea_test_agr_med.py",
-│   "rhea_test_cap.py",
-│   "rhea_test_cap_easy.py",
-│   "rhea_test_cap_med.py",
+    "rhea_test_agr_easy.py",
+    "rhea_test_agr_med.py",
+    "rhea_test_cap.py",
+    "rhea_test_cap_easy.py",
+    "rhea_test_cap_med.py",
     "ultra_def_test.py",
-│   "ultra_def_test_easy.py",
-│   "ultra_def_test_med.py"
+    "ultra_def_test_easy.py",
+    "ultra_def_test_med.py"
 ]
 
 RESULTS_DIR = "experiment_results"
