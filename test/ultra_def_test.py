@@ -83,4 +83,6 @@ for i in range(len(env.state["tags"])):
     temp_tags[i] += env.state["tags"][i]
 
 print("agent collisions:",env.state['agent_collisions'])
+print("SCORE: ",env.state['captures'])
+print("grabs: ",env.state['grabs'])
 env.close()
