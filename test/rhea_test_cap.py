@@ -7,8 +7,8 @@ from pyquaticus.base_policies.base_attack import BaseAttacker
 from pyquaticus.base_policies.base_defend import BaseDefender
 from pyquaticus.base_policies.base_combined import Heuristic_CTF_Agent
 from pyquaticus.base_policies.ultra_def_policy import UltraDefender
-from pyquaticus.base_policies.rhealg_policy import RHEA_Agent, RHEA_Environment
-#from pyquaticus.base_policies.rhealg_policy2 import RHEA_Agent, RHEA_Environment
+# from pyquaticus.base_policies.rhealg_policy import RHEA_Agent, RHEA_Environment
+from pyquaticus.base_policies.rhealg_policy2 import RHEA_Agent, RHEA_Environment
 #from pyquaticus.envs.pyquaticus import Team
 from pyquaticus.utils.rewards import test_reward_func, caps_and_grabs, aggressive_rew
 
