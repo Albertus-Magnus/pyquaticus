@@ -113,7 +113,7 @@ class RHEA_Environment(Environment):
         # for spd in [1.0, 0.5]: #speed will always be 1.0. Less speed is always never optimal and this counters computational expense
         spd = 1.0
         spd = self.env.max_speeds[0]
-        print("max speed: ",spd)
+        #print("max speed: ",spd)
         for hdg in range(180, -180, -45): #8 different directions possible
             self.action_map.append([spd, hdg])
         # add a none action
