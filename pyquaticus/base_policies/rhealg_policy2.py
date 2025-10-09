@@ -113,7 +113,7 @@ class RHEA_Environment(Environment):
         # for spd in [1.0, 0.5]: #speed will always be 1.0. Less speed is always never optimal and this counters computational expense
         spd = 1.0
         spd = self.env.max_speeds[0]
-        print("max speed: ",spd)
+        #print("max speed: ",spd)
         for hdg in range(180, -180, -45): #8 different directions possible
             self.action_map.append([spd, hdg])
         # add a none action
@@ -126,10 +126,16 @@ class RHEA_Environment(Environment):
         # End of env copy init
         # End of __init__
 
-    def perform_action(self, action):
+    def perform_action(self, action, statee):
         # I implement this to keep the environment up to date at each real-environment step.
         # action contains multiple actions, but step is already taking care of it.
-        self.env.step(action)
+        self.env.step(action) #should i remove this line? No. then its (maybe) worse
+        # print(self.env.state['agent_position'])
+        self.env.state = deepcopy(statee) #this is the important line, probably the only one I need?
+        #THE 3 LINES BELOW ARE NECESSARY TO UPDATE STATE:
+        self.env._set_player_attributes_from_state()
+        self.env._set_flag_attributes_from_state()
+        self.env._set_game_events_from_state()
 
     # I may need to change the input to x solutions and y solution. Then adjust rhea algorithm to handle the opponent moves itself.
     def evaluate_rollout(self, solutions, discount_factor=0, ignore_frames=0):
