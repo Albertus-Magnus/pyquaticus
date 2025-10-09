@@ -72,7 +72,7 @@ while True:
 
     
     obs, reward, term, trunc, info = env.step({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three, 'agent_4':four, 'agent_5':five})
-    rewardcurve.append(reward[1])
+    rewardcurve.append(reward)
 
     k =  list(term.keys())
     # In order to keep the simulated environment start state up to date with the "real" one we do the step here (alternative is copying the real one at every step.)
@@ -95,5 +95,6 @@ for i in range(len(env.state["grabs"])):
 for i in range(len(env.state["tags"])):
     temp_tags[i] += env.state["tags"][i]
 
+print("reward curve: ",rewardcurve)
 print("agent collisions:",env.state['agent_collisions'])
 env.close()
