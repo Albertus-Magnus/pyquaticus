@@ -5,8 +5,9 @@ import numpy as np
 import pandas as pd
 from collections import defaultdict
 
-# Path to logs
-LOG_DIR = "experiment_results" 
+LOG_DIR = "experiment_results"
+OUT_DIR = "averaged_tables"
+os.makedirs(OUT_DIR, exist_ok=True)
 
 # Regex patterns
 RE_REWARD = re.compile(r"reward curve:\s*(\[.*?\])", re.DOTALL)
@@ -14,7 +15,6 @@ RE_COLLISIONS = re.compile(r"agent collisions:\s*(\[.*?\])", re.DOTALL)
 RE_SCORE = re.compile(r"SCORE:\s*(\[.*?\])", re.DOTALL)
 RE_GRABS = re.compile(r"grabs:\s*(\[.*?\])", re.DOTALL)
 
-# Data containers
 data = defaultdict(lambda: {
     "reward_curves": [],
     "collisions": [],
@@ -23,7 +23,7 @@ data = defaultdict(lambda: {
 })
 
 def clean_lines(text):
-    """Remove warning and auto-detect lines."""
+    """Remove warnings and irrelevant lines."""
     lines = text.splitlines()
     cleaned = [
         l for l in lines
@@ -34,77 +34,74 @@ def clean_lines(text):
     return "\n".join(cleaned)
 
 def get_prefix(filename):
-    """Extract prefix before timestamp, e.g., 'rhea_test_agr'."""
+    """Extract prefix before timestamp."""
     parts = filename.split("_")
-    # remove last element (timestamp)
     return "_".join(parts[:-1])
+
+def safe_eval_array(txt):
+    """Convert a numpy-style list '[ 4 43 7 ]' to '[4, 43, 7]'."""
+    # Replace multiple spaces between digits with commas
+    txt = re.sub(r'(?<=\d)\s+(?=\d)', ', ', txt)
+    # Ensure commas between floats too
+    txt = re.sub(r'(?<=\d)\s+(?=[\d\-\.])', ', ', txt)
+    try:
+        return np.array(ast.literal_eval(txt), dtype=float)
+    except Exception:
+        # try to clean brackets
+        txt = txt.strip().replace('\n', '')
+        txt = txt.replace('[', '').replace(']', '').strip()
+        if txt:
+            numbers = [float(x) for x in txt.split() if x.replace('.', '', 1).replace('-', '', 1).isdigit()]
+            return np.array(numbers)
+        else:
+            return np.array([])
 
 for file in os.listdir(LOG_DIR):
     if not file.endswith(".log"):
         continue
-    with open(os.path.join(LOG_DIR, file), "r") as f:
+    path = os.path.join(LOG_DIR, file)
+    with open(path, "r") as f:
         content = clean_lines(f.read())
-    
+
     prefix = get_prefix(file)
 
-    # Extract data
     try:
         reward_match = RE_REWARD.search(content)
         if reward_match:
-            rewards = ast.literal_eval(reward_match.group(1))
-            # Extract agent_1 values only
-            agent1 = [entry.get("agent_1", 0.0) for entry in rewards]
+            txt = reward_match.group(1)
+            try:
+                rewards = ast.literal_eval(txt)
+            except Exception:
+                # Try to fix missing commas between dicts
+                txt = txt.replace("} {", "}, {")
+                rewards = ast.literal_eval(txt)
+            agent1 = [entry.get("agent_1", 0.0) for entry in rewards if isinstance(entry, dict)]
             data[prefix]["reward_curves"].append(agent1)
 
-        col_match = RE_COLLISIONS.search(content)
-        if col_match:
-            collisions = np.array(ast.literal_eval(col_match.group(1)), dtype=float)
-            data[prefix]["collisions"].append(collisions)
-
-        score_match = RE_SCORE.search(content)
-        if score_match:
-            scores = np.array(ast.literal_eval(score_match.group(1)), dtype=float)
-            data[prefix]["scores"].append(scores)
-
-        grabs_match = RE_GRABS.search(content)
-        if grabs_match:
-            grabs = np.array(ast.literal_eval(grabs_match.group(1)), dtype=float)
-            data[prefix]["grabs"].append(grabs)
+        for key, regex in [("collisions", RE_COLLISIONS),
+                           ("scores", RE_SCORE),
+                           ("grabs", RE_GRABS)]:
+            match = regex.search(content)
+            if match:
+                arr = safe_eval_array(match.group(1))
+                data[prefix][key].append(arr)
 
     except Exception as e:
         print(f"Error parsing {file}: {e}")
 
-# ---- Average every 5 logs ----
-OUT_DIR = "averaged_tables"
-os.makedirs(OUT_DIR, exist_ok=True)
+# Group & average in chunks of 5
+def chunk(lst, n=5):
+    for i in range(0, len(lst), n):
+        yield lst[i:i+n]
 
 for prefix, vals in data.items():
-    # Group in chunks of 5
-    def chunk(lst, n=5):
-        for i in range(0, len(lst), n):
-            yield lst[i:i+n]
-
-    # Reward Curves (agent_1)
-    reward_avg_tables = []
-    for i, group in enumerate(chunk(vals["reward_curves"], 5)):
-        if not group:
-            continue
-        min_len = min(map(len, group))
-        group = [g[:min_len] for g in group]
-        avg = np.mean(group, axis=0)
-        df = pd.DataFrame({
-            "step": np.arange(len(avg)),
-            "agent_1_avg_reward": avg
-        })
-        df.to_csv(f"{OUT_DIR}/{prefix}_reward_curve_group{i+1}.csv", index=False)
-        reward_avg_tables.append(df)
-
-    # Collisions, Score, Grabs
-    for metric in ["collisions", "scores", "grabs"]:
-        for i, group in enumerate(chunk(vals[metric], 5)):
+    for metric, groups in vals.items():
+        for i, group in enumerate(chunk(groups, 5)):
             if not group:
                 continue
             min_len = min(map(len, group))
+            if min_len == 0:
+                continue
             group = [g[:min_len] for g in group]
             avg = np.mean(group, axis=0)
             df = pd.DataFrame({
@@ -113,4 +110,19 @@ for prefix, vals in data.items():
             })
             df.to_csv(f"{OUT_DIR}/{prefix}_{metric}_group{i+1}.csv", index=False)
 
-print("Processing complete! Averaged CSVs saved to", OUT_DIR)
+    # Reward curve separately with "step" and "agent_1_avg_reward"
+    for i, group in enumerate(chunk(vals["reward_curves"], 5)):
+        if not group:
+            continue
+        min_len = min(map(len, group))
+        if min_len == 0:
+            continue
+        group = [g[:min_len] for g in group]
+        avg = np.mean(group, axis=0)
+        df = pd.DataFrame({
+            "step": np.arange(len(avg)),
+            "agent_1_avg_reward": avg
+        })
+        df.to_csv(f"{OUT_DIR}/{prefix}_reward_curve_group{i+1}.csv", index=False)
+
+print(" -- Parsing and averaging complete. -- Files saved to:", OUT_DIR)
