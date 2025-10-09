@@ -29,7 +29,7 @@ def run_experiment(script_path, extra_args=None):
             cmd,
             capture_output=True,
             text=True,
-            check=False  # don’t crash even if the script errors
+            check=False  # don’t crash even if the script errors (wish I did this back when doing Algorithm Eng. experiments...)
         )
     except Exception as e:
         return {"script": script_path, "error": str(e)}
@@ -37,10 +37,10 @@ def run_experiment(script_path, extra_args=None):
     end_time = time.time()
 
     # Save logs
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")#is this correct?
     log_filename = os.path.join(
         RESULTS_DIR,
-        f"{os.path.basename(script_path).replace('.py', '')}_{timestamp}.log"
+        f"{os.path.basename(script_path).replace('.py', '')}_{timestamp}.log"#might need to de-fancy that
     )
     with open(log_filename, "w") as f:
         f.write(result.stdout)
@@ -71,7 +71,7 @@ def main():
 
     print("\n All experiments completed.")
     for r in summary:
-        print(f"  - {r['script']} → return {r['returncode']} ({r['duration_sec']}s)")
+        print(f"  - {r['script']} returned {r['returncode']} ({r['duration_sec']}s)")
 
     print(f"\n Summary written to: {summary_file}")
 
