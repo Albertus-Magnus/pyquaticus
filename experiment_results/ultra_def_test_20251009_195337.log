@@ -1,0 +1,19 @@
+Warning! Action passed in for agent_0 ((0, 0)) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_0
+
+Warning! Action passed in for agent_1 ((0, 0)) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_1
+
+Warning! Action passed in for agent_2 ((0, 0)) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_2
+
+Warning! Action passed in for agent_3 ((10, -12.528807709151522)) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_3
+
+Warning! Action passed in for agent_4 ((10, 0.0)) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_4
+
+Warning! Action passed in for agent_5 ((10, 12.528807709151522)) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_5
+
+Final score: 0–0 (Blue–Red). No Winner
