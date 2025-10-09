@@ -1,0 +1,880 @@
+max speed:  10
+DOES THIS GET CALLED?
+Warning! Action passed in for agent_0 ([0.0, 0]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_0
+
+Warning! Action passed in for agent_1 ([10 45]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_1
+
+Warning! Action passed in for agent_2 ([0.0, 0]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_2
+
+Warning! Action passed in for agent_3 ([10, 45]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_3
+
+Warning! Action passed in for agent_4 ([10, -90]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_4
+
+Warning! Action passed in for agent_5 ([10, 0]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_5
+
+position= [52.39470812 39.34464166]
+position= [55.28787491 38.65005376]
+position= [58.18104169 39.34464166]
+position= [61.07420848 40.03922955]
+position= [63.96737527 40.73381744]
+Warning! Action passed in for agent_0 ([0.0, 0]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_0
+
+Warning! Action passed in for agent_1 ([10 90]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_1
+
+Warning! Action passed in for agent_2 ([0.0, 0]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_2
+
+Warning! Action passed in for agent_3 ([10, 0]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_3
+
+Warning! Action passed in for agent_4 ([10, -90]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_4
+
+Warning! Action passed in for agent_5 ([10, 135]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_5
+
+position= [52.39470812 39.34464166]
+position= [55.28787491 38.65005376]
+position= [58.28787491 38.65005376]
+position= [61.18104169 37.95546587]
+position= [64.07420848 37.26087798]
+Warning! Action passed in for agent_0 ([0.0, 0]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_0
+
+Warning! Action passed in for agent_1 ([10 45]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_1
+
+Warning! Action passed in for agent_2 ([0.0, 0]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_2
+
+Warning! Action passed in for agent_3 ([10, -135]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_3
+
+Warning! Action passed in for agent_4 ([0.0, 0]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_4
+
+Warning! Action passed in for agent_5 ([10, -135]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_5
+
+position= [52.39470812 39.34464166]
+position= [55.28787491 38.65005376]
+position= [58.28787491 38.65005376]
+position= [61.18104169 37.95546587]
+position= [63.44353587 36.02311329]
+Warning! Action passed in for agent_0 ([0.0, 0]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_0
+
+Warning! Action passed in for agent_1 ([ 10 180]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_1
+
+Warning! Action passed in for agent_2 ([0.0, 0]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_2
+
+Warning! Action passed in for agent_3 ([10, 45]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_3
+
+Warning! Action passed in for agent_4 ([10, -135]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_4
+
+Warning! Action passed in for agent_5 ([10, 45]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_5
+
+position= [52.39470812 39.34464166]
+position= [55.28787491 38.65005376]
+position= [58.28787491 38.65005376]
+position= [61.18104169 37.95546587]
+position= [61.62654496 37.72847062]
+Warning! Action passed in for agent_0 ([0.0, 0]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_0
+
+Warning! Action passed in for agent_1 ([ 10 180]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_1
+
+Warning! Action passed in for agent_2 ([0.0, 0]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_2
+
+Warning! Action passed in for agent_3 ([10, 180]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_3
+
+Warning! Action passed in for agent_4 ([10, -135]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_4
+
+Warning! Action passed in for agent_5 ([10, -90]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_5
+
+position= [52.39470812 39.34464166]
+position= [55.28787491 38.65005376]
+position= [58.18104169 39.34464166]
+position= [58.62654496 39.57163691]
+position= [60.46271905 41.2427402 ]
+Warning! Action passed in for agent_0 ([0.0, 0]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_0
+
+Warning! Action passed in for agent_1 ([10 45]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_1
+
+Warning! Action passed in for agent_2 ([0.0, 0]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_2
+
+Warning! Action passed in for agent_3 ([10, 135]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_3
+
+Warning! Action passed in for agent_4 ([10, 45]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_4
+
+Warning! Action passed in for agent_5 ([0.0, 0]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_5
+
+position= [52.39470812 39.34464166]
+position= [55.28787491 38.65005376]
+position= [55.78787491 38.65005376]
+position= [58.18258303 39.30541211]
+position= [60.4450772  41.23776469]
+Warning! Action passed in for agent_0 ([0.0, 0]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_0
+
+Warning! Action passed in for agent_1 ([ 10 180]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_1
+
+Warning! Action passed in for agent_2 ([0.0, 0]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_2
+
+Warning! Action passed in for agent_3 ([10, 180]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_3
+
+Warning! Action passed in for agent_4 ([10, -135]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_4
+
+Warning! Action passed in for agent_5 ([0.0, 0]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_5
+
+position= [52.39470812 39.34464166]
+position= [55.28787491 38.65005376]
+position= [58.28787491 38.65005376]
+position= [61.18104169 37.95546587]
+position= [63.44353587 36.02311329]
+Warning! Action passed in for agent_0 ([0.0, 0]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_0
+
+Warning! Action passed in for agent_1 ([  10 -135]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_1
+
+Warning! Action passed in for agent_2 ([0.0, 0]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_2
+
+Warning! Action passed in for agent_3 ([10, -90]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_3
+
+Warning! Action passed in for agent_4 ([10, -45]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_4
+
+Warning! Action passed in for agent_5 ([10, 90]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_5
+
+position= [52.39470812 40.65535834]
+position= [55.28787491 41.34994624]
+position= [58.18104169 40.65535834]
+position= [60.44353587 38.72300577]
+position= [62.70603005 36.79065319]
+Warning! Action passed in for agent_0 ((0, 0)) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_0
+
+Warning! Action passed in for agent_1 ([10 90]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_1
+
+Warning! Action passed in for agent_2 ((0, 0)) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_2
+
+Warning! Action passed in for agent_3 ((10, -12.528807709151522)) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_3
+
+Warning! Action passed in for agent_4 ((10, 0.0)) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_4
+
+Warning! Action passed in for agent_5 ((10, 12.528807709151522)) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_5
+
+Warning! Action passed in for agent_0 ((0, 0)) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_0
+
+Warning! Action passed in for agent_1 ([10 90]) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_1
+
+Warning! Action passed in for agent_2 ((0, 0)) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_2
+
+Warning! Action passed in for agent_3 ((10, -12.528807709151522)) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_3
+
+Warning! Action passed in for agent_4 ((10, 0.0)) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_4
+
+Warning! Action passed in for agent_5 ((10, 12.528807709151522)) is not contained in agent's action space (Discrete(17)).
+Auto-detecting action space for agent_5
+
+position= [52.39470812 39.34464166]
+position= [55.6170807  38.61582165]
+position= [58.51024748 39.31040954]
+position= [61.40341427 40.00499743]
+position= [64.29658106 39.31040954]
+position= [64.74208432 39.08341429]
+position= [55.6170807  38.61582165]
+position= [58.6170807  38.61582165]
+position= [61.51024748 37.92123375]
+position= [64.40341427 37.22664586]
+position= [67.29658106 36.53205797]
+position= [55.6170807  38.61582165]
+position= [58.51024748 37.92123375]
+position= [60.77274166 35.98888118]
+position= [63.03523584 34.0565286 ]
+position= [65.70825541 32.6945571 ]
+position= [55.39693348 37.94843804]
+position= [58.29010027 37.25385015]
+position= [61.18326706 36.55926226]
+position= [64.07643384 35.86467436]
+position= [66.96960063 35.17008647]
+position= [53.16941717 39.08341429]
+position= [55.39693348 37.94843804]
+position= [58.29010027 37.25385015]
+position= [61.29010027 37.25385015]
+position= [64.18326706 37.94843804]
+position= [55.6170807  38.61582165]
+position= [58.51024748 39.31040954]
+position= [61.40341427 40.00499743]
+position= [64.29658106 40.69958532]
+position= [67.18974784 41.39417321]
+position= [55.6170807  38.61582165]
+position= [58.51024748 39.31040954]
+position= [61.40341427 40.00499743]
+position= [64.29658106 40.69958532]
+position= [66.96960063 42.06155682]
+position= [54.98640809 37.37805696]
+position= [56.74976384 34.95100598]
+position= [57.88839121 32.20211636]
+position= [59.02701857 29.45322674]
+position= [60.79037432 27.02617576]
+position= [55.6170807  38.61582165]
+position= [58.61443737 38.61645625]
+position= [61.50760416 39.31104414]
+position= [63.77009834 41.24339672]
+position= [66.03259252 43.1757493 ]
+position= [68.29508669 45.10810188]
+position= [58.61443737 38.61645625]
+position= [61.50760416 39.31104414]
+position= [64.40077095 40.00563204]
+position= [67.29393773 40.70021993]
+position= [70.18710452 41.39480782]
+position= [58.50760416 37.92186836]
+position= [60.77009834 35.98951578]
+position= [63.03259252 34.0571632 ]
+position= [65.29508669 32.12481062]
+position= [67.05844245 29.69775964]
+position= [58.50760416 37.92186836]
+position= [60.77009834 35.98951578]
+position= [63.03259252 34.0571632 ]
+position= [65.29508669 32.12481062]
+position= [66.43371406 29.37592101]
+position= [58.50760416 37.92186836]
+position= [60.77009834 35.98951578]
+position= [62.53345409 33.5624648 ]
+position= [63.67208146 30.81357518]
+position= [63.43863609 27.84737059]
+position= [58.61443737 38.61645625]
+position= [61.50760416 37.92186836]
+position= [64.40077095 37.22728047]
+position= [67.29393773 37.92186836]
+position= [70.18710452 38.61645625]
+position= [58.61443737 38.61645625]
+position= [61.50760416 39.31104414]
+position= [64.40077095 40.00563204]
+position= [67.29393773 39.31104414]
+position= [69.55643191 37.37869157]
+position= [58.50760416 37.92186836]
+position= [61.40077095 37.22728047]
+position= [64.29393773 37.92186836]
+position= [67.18710452 38.61645625]
+position= [70.08027131 37.92186836]
+position= [58.61443737 38.61645625]
+position= [61.50760416 37.92186836]
+position= [64.40077095 37.22728047]
+position= [67.29393773 36.53269258]
+position= [69.55643191 34.60034   ]
+position= [71.81892609 32.66798742]
+position= [61.61443737 38.61645625]
+position= [62.11443737 38.61645625]
+position= [64.50914549 37.96109791]
+position= [66.77163967 36.02874533]
+position= [67.91026703 33.27985571]
+position= [61.50760416 37.92186836]
+position= [64.18062373 36.55989686]
+position= [67.07379052 35.86530897]
+position= [69.96695731 35.17072108]
+position= [72.86012409 34.47613319]
+position= [61.50760416 37.92186836]
+position= [64.40077095 37.22728047]
+position= [67.29393773 37.92186836]
+position= [70.18710452 38.61645625]
+position= [73.08027131 37.92186836]
+position= [61.50760416 37.92186836]
+position= [64.40077095 37.22728047]
+position= [67.29393773 37.92186836]
+position= [70.18710452 38.61645625]
+position= [73.08027131 39.31104414]
+position= [61.50760416 37.92186836]
+position= [64.40077095 37.22728047]
+position= [67.29393773 36.53269258]
+position= [69.55643191 34.60034   ]
+position= [69.85032454 34.1958315 ]
+position= [61.50760416 39.31104414]
+position= [64.40077095 40.00563204]
+position= [67.29393773 39.31104414]
+position= [70.18710452 38.61645625]
+position= [73.08027131 37.92186836]
+position= [61.50760416 37.92186836]
+position= [63.77009834 35.98951578]
+position= [66.03259252 34.0571632 ]
+position= [68.29508669 32.12481062]
+position= [69.43371406 29.37592101]
+position= [61.50760416 37.92186836]
+position= [63.76745501 35.99015039]
+position= [64.90608238 33.24126077]
+position= [64.67263701 30.27505618]
+position= [63.11800697 27.73813052]
+position= [60.5810813  26.18350047]
+position= [64.39812762 37.22791507]
+position= [67.29129441 37.92250297]
+position= [67.73679767 38.14949822]
+position= [69.57297177 39.82060151]
+position= [71.83546595 41.75295409]
+position= [63.76745501 35.99015039]
+position= [64.90608238 33.24126077]
+position= [64.67263701 30.27505618]
+position= [64.43919165 27.30885159]
+position= [64.20574628 24.34264701]
+position= [64.39812762 37.22791507]
+position= [67.29129441 37.92250297]
+position= [70.1844612  38.61709086]
+position= [73.07762798 39.31167875]
+position= [75.75064756 40.67365025]
+position= [61.9504641  37.69550772]
+position= [64.38169112 37.19226154]
+position= [67.27485791 37.88684943]
+position= [69.53735208 39.81920201]
+position= [71.79984626 41.75155459]
+position= [64.39812762 37.22791507]
+position= [67.29129441 37.92250297]
+position= [70.1844612  38.61709086]
+position= [73.07762798 39.31167875]
+position= [75.34012216 41.24403133]
+position= [64.17798041 36.56053147]
+position= [64.62348367 36.33353622]
+position= [66.45965777 34.66243292]
+position= [68.72215195 32.73008034]
+position= [70.98464612 30.79772776]
+position= [64.39812762 37.22791507]
+position= [67.29129441 37.92250297]
+position= [69.55378859 39.85485554]
+position= [70.69241595 42.60374516]
+position= [71.83104331 45.35263478]
+position= [64.39812762 37.22791507]
+position= [67.28865109 37.92313757]
+position= [70.18181787 38.61772546]
+position= [73.07498466 37.92313757]
+position= [75.33747884 35.99078499]
+position= [75.63137146 35.5862765 ]
+position= [67.28865109 37.92313757]
+position= [67.73415435 38.15013282]
+position= [69.57032845 39.82123612]
+position= [70.70895581 42.57012574]
+position= [71.84758317 45.31901535]
+position= [67.28865109 37.92313757]
+position= [70.18181787 38.61772546]
+position= [73.07498466 37.92313757]
+position= [75.74800423 36.56116607]
+position= [78.01049841 34.62881349]
+position= [67.28865109 36.53396179]
+position= [70.18181787 35.8393739 ]
+position= [73.07498466 35.144786  ]
+position= [73.52048792 34.91779075]
+position= [73.52048792 34.91779075]
+position= [67.28865109 36.53396179]
+position= [69.55114527 34.60160921]
+position= [69.84503789 34.19710071]
+position= [71.31450102 32.17455823]
+position= [73.5769952  30.24220565]
+position= [67.28865109 37.92313757]
+position= [70.18181787 38.61772546]
+position= [73.07498466 39.31231336]
+position= [75.74800423 40.67428485]
+position= [76.19350749 40.9012801 ]
+position= [67.28865109 37.92313757]
+position= [70.18181787 38.61772546]
+position= [70.68181787 38.61772546]
+position= [73.07652599 39.27308381]
+position= [73.52202926 39.50007906]
+position= [67.28865109 37.92313757]
+position= [70.18181787 38.61772546]
+position= [73.07498466 37.92313757]
+position= [75.33747884 35.99078499]
+position= [75.63137146 35.5862765 ]
+position= [67.28865109 37.92313757]
+position= [70.17917455 38.61709086]
+position= [73.07234134 39.31167875]
+position= [75.96550812 40.00626664]
+position= [78.85867491 40.70085453]
+position= [81.7518417  41.39544243]
+position= [70.17917455 38.61709086]
+position= [73.07234134 37.92250297]
+position= [75.96550812 37.22791507]
+position= [78.85867491 36.53332718]
+position= [81.53169448 35.17135568]
+position= [69.54850194 39.85485554]
+position= [71.81099612 41.78720812]
+position= [74.70416291 42.48179602]
+position= [77.59732969 41.78720812]
+position= [80.49049648 41.09262023]
+position= [70.17917455 38.61709086]
+position= [73.07234134 37.92250297]
+position= [75.74536091 36.56053147]
+position= [78.41838048 35.19855997]
+position= [80.68087466 33.26620739]
+position= [69.54850194 39.85485554]
+position= [71.3118577  42.28190653]
+position= [73.07521346 44.70895751]
+position= [74.21384082 47.45784713]
+position= [73.98039545 50.42405172]
+position= [70.17917455 38.61709086]
+position= [73.07234134 37.92250297]
+position= [75.74536091 36.56053147]
+position= [78.00785509 34.62817889]
+position= [79.14648245 31.87928927]
+position= [69.54850194 39.85485554]
+position= [71.81099612 41.78720812]
+position= [74.70416291 42.48179602]
+position= [77.59732969 41.78720812]
+position= [80.49049648 41.09262023]
+position= [70.17917455 38.61709086]
+position= [73.07234134 37.92250297]
+position= [75.96550812 37.22791507]
+position= [76.46550812 37.22791507]
+position= [78.86021624 36.57255673]
+position= [69.54850194 39.85485554]
+position= [70.68506219 42.60197968]
+position= [71.82368955 45.3508693 ]
+position= [74.08618373 47.28322188]
+position= [76.34867791 49.21557446]
+position= [78.11203366 51.64262544]
+position= [71.80892901 41.78544264]
+position= [74.70209579 42.48003053]
+position= [77.59526258 41.78544264]
+position= [80.48842937 41.09085475]
+position= [83.48842937 41.09085475]
+position= [71.30979059 42.28014105]
+position= [73.57228476 44.21249363]
+position= [76.46545155 44.90708152]
+position= [79.46545155 44.90708152]
+position= [82.35861834 44.21249363]
+position= [70.68506219 42.60197968]
+position= [71.82368955 45.3508693 ]
+position= [72.96231691 48.09975892]
+position= [74.10094427 50.84864853]
+position= [76.36343845 52.78100111]
+position= [70.68506219 42.60197968]
+position= [71.82368955 45.3508693 ]
+position= [74.08618373 47.28322188]
+position= [76.34867791 49.21557446]
+position= [78.61117209 51.14792703]
+position= [70.68506219 42.60197968]
+position= [70.45161683 45.56818427]
+position= [68.89698678 48.10510993]
+position= [66.36006112 49.65973998]
+position= [63.82313546 51.21437002]
+position= [71.30979059 42.28014105]
+position= [72.44841795 45.02903066]
+position= [73.58704531 47.77792028]
+position= [74.72567267 50.5268099 ]
+position= [74.4922273  53.49301449]
+position= [70.68506219 42.60197968]
+position= [71.82368955 45.3508693 ]
+position= [74.08618373 47.28322188]
+position= [76.97935052 47.97780977]
+position= [79.8725173  47.28322188]
+position= [71.30979059 42.28014105]
+position= [73.57228476 44.21249363]
+position= [76.46545155 44.90708152]
+position= [79.35861834 44.21249363]
+position= [81.62111252 42.28014105]
+position= [82.75973988 39.53125143]
+position= [73.57228476 44.21249363]
+position= [76.46545155 44.90708152]
+position= [79.35861834 45.60166941]
+position= [81.62111252 47.53402199]
+position= [82.75973988 50.2829116 ]
+position= [73.57228476 44.21249363]
+position= [76.46545155 44.90708152]
+position= [79.35861834 45.60166941]
+position= [82.03163791 46.96364091]
+position= [84.29413209 48.89599349]
+position= [73.57228476 44.21249363]
+position= [76.46545155 44.90708152]
+position= [79.46545155 44.90708152]
+position= [82.35861834 44.21249363]
+position= [84.62111252 42.28014105]
+position= [73.07314634 44.70719203]
+position= [75.33564052 46.63954461]
+position= [78.22880731 47.3341325 ]
+position= [81.12197409 46.63954461]
+position= [83.38446827 44.70719203]
+position= [73.07314634 44.70719203]
+position= [74.2117737  47.45608165]
+position= [74.6810771  50.41914667]
+position= [75.81970446 53.16803629]
+position= [78.08219864 55.10038886]
+position= [71.60368321 42.68464954]
+position= [73.54145337 44.23679914]
+position= [76.21447294 45.59877064]
+position= [76.6599762  45.82576589]
+position= [79.09120322 46.32901206]
+position= [71.60368321 42.68464954]
+position= [73.54145337 44.23679914]
+position= [76.21447294 45.59877064]
+position= [78.47696712 47.53112322]
+position= [79.61559448 50.28001283]
+position= [73.07314634 44.70719203]
+position= [74.2117737  47.45608165]
+position= [75.35040106 50.20497126]
+position= [76.48902843 52.95386088]
+position= [77.62765579 55.7027505 ]
+position= [77.92154841 56.107259  ]
+position= [74.2117737  47.45608165]
+position= [75.35040106 50.20497126]
+position= [76.48902843 52.95386088]
+position= [77.62765579 55.7027505 ]
+position= [79.39101154 58.12980148]
+position= [75.33564052 46.63954461]
+position= [77.5981347  48.57189719]
+position= [79.86062888 50.50424977]
+position= [80.30613214 50.73124502]
+position= [82.14230624 52.40234831]
+position= [75.33564052 46.63954461]
+position= [77.5981347  48.57189719]
+position= [78.73676206 51.3207868 ]
+position= [78.81497929 51.81463097]
+position= [79.20606546 54.28385183]
+position= [74.2117737  47.45608165]
+position= [73.97832834 50.42228623]
+position= [73.82381984 50.89781449]
+position= [73.05127736 53.27545578]
+position= [72.12422637 56.12862533]
+position= [75.33564052 46.63954461]
+position= [77.5981347  48.57189719]
+position= [79.86062888 50.50424977]
+position= [82.75379566 51.19883766]
+position= [85.75379566 51.19883766]
+position= [75.33564052 46.63954461]
+position= [78.22880731 47.3341325 ]
+position= [81.12197409 46.63954461]
+position= [83.79499367 45.27757311]
+position= [86.46801324 43.91560161]
+position= [75.33564052 46.63954461]
+position= [78.22880731 47.3341325 ]
+position= [81.12197409 46.63954461]
+position= [83.38446827 44.70719203]
+position= [84.52309563 41.95830241]
+position= [75.33564052 46.63954461]
+position= [78.22674019 47.33236702]
+position= [81.11990698 46.63777913]
+position= [83.38240116 44.70542655]
+position= [84.52102852 41.95653693]
+position= [84.59924575 41.46269276]
+position= [78.22674019 47.33236702]
+position= [81.11990698 46.63777913]
+position= [83.79292655 45.27580763]
+position= [86.05542073 43.34345505]
+position= [88.31791491 41.41110247]
+position= [78.22674019 47.33236702]
+position= [81.22674019 47.33236702]
+position= [84.22674019 47.33236702]
+position= [87.22674019 47.33236702]
+position= [90.11990698 46.63777913]
+position= [77.59606759 48.57013171]
+position= [79.85856176 50.50248428]
+position= [82.75172855 51.19707218]
+position= [85.75172855 51.19707218]
+position= [88.64489534 51.89166007]
+position= [78.22674019 47.33236702]
+position= [81.11990698 46.63777913]
+position= [83.79292655 45.27580763]
+position= [84.23842982 45.04881238]
+position= [86.66965684 44.5455662 ]
+position= [78.22674019 47.33236702]
+position= [81.11990698 46.63777913]
+position= [83.38240116 44.70542655]
+position= [85.14575692 42.27837557]
+position= [87.40825109 40.34602299]
+position= [75.77907667 46.86477438]
+position= [78.21030369 47.36802055]
+position= [81.21030369 47.36802055]
+position= [84.10347048 46.67343266]
+position= [86.99663726 45.97884477]
+position= [78.22674019 47.33236702]
+position= [81.11990698 46.63777913]
+position= [83.38240116 44.70542655]
+position= [84.52102852 41.95653693]
+position= [84.28758316 38.99033234]
+position= [78.22674019 47.33236702]
+position= [78.72409687 47.33173241]
+position= [81.22409687 47.33173241]
+position= [84.11726366 46.63714452]
+position= [86.37975784 44.70479194]
+position= [88.64225201 42.77243936]
+position= [81.11726366 46.63714452]
+position= [83.37975784 44.70479194]
+position= [85.64225201 42.77243936]
+position= [88.31527159 41.41046786]
+position= [90.57776577 39.47811529]
+position= [81.22409687 47.33173241]
+position= [84.22409687 47.33173241]
+position= [87.11726366 46.63714452]
+position= [89.37975784 44.70479194]
+position= [91.64225201 42.77243936]
+position= [81.11726366 46.63714452]
+position= [84.01043044 45.94255663]
+position= [87.01043044 45.94255663]
+position= [89.90359723 45.24796874]
+position= [92.79676402 44.55338085]
+position= [81.22409687 47.33173241]
+position= [84.22409687 47.33173241]
+position= [87.11726366 46.63714452]
+position= [90.01043044 45.94255663]
+position= [92.90359723 46.63714452]
+position= [81.22409687 47.33173241]
+position= [84.22409687 47.33173241]
+position= [87.22409687 47.33173241]
+position= [87.72409687 47.33173241]
+position= [90.11880499 46.67637407]
+position= [81.11726366 48.0263203 ]
+position= [84.01043044 48.7209082 ]
+position= [86.90359723 48.0263203 ]
+position= [89.16609141 46.09396773]
+position= [90.30471877 43.34507811]
+position= [81.22409687 47.33173241]
+position= [84.11726366 46.63714452]
+position= [86.37975784 44.70479194]
+position= [87.5183852  41.95590233]
+position= [88.65701256 39.20701271]
+position= [81.11726366 46.63714452]
+position= [83.37711451 44.70542655]
+position= [85.14047027 42.27837557]
+position= [86.27909763 39.52948595]
+position= [87.41772499 36.78059633]
+position= [88.55635235 34.03170671]
+position= [83.78763991 45.27580763]
+position= [86.46065948 43.91383613]
+position= [88.72315366 41.98148355]
+position= [90.98564784 40.04913097]
+position= [93.87881462 39.35454308]
+position= [83.37711451 44.70542655]
+position= [85.14047027 42.27837557]
+position= [85.4343629  41.87386707]
+position= [86.90382603 39.85132458]
+position= [88.04245339 37.10243496]
+position= [83.37711451 44.70542655]
+position= [85.63960869 42.77307397]
+position= [88.53277548 42.07848608]
+position= [91.42594227 42.77307397]
+position= [94.31910905 43.46766186]
+position= [84.00778712 45.94319123]
+position= [86.90095391 45.24860334]
+position= [89.16344809 43.31625076]
+position= [91.42594227 41.38389819]
+position= [91.87144553 41.15690294]
+position= [81.5601236  46.41078388]
+position= [83.78763991 45.27580763]
+position= [86.05013409 43.34345505]
+position= [88.31262826 41.41110247]
+position= [90.57512244 39.47874989]
+position= [84.00778712 45.94319123]
+position= [86.90095391 46.63777913]
+position= [89.7941207  47.33236702]
+position= [92.68728748 46.63777913]
+position= [94.94978166 44.70542655]
+position= [81.5601236  46.41078388]
+position= [81.5601236  46.41078388]
+position= [83.39629769 44.73968058]
+position= [85.65879187 42.807328  ]
+position= [87.92128605 40.87497542]
+position= [84.00778712 45.94319123]
+position= [86.89831059 46.63841373]
+position= [89.79147737 47.33300162]
+position= [92.68464416 46.63841373]
+position= [94.94713834 44.70606115]
+position= [97.20963252 42.77370858]
+position= [86.89831059 46.63841373]
+position= [89.79147737 47.33300162]
+position= [92.68464416 48.02758952]
+position= [95.57781095 48.72217741]
+position= [98.47097773 49.4167653 ]
+position= [86.89831059 46.63841373]
+position= [89.79147737 47.33300162]
+position= [90.29147737 47.33300162]
+position= [90.29147737 47.33300162]
+position= [92.68618549 46.67764328]
+position= [86.89831059 45.24923795]
+position= [89.16080476 43.31688537]
+position= [89.45469739 42.91237687]
+position= [90.33207547 40.58980734]
+position= [90.0986301  37.62360275]
+position= [86.89831059 45.24923795]
+position= [89.16080476 43.31688537]
+position= [90.29943212 40.56799575]
+position= [91.43805949 37.81910614]
+position= [92.57668685 35.07021652]
+position= [84.5051438  45.94382584]
+position= [86.89985192 45.2884675 ]
+position= [89.1623461  43.35611492]
+position= [91.42484028 41.42376234]
+position= [94.31800706 40.72917445]
+position= [86.89831059 45.24923795]
+position= [89.16080476 43.31688537]
+position= [90.29943212 40.56799575]
+position= [91.43805949 37.81910614]
+position= [91.73195211 37.41459764]
+position= [86.89831059 45.24923795]
+position= [89.16080476 43.31688537]
+position= [90.29943212 40.56799575]
+position= [90.06598676 37.60179116]
+position= [89.8325414  34.63558658]
+position= [86.89831059 46.63841373]
+position= [89.15816144 48.57013171]
+position= [90.2967888  51.31902132]
+position= [90.06334344 54.28522591]
+position= [88.50871339 56.82215157]
+position= [88.15516    57.17570496]
+position= [89.78883405 47.33236702]
+position= [92.68200084 48.02695491]
+position= [95.57516762 48.7215428 ]
+position= [98.46833441 48.02695491]
+position= [100.73082859  46.09460233]
+position= [89.78883405 47.33236702]
+position= [92.68200084 46.63777913]
+position= [95.57516762 45.94319123]
+position= [98.46833441 46.63777913]
+position= [100.73082859  48.57013171]
+position= [89.78883405 47.33236702]
+position= [92.68200084 48.02695491]
+position= [95.57516762 48.7215428 ]
+position= [98.46833441 49.41613069]
+position= [100.73082859  51.34848327]
+position= [89.15816144 48.57013171]
+position= [90.2967888  51.31902132]
+position= [91.43541616 54.06791094]
+position= [93.69791034 56.00026352]
+position= [96.59107713 56.69485141]
+position= [89.78883405 47.33236702]
+position= [92.68200084 48.02695491]
+position= [95.35502041 49.38892641]
+position= [97.61751459 51.32127899]
+position= [99.88000876 53.25363157]
+position= [89.78883405 47.33236702]
+position= [92.68200084 46.63777913]
+position= [95.35502041 45.27580763]
+position= [97.61751459 43.34345505]
+position= [98.75614195 40.59456543]
+position= [89.78883405 47.33236702]
+position= [92.78883405 47.33236702]
+position= [95.68200084 46.63777913]
+position= [97.94449501 44.70542655]
+position= [100.20698919  42.77307397]
+position= [89.78883405 47.33236702]
+position= [92.67935751 48.0263203 ]
+position= [95.5725243 48.7209082]
+position= [98.46569109 48.0263203 ]
+position= [98.91119435 47.79932506]
+position= [100.74736844  46.12822176]
+position= [92.67935751 48.0263203 ]
+position= [94.94185169 49.95867288]
+position= [97.20434587 51.89102546]
+position= [100.09751266  52.58561335]
+position= [103.09751266  52.58561335]
+position= [92.67935751 48.0263203 ]
+position= [95.5725243 48.7209082]
+position= [98.46569109 48.0263203 ]
+position= [100.72818526  46.09396773]
+position= [101.86681263  43.34507811]
+position= [92.67935751 46.63714452]
+position= [95.5725243  45.94255663]
+position= [98.46569109 45.24796874]
+position= [100.72818526  43.31561616]
+position= [101.86681263  40.56672654]
+position= [92.67935751 48.0263203 ]
+position= [95.35237709 49.3882918 ]
+position= [98.24554387 50.0828797 ]
+position= [101.13871066  49.3882918 ]
+position= [103.40120484  47.45593923]
+position= [92.67935751 48.0263203 ]
+position= [95.5725243 48.7209082]
+position= [98.46569109 48.0263203 ]
+position= [101.35885787  47.33173241]
+position= [104.25202466  48.0263203 ]
+position= [92.67935751 48.0263203 ]
+position= [95.5725243 48.7209082]
+position= [98.46569109 48.0263203 ]
+position= [101.35885787  47.33173241]
+position= [104.25202466  46.63714452]
+position= [92.78619073 47.33173241]
+position= [95.67935751 46.63714452]
+position= [97.94185169 44.70479194]
+position= [99.08047905 41.95590233]
+position= [98.84703369 38.98969774]
+position= [92.67935751 48.0263203 ]
+position= [95.56988098 48.72027359]
+position= [98.46304776 49.41486148]
+position= [98.90855103 49.64185673]
+position= [100.74472512  51.31296003]
+position= [103.0072193   53.24531261]
+position= [95.56988098 48.72027359]
+position= [98.46304776 48.0256857 ]
+position= [100.72554194  46.09333312]
+position= [101.8641693  43.3444435]
+position= [101.63072394  40.37823892]
+position= [95.56988098 48.72027359]
+position= [98.46304776 48.0256857 ]
+position= [101.35621455  47.33109781]
+position= [104.24938134  46.63650992]
+position= [106.92240091  45.27453842]
+position= [93.12221745 48.25268095]
+position= [95.55344447 48.75592712]
+position= [98.44661126 49.45051502]
+position= [100.70910544  51.3828676 ]
+position= [102.97159962  53.31522017]
+position= [95.56988098 48.72027359]
+position= [98.46304776 48.0256857 ]
+position= [101.35621455  47.33109781]
+position= [104.24938134  46.63650992]
+position= [106.51187551  44.70415734]
+position= [95.56988098 48.72027359]
+position= [98.46304776 48.0256857 ]
+position= [100.72554194  46.09333312]
+position= [101.8641693  43.3444435]
+position= [101.63072394  40.37823892]
+position= [95.56988098 48.72027359]
+position= [98.46304776 48.0256857 ]
+position= [101.35621455  47.33109781]
+position= [104.24938134  46.63650992]
+position= [107.14254812  45.94192202]
+position= [94.93920837 49.95803828]
+position= [97.20170255 51.89039086]
+position= [100.09486933  52.58497875]
+position= [102.98803612  51.89039086]
+position= [105.2505303   49.95803828]
+Final score: 0–0 (Blue–Red). No Winner
+position= [95.56988098 48.72027359]
