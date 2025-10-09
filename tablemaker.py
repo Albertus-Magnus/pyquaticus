@@ -6,7 +6,7 @@ import pandas as pd
 from collections import defaultdict
 
 # Path to logs
-LOG_DIR = "experiment_results"  # adjust if needed
+LOG_DIR = "experiment_results" 
 
 # Regex patterns
 RE_REWARD = re.compile(r"reward curve:\s*(\[.*?\])", re.DOTALL)
@@ -28,7 +28,8 @@ def clean_lines(text):
     cleaned = [
         l for l in lines
         if not l.strip().startswith("Warning!") and
-           "Auto-detecting action" not in l
+           "Auto-detecting action" not in l and
+           not l.strip().startswith("DOES THIS GET CALLED")
     ]
     return "\n".join(cleaned)
 
