@@ -243,7 +243,7 @@ def test_reward_func(
             t = 0
     team_home = flag_homes[t]#numpy.array(flag_homes[1])
     opp_home = flag_homes[(t + 1) % 2]#numpy.array(flag_homes[0])
-    # diff = team_home - opp_home
+    diff = team_home - opp_home
     total_dist_between_flags = numpy.sqrt(np.sum(diff**2))#math.hypot(diff[0], diff[1])  # or np.sqrt(np.sum(diff**2))
 
     if total_dist_between_flags <= 0.0:
