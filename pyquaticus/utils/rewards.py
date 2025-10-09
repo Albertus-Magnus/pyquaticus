@@ -281,7 +281,7 @@ def test_reward_func(
             dists = [float(numpy.linalg.norm(position - p)) for p in opp_positions]
             min_dist = min(dists)
             # normalized by the same total distance between flags, capped at 1.0
-            reward += min(1.0, min_dist / total_dist_between_flags)#0.6 * min(1.0, min_dist / total_dist_between_flags)
+            reward += 0.4*min(1.0, min_dist)#0.6 * min(1.0, min_dist / total_dist_between_flags)
 
     # Trying capsngrabs reward added here (capturing flags is necessary to add as reward)
     num_grabs = state['grabs'][t]
