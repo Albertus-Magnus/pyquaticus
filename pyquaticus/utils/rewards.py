@@ -258,7 +258,7 @@ def aggressive_rew(
     idx = agents.index(agent_id)
     #print("idx: ",idx)
     position = np.array(state['agent_position'][idx])
-    print("position=",position) #<-Position appears to be incorrect. Perhaps wrong agent tracked?
+    #print("position=",position) #<-Position appears to be incorrect. Perhaps wrong agent tracked?
     prev_position = np.array(prev_state['agent_position'][idx])
     # If tagged, return minus one
     # print("taggedness: ", state['agent_is_tagged'])
