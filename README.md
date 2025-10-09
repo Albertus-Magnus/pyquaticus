@@ -184,6 +184,6 @@ def caps_and_grabs(
 - [X] Clean up and complete project documentation (this file).
 - [X] Screencast of policy behaviour.
 - [X] Verify evolution improvement in agents reward function maxing and include proof in report (use average of 3 or more rounds).
-- [X] Maybe: Macro actions to improve RHEA behaviour level.
+- [ ] Maybe: Macro actions to improve RHEA behaviour level.
 - [X] Verify two-player pro and anti maxing is done correctly.
 - [X] Add more agents (first ultra-defensive agents) to the pyquaticus test simulation.
