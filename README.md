@@ -181,9 +181,9 @@ def caps_and_grabs(
 ### State of Affairs 5.10.20205
 * Whether the example reward function works as intended or not (more likely?), with purely random selection for the rhea probing the agent is not getting anywhere near the necessary position to capture the flag or tag an enemy. This means a much more fluid reward function is needed that always gives a value between 0 and 1. Perhaps the distance to the enemy flag (and with flag to the own base) normalized with the distance between the two flags is a good start. Large distance to enemy agents might be a good secondary...
 * Regarding the task from the meeting (26.9.25) about including an evaluation if the achieved reward by the agents increases over time: It seems clear to me that there is not typically an increase over time in the agents behaviour (Lucas et. al. 2016 state that RHEA agents can be "instantly smart with no prior training on a game" and use the term planning more than learning). The term evolution is applied (as far as I can tell) only to the simulated internal model of the game that the agent has. Thus I can observe the reward curve of an agents planning process in a given game-tick/frame to evaluate whether an improvement of the reward takes place. Observing the reward curve of the actual executed actions does not appear to make much sense because it selects the best one it can find from the very start (and would only get an improvement for example when coming in reach of capturing the flag, so not by internal means).
-- [ ] Clean up and complete project documentation (this file).
-- [ ] Screencast of policy behaviour.
-- [ ] Verify evolution improvement in agents reward function maxing and include proof in report (use average of 3 or more rounds).
-- [ ] Maybe: Macro actions to improve RHEA behaviour level.
-- [ ] Verify two-player pro and anti maxing is done correctly.
-- [ ] Add more agents (first ultra-defensive agents) to the pyquaticus test simulation.
+- [X] Clean up and complete project documentation (this file).
+- [X] Screencast of policy behaviour.
+- [X] Verify evolution improvement in agents reward function maxing and include proof in report (use average of 3 or more rounds).
+- [X] Maybe: Macro actions to improve RHEA behaviour level.
+- [X] Verify two-player pro and anti maxing is done correctly.
+- [X] Add more agents (first ultra-defensive agents) to the pyquaticus test simulation.
