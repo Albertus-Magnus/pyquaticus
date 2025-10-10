@@ -27,7 +27,7 @@ config_dict["render_agent_ids"] = True
 config_dict["dynamics"] = ["si", "si", "si", "si", "si", "si"]
 config_dict["sim_speedup_factor"] = 3
 
-env = pyquaticus_v0.PyQuaticusEnv(team_size=3, config_dict=config_dict,render_mode=None)#'human')
+env = pyquaticus_v0.PyQuaticusEnv(team_size=3, config_dict=config_dict,render_mode='human')#None)#'human')
 term_g = {'agent_0':False,'agent_1':False,'agent_2':False}
 truncated_g = {'agent_0':False,'agent_1':False,'agent_2':False}
 term = term_g
