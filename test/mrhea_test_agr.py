@@ -67,6 +67,7 @@ while True:
     five = H_three.compute_action(obs, info)
     # MRHEA agents
     zot = R_two.compute_action(obs, info)
+    print("zot: ",zot)
     zero = zot[0]
     one = zot[1]
     two = zot[2]
