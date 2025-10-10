@@ -3,7 +3,7 @@ import random
 from typing import Any, Union
 import numpy as np
 
-from pyquaticus.utils.rewards import test_reward_func, aggressive_rew, caps_and_grabs
+from pyquaticus.utils.rewards import triple_aggressive_rew, triple_caps_and_grabs
 # I Copied rhea code into a subfolder of the current folder for easy access in imports
 from .RollingHorizonEvolAlg.environment import Environment
 from .RollingHorizonEvolAlg.multirhea import MultipleRollingHorizonEvolutionaryAlgorithm
@@ -84,7 +84,7 @@ class RHEA_Environment(Environment):
         config_dict["dynamics"] = ["si", "si", "si", "si", "si", "si"]
         config_dict["sim_speedup_factor"] = 3
 
-        self.env = pyquaticus_v0.PyQuaticusEnv(team_size=3, config_dict=config_dict, reward_config={'agent_1': aggressive_rew},render_mode=None)
+        self.env = pyquaticus_v0.PyQuaticusEnv(team_size=3, config_dict=config_dict, reward_config={'agent_1': triple_aggressive_rew},render_mode=None)
         # term_g = {'agent_0':False,'agent_1':False,'agent_2':False}
         # truncated_g = {'agent_0':False,'agent_1':False,'agent_2':False}
         # term = term_g
