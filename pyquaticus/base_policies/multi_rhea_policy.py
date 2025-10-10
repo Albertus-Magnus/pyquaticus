@@ -161,7 +161,7 @@ class RHEA_Environment(Environment):
             #print("solutri: ",solutri)
             # for index in range(len(solutri[0]) - 1):
             for index in range(len(solutri[0])):
-                print("index: ",index)
+                # print("index: ",index)
                 #state_copy[action[0]] += action[1] probably old code from the example, delete
                 # Provisional solution for testing: Just one random solution per opponent, as in RHGA with low budget...
                 zero = solutri[0][index] #Should be ith action in the first agents solution block
