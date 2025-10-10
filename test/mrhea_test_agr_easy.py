@@ -16,9 +16,9 @@ create a test of 3x multi-rhea policy agents versus
 """
 
 # Adjust the mode here to change difficulty of the Heuristic_CTF_Agents
-MODE = "hard"
+#MODE = "hard"
 #MODE = "medium"
-#MODE = "easy"
+MODE = "easy"
 
 config_dict = {}
 config_dict["max_time"] = 600.0
