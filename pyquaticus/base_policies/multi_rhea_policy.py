@@ -35,7 +35,7 @@ class RHEA_Agent(BaseAgentPolicy):
         super().__init__(agent_id, env)
         # initialize rhea heuristic class
         self.rhea = RollingHorizonEvolutionaryAlgorithm(
-            rollout_actions_length, 
+            (rollout_actions_length*3), #creates solutions for all 3 agents, ABC are concatenated and treated accordingly in compute_action and evaluate_rollout
             rhea_env, 
             mutation_probability, 
             num_evals, 
@@ -60,8 +60,10 @@ class RHEA_Agent(BaseAgentPolicy):
             action: if continuous, a tuple containing desired speed and relative bearing.
             if discrete, an action index corresponding to ACTION_MAP in config.py
         """
-        action = self.rhea._get_next_action()
-        return action
+        action = self.rhea._get_next_action() #actually we need to make sure get_next_action already returns 3 actions TODO
+        # action is actually 3 actions for 3 agents:
+        #parts = np.array_split(action, 3)#not entire solutions, so we need only pass them
+        return action #list(3x) of lists(rollout-length) of actions
         # End of compute_action
 
 """
@@ -152,25 +154,28 @@ class RHEA_Environment(Environment):
         # Then I need to apply the solutions to the copies.:
         scores = np.zeros(n_evals)
         i = 0
+        #solutionthrice = np.array_split(solution, 3)
         for state_copy, solution in zip(state_copies, solutions):
             #do I need to do this multiple times for each opponent?:
-            for action in solution:
+            solutri = np.array_split(solution, 3)
+            for index in range(solutri[0].len):
                 #state_copy[action[0]] += action[1] probably old code from the example, delete
                 # Provisional solution for testing: Just one random solution per opponent, as in RHGA with low budget...
-                zero = [0.0, 0]
-                one = action
-                two = [0.0, 0]
+                zero = solutri[0][i] #Should be ith action in the first agents solution block
+                one = solutri[1][i] #Should be ith action in the seccond agents solution block
+                two = solutri[2][i] #Should be ith action in the third agents solution block
                 #three = np.array([self.get_random_action() for _ in range(rollout_actions_length)])
                 #this is incorrect, is entire solution where only one action is needed...
                 #four = np.array([self.get_random_action() for _ in range(rollout_actions_length)])
                 #five = np.array([self.get_random_action() for _ in range(rollout_actions_length)])
-                #Provisorisch: jeweils eine zufallsaktion:
+                # First part of RHGA: opponent does random actions (code is already not very 
+                # performant, so we keep it at the minimal one evaluations per solution).
                 three = self.get_random_action()
                 four = self.get_random_action()
                 five = self.get_random_action()
-
-                #TODO I may need to compute action for every other agent in the game here so the plan always uses correct other agents. Though for the competition it would be unfair to have an agent know what the other agents do... So how do We implement this? - also rhea would be best, but now doing a deadlock...
-                # F*ck... -we move this to rhea TODO        #one is the rhea agent, zero and two are None (too expensive). The rest are rhea estimates of enemies :/
+                # Ignore the following rambling, there were actually descriptions of approaches in the Two-Player paper (Lucas et. al. 2016).
+                #I may need to compute action for every other agent in the game here so the plan always uses correct other agents. Though for the competition it would be unfair to have an agent know what the other agents do... So how do We implement this? - also rhea would be best, but now doing a deadlock...
+                #we move this to rhea at a point in the future TODO      #one is the rhea agent, zero and two are None (too expensive). The rest are rhea estimates of enemies :/
                 #obs, reward, term, trunc, info = self.env.step({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three, 'agent_4':four, 'agent_5':five}) #TODO we have only one action so far, what do the other agents do in our plan?
                 obs, reward, term, trunc, info = state_copy.step({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three, 'agent_4':four, 'agent_5':five}) #TODO we have only one action so far, what do the other agents do in our plan?
                 # print("Reward returned: ",reward['agent_1'])
@@ -197,5 +202,16 @@ class RHEA_Environment(Environment):
     def ignore_frame(self):
         # this is only necessary if rhea.run() is used, which it isn't in the current context
         raise NotImplementedError 
+    
+    def splitlist(l,n):
+    # split list l into n parts, could use this instead of splitarray if there are type mismatches
+        if l: 
+            p = len(l) if n < 1 else len(l) // n   # no split
+            p = p if p > 0 else 1                  # split down to elements
+            for i in range(0, len(l), p):
+                yield l[i:i+p]
+        else:
+            yield [] # empty list split returns empty list
+
     
     # End of RHEA_Environment

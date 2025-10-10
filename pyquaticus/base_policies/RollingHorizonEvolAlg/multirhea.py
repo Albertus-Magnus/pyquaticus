@@ -51,24 +51,13 @@ class MultipleRollingHorizonEvolutionaryAlgorithm():
 
         self._logger.info('Best score in evaluations: %.2f' % best_score_in_evaluations)
 
-        # The next best action is the first action from the solution space
-        return self._solution[0]
-
-    #def compute_action(self, obs=None, info=None):
-        """
-        Public wrapper to compute the next action. If the provided environment
-        wrapper exposes set_start_state(obs, info), call it so rollouts start
-        from the current simulator state/observation.
-        """
-        # Let the environment wrapper snapshot any required state for rollouts
-    #    if hasattr(self._environment, "set_start_state"):
-    #        try:
-    #            self._environment.set_start_state(obs, info)
-    #        except Exception:
-                # don't fail if the env wrapper doesn't need or can't use the data
-    #             pass
-
-    #    return self._get_next_action()
+        # The next best action is the first action (or here first 3 actions) from the solution space
+        #self._solution[0:3]
+        parts = np.array_split(self._solution, 3)
+        # Return first element of the three agent solutions (one behind the other in self._solution, separated in parts).
+        solutri = [parts[0][0], parts[1][0], parts[2][0]]
+        print("solutri: ",solutri)
+        return solutri
 
     def _shift_and_append(self, solution):
         """
