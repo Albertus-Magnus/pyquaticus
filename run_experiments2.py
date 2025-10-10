@@ -8,11 +8,11 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Paths to the experiment scripts
 EXPERIMENTS = [
-    "test/mrhea_test_agr.py"
-    "test/mrhea_test_agr_easy.py"
-    "test/mrhea_test_agr_med.py"
-    "test/mrhea_test_cap.py"
-    "test/mrhea_test_cap_easy.py"
+    "test/mrhea_test_agr.py",
+    "test/mrhea_test_agr_easy.py",
+    "test/mrhea_test_agr_med.py",
+    "test/mrhea_test_cap.py",
+    "test/mrhea_test_cap_easy.py",
     "test/mrhea_test_cap_med.py"
 ]
 
