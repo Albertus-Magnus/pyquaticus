@@ -197,17 +197,17 @@ def caps_and_grabs(
     tagging_cooldown: float
 ):
     reward = 0.0
-    prev_num_oob = prev_state['agent_oob'][agents.index(agent_id)]#remove prev_
+    prev_num_oob = prev_state['agent_oob'][agents.index(agent_id)]
     num_oob = state['agent_oob'][agents.index(agent_id)]
     if num_oob > prev_num_oob:
         reward += -1.0
     for t in [0,1]:
-        prev_num_grabs = prev_state['grabs'][t]#remove prev_
+        prev_num_grabs = prev_state['grabs'][t]
         num_grabs = state['grabs'][t]
         if num_grabs > prev_num_grabs:
             reward += 0.25 if t == team else -0.25
 
-        prev_num_caps = prev_state['captures'][t]#remove prev_
+        prev_num_caps = prev_state['captures'][t]
         num_caps = state['captures'][t]
         if num_caps > prev_num_caps:
             reward += 1.0 if t == team else -1.0
