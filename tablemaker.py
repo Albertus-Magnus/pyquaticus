@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from collections import defaultdict
 
-LOG_DIR = "experiment_results"
+LOG_DIR = "experiment_results/batch 1"
 OUT_DIR = "averaged_tables"
 os.makedirs(OUT_DIR, exist_ok=True)
 
