@@ -6,7 +6,7 @@ import numpy as np
 from pyquaticus.utils.rewards import test_reward_func, aggressive_rew, caps_and_grabs
 # I Copied rhea code into a subfolder of the current folder for easy access in imports
 from .RollingHorizonEvolAlg.environment import Environment
-from .RollingHorizonEvolAlg.rhea import RollingHorizonEvolutionaryAlgorithm
+from .RollingHorizonEvolAlg.multirhea import MultipleRollingHorizonEvolutionaryAlgorithm
 # (special rhea import is thus no longer needed)
 from pyquaticus import pyquaticus_v0
 from pyquaticus.envs.pyquaticus import PyQuaticusEnv#, Team
@@ -34,7 +34,7 @@ class RHEA_Agent(BaseAgentPolicy):
     ):
         super().__init__(agent_id, env)
         # initialize rhea heuristic class
-        self.rhea = RollingHorizonEvolutionaryAlgorithm(
+        self.rhea = MultipleRollingHorizonEvolutionaryAlgorithm(
             (rollout_actions_length*3), #creates solutions for all 3 agents, ABC are concatenated and treated accordingly in compute_action and evaluate_rollout
             rhea_env, 
             mutation_probability, 
