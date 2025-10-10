@@ -1,7 +1,14 @@
 import numpy as np
 import logging
 
-class RollingHorizonEvolutionaryAlgorithm():
+"""
+This was adjusted during the Masters Project Oct 2025
+This RHEA implementation was adjusted to deliver 3 solutions as one (for 3 MCTF or 
+other agents). These are then treated like a single solution, which does not increase 
+the computational cost too much since only num_evals different solutions are evaluated 
+(the costly part, given our reward function).
+"""
+class MultipleRollingHorizonEvolutionaryAlgorithm():
 
     def __init__(self, rollout_actions_length, environment, mutation_probability, num_evals, use_shift_buffer=True,
                  flip_at_least_one=True, discount_factor=None, ignore_frames=0):
@@ -17,8 +24,9 @@ class RollingHorizonEvolutionaryAlgorithm():
         self._num_evals = num_evals
         self._ignore_frames = ignore_frames
 
-        # Initialize the solution to a random sequence
+        # Initialize the solution to a random set of three sequences
         if self._use_shift_buffer:
+            #self._solution = [self._random_solution(), self._random_solution(), self._random_solution()] #actually, it suffices to create a solution thrice as long and act accordingly in Environment...
             self._solution = self._random_solution()
 
     def _get_next_action(self):
@@ -74,7 +82,7 @@ class RollingHorizonEvolutionaryAlgorithm():
         """
         Create a random set of actions
         """
-        # print("DOES THIS GET CALLED?") #still no confirmation??! <-gets called once in the beginning, usually.
+        #print("DOES THIS GET CALLED?") #still no confirmation??! <-gets called once in the beginning, usually.
         return np.array([self._environment.get_random_action() for _ in range(self._rollout_actions_length)])
 
     def _mutate(self, solution, mutation_probability):
