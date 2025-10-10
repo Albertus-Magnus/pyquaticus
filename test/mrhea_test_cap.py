@@ -4,7 +4,7 @@ import os.path
 import pyquaticus
 from pyquaticus import pyquaticus_v0
 from pyquaticus.base_policies.base_combined import Heuristic_CTF_Agent
-from pyquaticus.base_policies.multi_rhea_policy import RHEA_Agent, RHEA_Environment
+from pyquaticus.base_policies.multi_rhea_policy_cap import RHEA_Agent, RHEA_Environment
 #from pyquaticus.base_policies.rhealg_policy2 import RHEA_Agent, RHEA_Environment
 #from pyquaticus.envs.pyquaticus import Team
 from pyquaticus.utils.rewards import triple_aggressive_rew, triple_caps_and_grabs
@@ -27,7 +27,7 @@ config_dict["render_agent_ids"] = True
 config_dict["dynamics"] = ["si", "si", "si", "si", "si", "si"]
 config_dict["sim_speedup_factor"] = 3
 
-env = pyquaticus_v0.PyQuaticusEnv(team_size=3, config_dict=config_dict, reward_config={'agent_1': triple_aggressive_rew}, 
+env = pyquaticus_v0.PyQuaticusEnv(team_size=3, config_dict=config_dict, reward_config={'agent_1': triple_caps_and_grabs}, 
  render_mode=None)#'human')
 term_g = {'agent_0':False,'agent_1':False,'agent_2':False}
 truncated_g = {'agent_0':False,'agent_1':False,'agent_2':False}
