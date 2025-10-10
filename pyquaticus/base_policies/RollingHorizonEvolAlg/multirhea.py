@@ -56,7 +56,7 @@ class MultipleRollingHorizonEvolutionaryAlgorithm():
         parts = np.array_split(self._solution, 3)
         # Return first element of the three agent solutions (one behind the other in self._solution, separated in parts).
         solutri = [parts[0][0], parts[1][0], parts[2][0]]
-        print("solutri: ",solutri)
+        # print("solutri: ",solutri)
         return solutri
 
     def _shift_and_append(self, solution):
