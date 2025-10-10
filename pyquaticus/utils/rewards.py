@@ -366,9 +366,9 @@ def triple_aggressive_rew(
 ):
     reward = 0.0
     #idx = agents.index(agent_id)
-    idx1 = 'agent0'
-    idx2 = 'agent1'
-    idx3 = 'agent2'
+    idx1 = 0#'agent0'
+    idx2 = 1#'agent1'
+    idx3 = 2#'agent2'
     position1 = np.array(state['agent_position'][idx1])
     position2 = np.array(state['agent_position'][idx2])
     position3 = np.array(state['agent_position'][idx3])
