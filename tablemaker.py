@@ -29,7 +29,8 @@ def clean_lines(text):
         l for l in lines
         if not l.strip().startswith("Warning!") and
            "Auto-detecting action" not in l and
-           not l.strip().startswith("DOES THIS GET CALLED")
+           not l.strip().startswith("DOES THIS GET CALLED") and
+           not l.strip().startswith("solutri")
     ]
     return "\n".join(cleaned)
 
