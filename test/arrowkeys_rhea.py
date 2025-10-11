@@ -31,7 +31,7 @@ from pyquaticus.config import get_std_config, ACTION_MAP
 from pyquaticus.envs.pyquaticus import Team
 from pyquaticus.base_policies.base_combined import Heuristic_CTF_Agent
 from pyquaticus.base_policies.base_attack import BaseAttacker
-from pyquaticus.utils.rewards import test_reward_func, simplest_test
+from pyquaticus.utils.rewards import caps_and_grabs
 #from .RollingHorizonEvolAlg.rhea import RollingHorizonEvolutionaryAlgorithm
 #from .RollingHorizonEvolAlg.environment import Environment
 from pyquaticus.base_policies.RollingHorizonEvolAlg.rhea import RollingHorizonEvolutionaryAlgorithm
@@ -116,6 +116,6 @@ if __name__ == '__main__':
     config['sim_speedup_factor'] = 5
 
     #PyQuaticusEnv is a Parallel Petting Zoo Environment
-    env = pyquaticus_v0.PyQuaticusEnv(render_mode='human', team_size=1, config_dict=config, reward_config={'agent_1': test_reward_func})
+    env = pyquaticus_v0.PyQuaticusEnv(render_mode='human', team_size=1, config_dict=config, reward_config={'agent_1': caps_and_grabs})
     kt = KeyTest(env)
     kt.begin()
