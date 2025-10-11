@@ -64,12 +64,52 @@ python ./test/base_policy_test.py
 
 For a run of the ultra-defensive policy against a team using pre-existing Pyquaticus policies:
 ```
-python ./test/nothing_test.py
+python ./test/ultra_def_test.py
+# or
+python ./test/ultra_def_test_med.py
+# or
+python ./test/ultra_def_test_easy.py
 ```
 
-For an implementation of integrating RHEA into the Pyquaticus framework:
+For an implementation of integrating RHEA into the Pyquaticus framework using the caps_and_grabs (CAP) reward function:
 ```
-python ./test/copy_rhea_test.py
+python ./test/rhea_test_cap.py
+or
+python ./test/rhea_test_cap_med.py
+or
+python ./test/rhea_test_cap_easy.py
+```
+
+For an implementation of integrating RHEA into the Pyquaticus framework using the aggressive_rew (AGR) reward function:
+```
+python ./test/rhea_test_agr.py
+or
+python ./test/rhea_test_agr_med.py
+or
+python ./test/rhea_test_agr_easy.py
+```
+
+For an implementation of implementing MRHEA and integrating it into the Pyquaticus framework using the caps_and_grabs (CAP) reward function:
+```
+python ./test/mrhea_test_cap.py
+or
+python ./test/mrhea_test_cap_med.py
+or
+python ./test/mrhea_test_cap_easy.py
+```
+
+For an implementation of implementing MRHEA and integrating it into the Pyquaticus framework using the aggressive_rew (AGR) reward function:
+```
+python ./test/mrhea_test_agr.py
+or
+python ./test/mrhea_test_agr_med.py
+or
+python ./test/mrhea_test_agr_easy.py
+```
+
+For an example of rhea using the caps_and_grabs (CAP) reward function:
+```
+python arrowkeys_rhea.py
 ```
 
 Depending on the purpose of the execution the render mode has to be adjusted to 'human' or None. This is always done in the file that has "test" in its name. Files that are not the test executers may have different render modes that must not be changed to 'human'.
@@ -77,3 +117,4 @@ Example of a human render mode (from ``mrhea_test_agr.py``, ca line 30):
 ```
 env = pyquaticus_v0.PyQuaticusEnv(team_size=3, config_dict=config_dict, reward_config={'agent_1': triple_aggressive_rew}, render_mode='human')
 ```
+
