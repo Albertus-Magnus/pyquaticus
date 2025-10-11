@@ -16,10 +16,10 @@
 
 ## Ultra-Defensive Strategy
 
-- Executing the Pyquaticus environment is done in the ./test/ fodler (starting in the repository root folder). For example ``./test/base_policy_test.py``.
+- Executing the Pyquaticus environment is done in the ./test/ fodler (starting in the repository root folder). For example ``./test/ultra_def_test.py``.
 - base_policy_test.py is calling ``./pyquaticus/base_policies/base_combined.py`` for the agent behaviour (policy).
 - To implement the ultra-defensive strategy a ``./test/base_policy_test.py`` copy has to be created and modified to either call a custom base_policy or call an existing policy that supports the argument ``mode="nothing"`` in the python file.
-- A custom policy would either have to return ``(0, 0)`` (for continuous agents) or ``Null`` (for discrete agents) when its ``compute_action()`` function is called to implement this behaviour.
+- A custom policy would either have to return ``(0, 0)`` (for continuous agents) or ``Null`` (for discrete agents) when its ``compute_action()`` function is called to implement this behaviour. ``base_policies/ultra_def_policy.py`` was created during this project and implements this strategy.
 
 ## Looking for RHEA implementations on GitHub
 
@@ -71,3 +71,4 @@ For an implementation of integrating RHEA into the Pyquaticus framework:
 ```
 python ./test/copy_rhea_test.py
 ```
+
