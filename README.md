@@ -72,3 +72,8 @@ For an implementation of integrating RHEA into the Pyquaticus framework:
 python ./test/copy_rhea_test.py
 ```
 
+Depending on the purpose of the execution the render mode has to be adjusted to 'human' or None. This is always done in the file that has "test" in its name. Files that are not the test executers may have different render modes that must not be changed to 'human'.
+Example of a human render mode (from ``mrhea_test_agr.py``, ca line 30):
+```
+env = pyquaticus_v0.PyQuaticusEnv(team_size=3, config_dict=config_dict, reward_config={'agent_1': triple_aggressive_rew}, render_mode='human')
+```
