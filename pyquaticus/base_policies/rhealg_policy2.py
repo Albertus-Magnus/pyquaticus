@@ -99,10 +99,6 @@ class RHEA_Environment(Environment):
         config_dict["sim_speedup_factor"] = 3
 
         self.env = pyquaticus_v0.PyQuaticusEnv(team_size=3, config_dict=config_dict, reward_config={'agent_1': caps_and_grabs},render_mode=None)
-        # term_g = {'agent_0':False,'agent_1':False,'agent_2':False}
-        # truncated_g = {'agent_0':False,'agent_1':False,'agent_2':False}
-        # term = term_g
-        # trunc = truncated_g
         # The following line assumes the env is brand new and also just reset.
         reset_opts = {'normalize_obs': False, 'normalize_state': False}
         #obs, info = 
@@ -119,12 +115,6 @@ class RHEA_Environment(Environment):
         # add a none action
         self.action_map.append([0.0, 0])
         # End of action_map
-
-        # temp_captures = env.state["captures"]
-        # temp_grabs = env.state["grabs"]
-        # temp_tags = env.state["tags"]
-        # End of env copy init
-        # End of __init__
 
     def perform_action(self, action, statee):
         # I implement this to keep the environment up to date at each real-environment step.
@@ -176,24 +166,15 @@ class RHEA_Environment(Environment):
                 zero = [0.0, 0]
                 one = action
                 two = [0.0, 0]
-                #three = np.array([self.get_random_action() for _ in range(rollout_actions_length)])
-                #this is incorrect, is entire solution where only one action is needed...
-                #four = np.array([self.get_random_action() for _ in range(rollout_actions_length)])
-                #five = np.array([self.get_random_action() for _ in range(rollout_actions_length)])
-                #Provisorisch: jeweils eine zufallsaktion:
                 three = self.get_random_action()
                 four = self.get_random_action()
                 five = self.get_random_action()
 
-                #TODO I may need to compute action for every other agent in the game here so the plan always uses correct other agents. Though for the competition it would be unfair to have an agent know what the other agents do... So how do We implement this? - also rhea would be best, but now doing a deadlock...
-                # F*ck... -we move this to rhea TODO        #one is the rhea agent, zero and two are None (too expensive). The rest are rhea estimates of enemies :/
-                #obs, reward, term, trunc, info = self.env.step({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three, 'agent_4':four, 'agent_5':five}) #TODO we have only one action so far, what do the other agents do in our plan?
                 obs, reward, term, trunc, info = state_copy.step({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three, 'agent_4':four, 'agent_5':five}) #TODO we have only one action so far, what do the other agents do in our plan?
                 # print("Reward returned: ",reward['agent_1'])
                 scores[i] += reward['agent_1'] #This is assuming the reward is per step. If the reward is a score that keeps its pos/neg values from previous steps only the last score needs to be remembered/added.
             i += 1
-        # The final(?)/summed(?) reward of the solution has to be stored in a list and returned:
-        return scores #currently a sum of all steps
+            return scores #currently a sum of all steps
 
 
     def get_random_action(self):
@@ -208,7 +189,7 @@ class RHEA_Environment(Environment):
 
     def get_current_score(self):
         # this is only necessary if rhea.run() is used, which it isn't in the current context
-        raise NotImplementedError #TODO (might still need it?)
+        raise NotImplementedError 
 
     def ignore_frame(self):
         # this is only necessary if rhea.run() is used, which it isn't in the current context

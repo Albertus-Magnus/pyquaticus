@@ -85,15 +85,10 @@ class RHEA_Environment(Environment):
         config_dict["sim_speedup_factor"] = 3
 
         self.env = pyquaticus_v0.PyQuaticusEnv(team_size=3, config_dict=config_dict, reward_config={'agent_1': triple_caps_and_grabs},render_mode=None)
-        # term_g = {'agent_0':False,'agent_1':False,'agent_2':False}
-        # truncated_g = {'agent_0':False,'agent_1':False,'agent_2':False}
-        # term = term_g
-        # trunc = truncated_g
         # The following line assumes the env is brand new and also just reset.
         reset_opts = {'normalize_obs': False, 'normalize_state': False}
         #obs, info = 
-        self.env.reset(options=reset_opts) #is this necessary? maybe it is just done to get obs, info but the False above make it so it doesn't do anything...
-
+        self.env.reset(options=reset_opts) 
         #Adding action_map to this env for easy access:
         self.action_map = []
         # for spd in [1.0, 0.5]: #speed will always be 1.0. Less speed is always never optimal and this counters computational expense
@@ -105,12 +100,6 @@ class RHEA_Environment(Environment):
         # add a none action
         self.action_map.append([0.0, 0])
         # End of action_map
-
-        # temp_captures = env.state["captures"]
-        # temp_grabs = env.state["grabs"]
-        # temp_tags = env.state["tags"]
-        # End of env copy init
-        # End of __init__
 
     def perform_action(self, action, statee):
         # I implement this to keep the environment up to date at each real-environment step.
@@ -161,30 +150,17 @@ class RHEA_Environment(Environment):
             #print("solutri: ",solutri)
             # for index in range(len(solutri[0]) - 1):
             for index in range(len(solutri[0])):
-                # print("index: ",index)
-                #state_copy[action[0]] += action[1] probably old code from the example, delete
-                # Provisional solution for testing: Just one random solution per opponent, as in RHGA with low budget...
+                # RHGA with low computational budget: Just one random solution per opponent.^
                 zero = solutri[0][index] #Should be ith action in the first agents solution block
                 one = solutri[1][index] #Should be ith action in the seccond agents solution block
                 two = solutri[2][index] #Should be ith action in the third agents solution block
-                #three = np.array([self.get_random_action() for _ in range(rollout_actions_length)])
-                #this is incorrect, is entire solution where only one action is needed...
-                #four = np.array([self.get_random_action() for _ in range(rollout_actions_length)])
-                #five = np.array([self.get_random_action() for _ in range(rollout_actions_length)])
-                # First part of RHGA: opponent does random actions (code is already not very 
-                # performant, so we keep it at the minimal one evaluations per solution).
                 three = self.get_random_action()
                 four = self.get_random_action()
                 five = self.get_random_action()
-                # Ignore the following rambling, there were actually descriptions of approaches in the Two-Player paper (Lucas et. al. 2016).
-                #I may need to compute action for every other agent in the game here so the plan always uses correct other agents. Though for the competition it would be unfair to have an agent know what the other agents do... So how do We implement this? - also rhea would be best, but now doing a deadlock...
-                #we move this to rhea at a point in the future TODO      #one is the rhea agent, zero and two are None (too expensive). The rest are rhea estimates of enemies :/
-                #obs, reward, term, trunc, info = self.env.step({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three, 'agent_4':four, 'agent_5':five}) #TODO we have only one action so far, what do the other agents do in our plan?
                 obs, reward, term, trunc, info = state_copy.step({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three, 'agent_4':four, 'agent_5':five}) #TODO we have only one action so far, what do the other agents do in our plan?
                 # print("Reward returned: ",reward['agent_1'])
-                scores[i] += reward['agent_1'] #This is assuming the reward is per step. If the reward is a score that keeps its pos/neg values from previous steps only the last score needs to be remembered/added.
+                scores[i] += reward['agent_1'] #This is assuming the reward is per step.
             i += 1
-        # The final(?)/summed(?) reward of the solution has to be stored in a list and returned:
         return scores #currently a sum of all steps
 
 
@@ -209,12 +185,13 @@ class RHEA_Environment(Environment):
     def splitlist(l,n):
     # split list l into n parts, could use this instead of splitarray if there are type mismatches
         if l: 
-            p = len(l) if n < 1 else len(l) // n   # no split
-            p = p if p > 0 else 1                  # split down to elements
+            p = len(l) if n < 1 else len(l) // n
+            p = p if p > 0 else 1
             for i in range(0, len(l), p):
                 yield l[i:i+p]
         else:
-            yield [] # empty list split returns empty list
+            # empty list split returns empty list
+            yield [] 
 
     
     # End of RHEA_Environment
