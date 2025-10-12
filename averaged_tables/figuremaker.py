@@ -5,13 +5,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # -------- CONFIG --------
-DATA_DIR = "batch combined"
+DATA_DIR = "batch 2"
 OUT_DIR = "figures"
-SAVE_FIGS = True
+SAVE_FIGS = False
 # batch number
-GRP = "3"
+GRP = "2"
 # number of steps into the game reward is plotted for
-NEM = 300
+NEM = 2000
 REDCODE = "#FF0000"
 BLUECODE = "#0000FF"
 
@@ -267,7 +267,7 @@ def plot_reward_subset(substring: str, title_suffix: str):
     if SAVE_FIGS:
         Path(OUT_DIR).mkdir(exist_ok=True)
         plt.savefig(f"{OUT_DIR}/reward_curves_{substring}_group{GRP}.png", dpi=400)
-    # plt.show()
+    plt.show()
 
 
 # Two separate figures

@@ -12,22 +12,6 @@ from pyquaticus import pyquaticus_v0
 from pyquaticus.envs.pyquaticus import PyQuaticusEnv#, Team
 from pyquaticus.moos_bridge.pyquaticus_moos_bridge import PyQuaticusMoosBridge
 from pyquaticus.base_policies.base_policy import BaseAgentPolicy
-#Start of special rhea import
-# try the normal absolute import first; if it fails, add project root and retry
-# try:
-#     from RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea import RollingHorizonEvolutionaryAlgorithm
-# except ModuleNotFoundError:
-#     import sys, os, importlib
-#     # compute project root relative to this file (../../.. -> project root)
-#     _this_dir = os.path.dirname(__file__)
-#     _project_root = os.path.abspath(os.path.join(_this_dir, "..", "..", ".."))
-#     if _project_root not in sys.path:
-#         sys.path.insert(0, _project_root)
-#     # retry import (let any exception propagate if it still fails)
-#     RollingHorizonEvolutionaryAlgorithm = importlib.import_module(
-#         "RollingHorizonEvolutionaryAlgorithm.RollingHorizonEA.rhea"
-#     ).RollingHorizonEvolutionaryAlgorithm
-# #End of special rhea import
 
 # RHEA parameters (adjust here globally)
 rollout_actions_length = 5#100
@@ -59,7 +43,7 @@ class RHEA_Agent(BaseAgentPolicy):
             flip_at_least_one=True, 
             discount_factor=None, 
             ignore_frames=0
-        ) # If this RHEA is adjusted properly for multiple teammates it might need to be initialized centrally.
+        ) 
         self.rhea_env = rhea_env
         # End of __init__
 
@@ -85,11 +69,7 @@ This Class inherits from the Rolling Horizon Evolutionary Algorithm Environment 
 """
 class RHEA_Environment(Environment):
     
-    def __init__(self, env):#agent_id, team, obs, info):
-        # self.agent_id = agent_id #old stuff, delete later?
-        # self.team = team
-        # self.obs = obs
-        # self.info = info
+    def __init__(self, env):
         """ Initialize a copy of the pyquaticus environment """
         config_dict = {}
         config_dict["max_time"] = 600.0
@@ -99,10 +79,6 @@ class RHEA_Environment(Environment):
         config_dict["sim_speedup_factor"] = 3
 
         self.env = pyquaticus_v0.PyQuaticusEnv(team_size=3, config_dict=config_dict, reward_config={'agent_1': aggressive_rew},render_mode=None)
-        # term_g = {'agent_0':False,'agent_1':False,'agent_2':False}
-        # truncated_g = {'agent_0':False,'agent_1':False,'agent_2':False}
-        # term = term_g
-        # trunc = truncated_g
         # The following line assumes the env is brand new and also just reset.
         reset_opts = {'normalize_obs': False, 'normalize_state': False}
         #obs, info = 
@@ -119,12 +95,6 @@ class RHEA_Environment(Environment):
         # add a none action
         self.action_map.append([0.0, 0])
         # End of action_map
-
-        # temp_captures = env.state["captures"]
-        # temp_grabs = env.state["grabs"]
-        # temp_tags = env.state["tags"]
-        # End of env copy init
-        # End of __init__
 
     def perform_action(self, action, statee):
         # I implement this to keep the environment up to date at each real-environment step.
@@ -185,15 +155,11 @@ class RHEA_Environment(Environment):
                 four = self.get_random_action()
                 five = self.get_random_action()
 
-                #TODO I may need to compute action for every other agent in the game here so the plan always uses correct other agents. Though for the competition it would be unfair to have an agent know what the other agents do... So how do We implement this? - also rhea would be best, but now doing a deadlock...
-                # F*ck... -we move this to rhea TODO        #one is the rhea agent, zero and two are None (too expensive). The rest are rhea estimates of enemies :/
-                #obs, reward, term, trunc, info = self.env.step({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three, 'agent_4':four, 'agent_5':five}) #TODO we have only one action so far, what do the other agents do in our plan?
                 obs, reward, term, trunc, info = state_copy.step({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three, 'agent_4':four, 'agent_5':five}) #TODO we have only one action so far, what do the other agents do in our plan?
                 # print("Reward returned: ",reward['agent_1'])
                 scores[i] += reward['agent_1'] #This is assuming the reward is per step. If the reward is a score that keeps its pos/neg values from previous steps only the last score needs to be remembered/added.
             i += 1
-        # The final(?)/summed(?) reward of the solution has to be stored in a list and returned:
-        return scores #currently a sum of all steps
+            return scores #currently a sum of all steps
 
 
     def get_random_action(self):
