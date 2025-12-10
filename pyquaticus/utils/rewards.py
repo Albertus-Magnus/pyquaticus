@@ -486,3 +486,100 @@ def triple_caps_and_grabs(
             reward += 1.0 if t == team else -1.0
 
     return reward
+
+def defensive_rew(
+    agent_id: str,
+    team: Team,
+    agents: list,
+    agent_inds_of_team: dict,
+    state: dict,
+    prev_state: dict,
+    env_size: np.ndarray,
+    agent_radius: np.ndarray,
+    catch_radius: float,
+    scrimmage_coords: np.ndarray,
+    max_speeds: list,
+    tagging_cooldown: float
+):
+    reward = 0.0
+    idx = agents.index(agent_id)
+
+    # Current and previous position of this agent
+    position = np.array(state["agent_position"][idx])
+    prev_position = np.array(prev_state["agent_position"][idx])
+
+    # Punish being tagged or out of bounds
+    if state["agent_is_tagged"][idx]:
+        return -5.0  
+    if (
+        position[0] < 0 or position[0] > env_size[0] or
+        position[1] < 0 or position[1] > env_size[1]
+    ):
+        return -10.0
+
+    # Note team index
+    t = team.value  #0 (blue team) or 1 (red team)
+
+    enemy_team = (t + 1) % 2
+
+    # Flag position of own team (defensive target)
+    own_flag_pos = np.array(state["flag_home"][t])
+
+    # Enemy agent indices
+    #enemy_agent_inds = agents.index(ag     #agent_inds_of_team[enemy_team]
+    enemy_team_enum = Team(enemy_team)
+    enemy_agent_ids = agent_inds_of_team[enemy_team_enum]
+
+
+    # Identify the enemy that is the biggest threat
+    best_threat = None
+    best_threat_dist = float("inf")
+
+    for e_idx in enemy_agent_ids:
+        enemy_pos = np.array(state["agent_position"][e_idx])
+        has_flag = state["agent_has_flag"][e_idx]
+
+        if has_flag:
+            # Highest priority threat
+            dist = 0.0
+            #dist = np.linalg.norm(enemy_pos - own_flag_pos) * 0.01
+        else:
+            # Standard threat: distance to your flag
+            dist = np.linalg.norm(enemy_pos - own_flag_pos)
+
+        if dist < best_threat_dist:
+            best_threat_dist = dist
+            best_threat = e_idx
+
+    # No enemy agents possible?
+    if best_threat is None:
+        print("Error. No best threat found.")
+        return 0.0
+
+    # Compute defensive movement reward
+    threat_pos = np.array(state["agent_position"][best_threat])
+
+    prev_dist_to_threat = np.linalg.norm(prev_position - threat_pos)
+    curr_dist_to_threat = np.linalg.norm(position - threat_pos)
+
+    print("Best Enemy is: ",best_threat, "location: ",threat_pos, "distance: ",curr_dist_to_threat, "prev_dist: ",prev_dist_to_threat)
+
+    # Reward reducing distance to the threat
+    distance_improvement = prev_dist_to_threat - curr_dist_to_threat
+
+    if distance_improvement > 0:
+        # Normalize by max speed
+        reward += (min(1.0, distance_improvement / max_speeds[0]) * 5.0)
+    else:
+        reward += distance_improvement   # penalty for moving away
+
+    # Bonus for tagging the threat
+    if (
+        state["agent_is_tagged"][best_threat] and 
+        not prev_state["agent_is_tagged"][best_threat]
+    ):
+        reward += 5.0
+
+    print("reward=",reward)
+    return reward
+

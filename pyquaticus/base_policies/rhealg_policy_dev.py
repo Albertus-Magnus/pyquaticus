@@ -16,7 +16,7 @@ from pyquaticus.base_policies.base_policy import BaseAgentPolicy
 # RHEA parameters (adjust here globally)
 rollout_actions_length = 5#100
 mutation_probability = 0.5
-num_evals = 20#100
+num_evals = 8#100
 # End of RHEA parameters
 
 class RHEA_Agent(BaseAgentPolicy):
