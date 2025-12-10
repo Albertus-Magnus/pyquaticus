@@ -571,7 +571,7 @@ def defensive_rew(
         # Normalize by max speed
         reward += (min(1.0, distance_improvement / max_speeds[0]) * 5.0)
     else:
-        reward += distance_improvement   # penalty for moving away
+        reward += distance_improvement   #penalty for moving away
 
     # Bonus for tagging the threat
     if (
