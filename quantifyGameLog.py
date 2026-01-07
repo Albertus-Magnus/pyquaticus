@@ -67,8 +67,10 @@ with open("match.log", "r") as f:
         m = flag_pattern.search(line)
         if m:
             #find current flag positions
-            blue_cords = m.group(1).split(',')
-            red_cords  = m.group(2).split(',')
+            blue_nums = m.group(1).split(',')
+            red_nums  = m.group(2).split(',')
+            blue_cords = (float(blue_nums[0]), float(blue_nums[1]))
+            red_cords  = (float(red_nums[0]),  float(red_nums[1]))
             # this should only compute if all agent positions are known
             if all(a in current_pos for a in blue_agents + red_agents):#i guess just to be safe
                 min_r_agent = -1
@@ -91,19 +93,31 @@ with open("match.log", "r") as f:
                         min_b_agent = blue_id
                         min_b_dist = dist_to_flag
 
-                min_b_dist = dist(current_pos[closest_to_r], current_pos[min_r_agent]) #set to first distance to be compared (computes twice but should be efficient enough...)
+                """ min_b_dist = dist(current_pos[closest_to_r], current_pos[min_r_agent]) #set to first distance to be compared (computes twice but should be efficient enough...)
                 for blue_id in blue_agents:
                     dist_to_agent = dist(current_pos[blue_id], current_pos[min_r_agent]) #find the closest blue agent to the "aggressive" or "dangerous" red agent
                     if(dist_to_agent < min_b_dist):
                         min_b_dist = dist_to_agent
                 #now min_b_dist is the distance from the closest blue agent to the most "aggressive" red agent.
 
-                min_r_dist = dist(current_pos[closest_to_r], current_pos[min_r_agent]) #set to first distance to be compared 
-                for blue_id in blue_agents:
-                    dist_to_agent = dist(current_pos[blue_id], current_pos[min_r_agent]) #find the closest red agent to the "aggressive" or "dangerous" blue agent
+                min_r_dist = dist(current_pos[closest_to_b], current_pos[min_b_agent]) #set to first distance to be compared 
+                for red_id in blue_agents:
+                    dist_to_agent = dist(current_pos[red_id], current_pos[min_b_agent]) #find the closest red agent to the "aggressive" or "dangerous" blue agent
                     if(dist_to_agent < min_r_dist):
-                        min_r_dist = dist_to_agent
-                #now min_r_dist is the distance from the closest red agent to the most "aggressive" blue agent.
+                        min_r_dist = dist_to_agent      #THIS CODESNIPPET WAS WRONG - probably was confused by the bad naming and convoluded blue vs red logic. Need to do some illustration in my pdf to explain this... TODO
+                #now min_r_dist is the distance from the closest red agent to the most "aggressive" blue agent. """
+                # distance from closest blue to most aggressive red #STARTOF
+                min_b_dist = float("inf")
+                for blue_id in blue_agents:
+                    d = dist(current_pos[blue_id], current_pos[min_r_agent])
+                    if d < min_b_dist:
+                        min_b_dist = d
+                # distance from closest red to most aggressive blue
+                min_r_dist = float("inf")
+                for red_id in red_agents:
+                    d = dist(current_pos[red_id], current_pos[min_b_agent])
+                    if d < min_r_dist:
+                        min_r_dist = d #ENDOF
                 
                 blue_def_dist.append(min_b_dist)
                 red_def_dist.append(min_r_dist)
