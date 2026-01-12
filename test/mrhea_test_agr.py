@@ -26,7 +26,7 @@ config_dict["max_score"] = 100
 config_dict["render_agent_ids"] = True
 config_dict["dynamics"] = ["si", "si", "si", "si", "si", "si"]
 config_dict["sim_speedup_factor"] = 3
-config_dict["default_init"] = False #random starting positions
+config_dict["default_init"] = False #random starting positions (uses seed)
 
 env = pyquaticus_v0.PyQuaticusEnv(team_size=3, config_dict=config_dict, reward_config={'agent_1': triple_aggressive_rew},
  render_mode='human')  #None)#'human')
@@ -34,10 +34,9 @@ term_g = {'agent_0':False,'agent_1':False,'agent_2':False}
 truncated_g = {'agent_0':False,'agent_1':False,'agent_2':False}
 term = term_g
 trunc = truncated_g
-
+seed = 12345 #SEED for "random" starts
 reset_opts = {'normalize_obs': False, 'normalize_state': False}
-    ###TODO somewhere here the default_init: False has to be passed (before the reset)
-obs, info = env.reset(options=reset_opts)
+obs, info = env.reset(options=reset_opts, seed=12345)
 
 temp_captures = env.state["captures"]
 temp_grabs = env.state["grabs"]
