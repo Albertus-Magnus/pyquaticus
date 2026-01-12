@@ -112,7 +112,7 @@ with open("match.log", "r") as f:
                     d = dist(current_pos[blue_id], current_pos[min_r_agent])
                     if d < min_b_dist:
                         min_b_dist = d
-                # distance from closest red to most aggressive blue
+                # distance from closest red to most aggressive blue 
                 min_r_dist = float("inf")
                 for red_id in red_agents:
                     d = dist(current_pos[red_id], current_pos[min_b_agent])
