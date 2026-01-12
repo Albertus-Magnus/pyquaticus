@@ -104,7 +104,7 @@ with open("match.log", "r") as f:
                 for red_id in blue_agents:
                     dist_to_agent = dist(current_pos[red_id], current_pos[min_b_agent]) #find the closest red agent to the "aggressive" or "dangerous" blue agent
                     if(dist_to_agent < min_r_dist):
-                        min_r_dist = dist_to_agent      #THIS CODESNIPPET WAS WRONG - probably was confused by the bad naming and convoluded blue vs red logic. Need to do some illustration in my pdf to explain this... TODO
+                        min_r_dist = dist_to_agent      #THIS CODESNIPPET WAS WRONG - probably was confused by the bad naming and convoluded blue vs red logic. TODO Need to do some illustration in my pdf to explain this...
                 #now min_r_dist is the distance from the closest red agent to the most "aggressive" blue agent. """
                 # distance from closest blue to most aggressive red #STARTOF
                 min_b_dist = float("inf")
