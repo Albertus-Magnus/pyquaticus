@@ -1,3 +1,4 @@
+from datetime import datetime
 import logging
 import sys
 import os
@@ -6,8 +7,8 @@ import pyquaticus
 import numpy # type: ignore
 from pyquaticus import pyquaticus_v0
 from pyquaticus.base_policies.base_combined import Heuristic_CTF_Agent
-from pyquaticus.base_policies.multi_rhea_policy import MRHEA_Agent, RHEA_Environment
-from pyquaticus.base_policies.rhea_policy import RHEA_Agent, RHEA_Environment
+from pyquaticus.base_policies.multi_rhea_policy import MRHEA_Agent, MRHEA_Environment
+from pyquaticus.base_policies.rhealg_policy2 import RHEA_Agent, RHEA_Environment
 from pyquaticus.base_policies.ultra_def_policy import UltraDefender
 #from pyquaticus.base_policies.rhealg_policy2 import RHEA_Agent, RHEA_Environment
 #from pyquaticus.envs.pyquaticus import Team
@@ -31,7 +32,7 @@ def setup_experiment(
     #MODE = "medium"
     #MODE = "easy"
     agent_type: int = 1,
-    # 1 is mrhea agent, 2 is ultra-defensive agent TODO add rhea plus two ultra-defensive agents TODO also add easy,medium,hard as types? maybe not...
+    # 1 is mrhea agent, 2 is rhea plus two ultra-defensive agents, 3 (or 0) is ultra-defensive agent TODO also add easy,medium,hard as types? maybe not...
     reward_choice: int = 1, #maybe could be string, but cleaner so?
     render_mode: str = 'human',
     timelimit: float = 600.,
@@ -64,10 +65,11 @@ def setup_experiment(
         filename=logname,
         filemode="w",   #"w" to overwrite, "a" to append. Does it overwrite within the loop? if so, a.
         level=logging.INFO,
-        format="%(asctime)s %(message)s"
+        format="%(asctime)s %(message)s",
+        force=True
     )
 
-    env = pyquaticus_v0.PyQuaticusEnv(team_size=3, config_dict=config_dict, reward_config={'agent_1': reward_method},
+    env = pyquaticus_v0.PyQuaticusEnv(team_size=3, action_space="continuous", config_dict=config_dict, reward_config={'agent_0': reward_method, 'agent_1': reward_method, 'agent_2': reward_method},
     render_mode=render_mode) #'human')  #None)#'human')
     term_g = {'agent_0':False,'agent_1':False,'agent_2':False}
     truncated_g = {'agent_0':False,'agent_1':False,'agent_2':False}
@@ -81,8 +83,12 @@ def setup_experiment(
     temp_grabs = env.state["grabs"]
     temp_tags = env.state["tags"]
 
-    # initialize rhea environment #TODO correct input
-    rhea_env = RHEA_Environment(env)     #(self.id, self.team, obs, info, self.teammate_ids, self.opponent_ids)
+    # initialize rhea environment 
+    if agent_type == 1:
+        rhea_env = MRHEA_Environment(env)     #(self.id, self.team, obs, info, self.teammate_ids, self.opponent_ids)
+    else:
+        # rhea and mrhea require different environments (do they rn though?)
+        rhea_env = RHEA_Environment(env)
     # give this to the agent below
 
     # Base_combine agents
@@ -92,13 +98,22 @@ def setup_experiment(
     # Ultra-defensive agents and RHEA agent
     #R_one = UltraDefender('agent_0', rhea_env, env, continuous=True) # MRHEA agent here
     if agent_type == 1:
-        R_two = RHEA_Agent('agent_1', rhea_env, env, continuous=True) # MRHEA agent here
-    else: # if agent_type == 2:
-        # Ultra-defensive agent as fallback
+        print("Setting up MRHEA agent")
+        R_two = MRHEA_Agent('agent_1', rhea_env, env, continuous=True) # MRHEA agent here
+    elif agent_type == 2:
+        print("Setting up RHEA agent")
         R_one = UltraDefender('agent_0', env, continuous=True) # MRHEA agent here
         R_two = RHEA_Agent('agent_1', rhea_env, env, continuous=True)
         R_three = UltraDefender('agent_2', env, continuous=True) # MRHEA agent here
-    #R_three = UltraDefender('agent_2', rhea_env, env, continuous=True) # MRHEA agent here
+        #R_one = UltraDefender('agent_0', env, continuous=True) #snippet from rhea_test_cap.py
+        #R_two = RHEA_Agent('agent_1', rhea_env, env, continuous=True) # RHEA agent here
+        #R_three = UltraDefender('agent_2', env, continuous=True)
+        #R_three = UltraDefender('agent_2', rhea_env, env, continuous=True) # MRHEA agent here
+    else:
+        print("Setting up Ultra-defensive agents")
+        R_one = UltraDefender('agent_0', env, continuous=True)
+        R_two = UltraDefender('agent_1', env, continuous=True)
+        R_three = UltraDefender('agent_2', env, continuous=True)
 
     step = 0
     rewardcurve = []
@@ -111,7 +126,7 @@ def setup_experiment(
         if agent_type == 1:
             # MRHEA agents
             zot = R_two.compute_action(obs, info)
-            # print("zot: ",zot) #zot is rn only one action
+            #print("zot: ",zot) #zot is rn only one action
             zero = zot[0]
             one = zot[1]
             two = zot[2]
@@ -132,7 +147,8 @@ def setup_experiment(
 
         k =  list(term.keys())
         # In order to keep the simulated environment start state up to date with the "real" one we do the step here (alternative is copying the real one at every step.)
-        R_two.rhea_env.perform_action({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three, 'agent_4':four, 'agent_5':five}, env.state)
+        if agent_type == 1 or agent_type == 2:
+            R_two.rhea_env.perform_action({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three, 'agent_4':four, 'agent_5':five}, env.state)
 
         step += 1
         if term[k[0]] == True or trunc[k[0]]==True:
@@ -151,12 +167,13 @@ def setup_experiment(
     for i in range(len(env.state["tags"])):
         temp_tags[i] += env.state["tags"][i]
 
-    print("~~~Run Concluded~~~\nreward curve: ",rewardcurve)
+    print("\n~~~Run Concluded~~~")#\nreward curve: ",rewardcurve)
+    formatted_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+    print(f" Time: {formatted_time}")
     print("agent collisions:",env.state['agent_collisions'])
     print("SCORE: ",env.state['captures'])
     print("grabs: ",env.state['grabs'])
     env.close()
-
 
 if __name__ == "__main__":
     setup_experiment(seed=12345, difficulty="hard", agent_type=1, reward_choice=1, render_mode="human", timelimit=600.)

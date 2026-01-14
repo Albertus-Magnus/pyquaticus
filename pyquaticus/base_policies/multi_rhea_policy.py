@@ -69,9 +69,9 @@ class MRHEA_Agent(BaseAgentPolicy):
 """
 This Class inherits from the Rolling Horizon Evolutionary Algorithm Environment interface.
 """
-class RHEA_Environment(Environment):
+class MRHEA_Environment(Environment):
     
-    def __init__(self, env):#agent_id, team, obs, info):
+    def __init__(self, env, reward_choice):#agent_id, team, obs, info):
         # self.agent_id = agent_id #old stuff, delete later?
         # self.team = team
         # self.obs = obs
@@ -84,7 +84,12 @@ class RHEA_Environment(Environment):
         config_dict["dynamics"] = ["si", "si", "si", "si", "si", "si"]
         config_dict["sim_speedup_factor"] = 3
 
-        self.env = pyquaticus_v0.PyQuaticusEnv(team_size=3, config_dict=config_dict, reward_config={'agent_1': triple_aggressive_rew},render_mode=None)
+        # Reward has to be passed down for the internal env copy
+        if reward_choice == 1:
+            reward_method = triple_aggressive_rew
+        else:
+            reward_method = triple_caps_and_grabs
+        self.env = pyquaticus_v0.PyQuaticusEnv(team_size=3, config_dict=config_dict, reward_config={'agent_1': reward_method},render_mode=None)
         # term_g = {'agent_0':False,'agent_1':False,'agent_2':False}
         # truncated_g = {'agent_0':False,'agent_1':False,'agent_2':False}
         # term = term_g
@@ -105,6 +110,14 @@ class RHEA_Environment(Environment):
         # add a none action
         self.action_map.append([0.0, 0])
         # End of action_map
+
+        """ #TODO correct action_map. Consider below further processing of the action map for discrete actions:
+        # Setup action and observation spaces
+        self.discrete_action_map = [[spd, hdg] for (spd, hdg) in ACTION_MAP]
+        self.act_space_str = self.multiagent_var(action_space, dict, "action_space")
+        self.action_spaces = {agent_id: self.get_agent_action_space(self.act_space_str[agent_id], i) for i, agent_id in enumerate(self.players)}
+        self.act_space_checked = {agent_id: False for agent_id in self.players}
+        self.act_space_match = {agent_id: True for agent_id in self.players} """
 
         # temp_captures = env.state["captures"]
         # temp_grabs = env.state["grabs"]
