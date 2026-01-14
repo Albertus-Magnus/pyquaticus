@@ -168,7 +168,7 @@
 ##############GOODSCATTERPLOT
 
 import re
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt # type: ignore
 from collections import defaultdict
 
 # Regex patterns
@@ -199,7 +199,7 @@ with open("match.log", "r") as f:
             agent_id = int(m.group(1))
             is_tagged = (m.group(2) == "True")
 
-            # Detect False → True transition
+            # Detect False -> True transition
             if (not prev_tag_state[agent_id]) and is_tagged:
                 if agent_id in current_pos:
                     tag_positions[agent_id].append(current_pos[agent_id])

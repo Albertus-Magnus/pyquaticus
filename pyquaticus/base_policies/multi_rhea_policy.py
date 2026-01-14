@@ -19,7 +19,7 @@ mutation_probability = 0.5
 num_evals = 12#100
 # End of RHEA parameters
 
-class RHEA_Agent(BaseAgentPolicy):
+class MRHEA_Agent(BaseAgentPolicy):
     """
     Copied from BaseAgentPolics and modified to implement RHEA agent.
     """
