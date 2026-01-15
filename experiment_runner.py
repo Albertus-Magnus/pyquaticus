@@ -1,3 +1,4 @@
+from multiprocessing import Pool
 import os
 import numpy as np # type: ignore
 import random
@@ -20,6 +21,20 @@ def create_experiment_directory():
     
     return experiment_dir
 
+def run_single_experiment(args):
+    seed, difficulty, agent_type, reward_choice, timelimit, logname = args
+    print(f"Running agent_type{agent_type}_diff{difficulty}_seed{seed}_reward{reward_choice}")
+    setup_experiment(
+                        seed=seed,
+                        difficulty=difficulty,
+                        agent_type=agent_type,
+                        reward_choice=reward_choice,
+                        render_mode=None,
+                        timelimit=timelimit,
+                        logname=logname
+                    )
+    print(f"Finished running agent_type{agent_type}_diff{difficulty}_seed{seed}_reward{reward_choice}")
+
 def run_experiments():
     # Create experiment directory
     experiment_dir = create_experiment_directory()
@@ -41,10 +56,14 @@ def run_experiments():
     # Reward choices to test
     reward_choices = [1, 2]
     #1 is triple_aggressive_rew, 2 is triple_caps_and_grabs
+
+    # Initalize for parallel processing
+    jobs = []
     
     # Loops to run experiments
     for agent_type in agent_types:
-        if agent_type == 0 or False:
+        if agent_type == 0 and False: 
+            #ATTENTION: only turn this on for debugging when avoiding the ultra-defensive agent runs
             continue
         print(f"\n{'='*20} AGENT TYPE {agent_type} {'='*20}")
         
@@ -61,7 +80,7 @@ def run_experiments():
                         experiment_dir, 
                         f"agent_type{agent_type}_diff{difficulty}_seed{seed}_reward{reward_choice}.log"
                     )
-                    #print("label 12")
+                    """ # Run the experiment
                     setup_experiment(
                         seed=seed,
                         difficulty=difficulty,
@@ -70,7 +89,13 @@ def run_experiments():
                         render_mode=None,# "human", # None,# "human", # None,# "human", # None,# "human", # None,# "human", # None,# "human", # None,# "human", # 
                         timelimit=MAXTIME,
                         logname=logname
-                    )
+                    ) """
+                    # Parallelize the experiment (setup a list of executions to run below)
+                    jobs.append((seed, difficulty, agent_type,  reward_choice, MAXTIME, logname))
+    workers = max(1, os.cpu_count() - 1)
+    print(f"Running {len(jobs)} experiments using {workers} processes")
+    with Pool(processes=workers) as pool:
+        pool.map(run_single_experiment, jobs)
 
 # Run the experiments when the script is executed
 if __name__ == "__main__":
