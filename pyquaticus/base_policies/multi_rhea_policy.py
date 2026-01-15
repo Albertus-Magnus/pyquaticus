@@ -71,7 +71,7 @@ This Class inherits from the Rolling Horizon Evolutionary Algorithm Environment 
 """
 class MRHEA_Environment(Environment):
     
-    def __init__(self, env, reward_choice):#agent_id, team, obs, info):
+    def __init__(self, reward_choice):#agent_id, team, obs, info):
         # self.agent_id = agent_id #old stuff, delete later?
         # self.team = team
         # self.obs = obs

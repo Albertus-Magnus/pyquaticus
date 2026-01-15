@@ -85,10 +85,10 @@ def setup_experiment(
 
     # initialize rhea environment 
     if agent_type == 1:
-        rhea_env = MRHEA_Environment(env)     #(self.id, self.team, obs, info, self.teammate_ids, self.opponent_ids)
+        rhea_env = MRHEA_Environment(reward_choice)     #(self.id, self.team, obs, info, self.teammate_ids, self.opponent_ids)
     else:
         # rhea and mrhea require different environments (do they rn though?)
-        rhea_env = RHEA_Environment(env)
+        rhea_env = RHEA_Environment(reward_choice)
     # give this to the agent below
 
     # Base_combine agents

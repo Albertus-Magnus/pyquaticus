@@ -5,7 +5,7 @@ from datetime import datetime
 from test.magnus_test import setup_experiment
 
 REPETITIONS = 5
-MAXTIME = 120.0 #600.0 is standard, currently set for quicker tests
+MAXTIME = 600.0 #600.0 is standard, currently set for quicker tests
 
 # Create a base results directory with timestamp
 def create_experiment_directory():
@@ -44,7 +44,7 @@ def run_experiments():
     
     # Loops to run experiments
     for agent_type in agent_types:
-        if agent_type == 0 and False:
+        if agent_type == 0 or False:
             continue
         print(f"\n{'='*20} AGENT TYPE {agent_type} {'='*20}")
         
@@ -67,7 +67,7 @@ def run_experiments():
                         difficulty=difficulty,
                         agent_type=agent_type,
                         reward_choice=reward_choice,
-                        render_mode=None,# "human", # None,# "human", # None,# "human", # None,# "human", # None,# "human", # None,# "human", # None,# "human", # None,# "human", # 
+                        render_mode=None,# "human", # None,# "human", # None,# "human", # None,# "human", # None,# "human", # None,# "human", # None,# "human", # 
                         timelimit=MAXTIME,
                         logname=logname
                     )

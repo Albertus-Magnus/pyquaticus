@@ -85,7 +85,7 @@ This Class inherits from the Rolling Horizon Evolutionary Algorithm Environment 
 """
 class RHEA_Environment(Environment):
     
-    def __init__(self, env):#agent_id, team, obs, info):
+    def __init__(self, reward_choice):#agent_id, team, obs, info):
         # self.agent_id = agent_id #old stuff, delete later?
         # self.team = team
         # self.obs = obs
@@ -98,7 +98,13 @@ class RHEA_Environment(Environment):
         config_dict["dynamics"] = ["si", "si", "si", "si", "si", "si"]
         config_dict["sim_speedup_factor"] = 3
 
-        self.env = pyquaticus_v0.PyQuaticusEnv(team_size=3, config_dict=config_dict, reward_config={'agent_1': caps_and_grabs},render_mode=None)
+        # Reward has to be passed down for the internal env copy
+        if reward_choice == 1:
+            reward_method = aggressive_rew
+        else:
+            reward_method = caps_and_grabs
+
+        self.env = pyquaticus_v0.PyQuaticusEnv(team_size=3, config_dict=config_dict, reward_config={'agent_1': reward_method},render_mode=None)
         # The following line assumes the env is brand new and also just reset.
         reset_opts = {'normalize_obs': False, 'normalize_state': False}
         #obs, info = 
