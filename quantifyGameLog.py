@@ -6,7 +6,7 @@ import re
 import numpy as np
 import matplotlib.pyplot as plt
 from collections import defaultdict
-import statistics
+#import statistics
 
 # Regex patterns
 pos_pattern = re.compile(
