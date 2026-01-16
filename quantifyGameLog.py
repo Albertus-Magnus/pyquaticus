@@ -1,5 +1,4 @@
 import re
-#import matplotlib.pyplot as plt
 from collections import defaultdict
 import math
 import os
