@@ -1,12 +1,17 @@
-from multiprocessing import Pool
+from multiprocessing import Pool, Value, Lock
 import os
 import numpy as np # type: ignore
 import random
 from datetime import datetime
 from test.magnus_test import setup_experiment
 
-REPETITIONS = 5
+REPETITIONS = 50 #600.0 is standard, currently set for extensive experiments
 MAXTIME = 600.0 #600.0 is standard, currently set for quicker tests
+
+PARALLEL = True
+
+counter = Value('i', 0)
+lock = Lock()
 
 # Create a base results directory with timestamp
 def create_experiment_directory():
@@ -22,7 +27,7 @@ def create_experiment_directory():
     return experiment_dir
 
 def run_single_experiment(args):
-    seed, difficulty, agent_type, reward_choice, timelimit, logname = args
+    seed, difficulty, agent_type, reward_choice, timelimit, logname, number_jobs = args
     print(f"Running agent_type{agent_type}_diff{difficulty}_seed{seed}_reward{reward_choice}")
     setup_experiment(
                         seed=seed,
@@ -34,6 +39,9 @@ def run_single_experiment(args):
                         logname=logname
                     )
     print(f"Finished running agent_type{agent_type}_diff{difficulty}_seed{seed}_reward{reward_choice}")
+    with lock:
+        counter.value += 1
+        print(f"Concluded experiment {counter.value} out of {number_jobs}")
 
 def run_experiments():
     # Create experiment directory
@@ -80,26 +88,36 @@ def run_experiments():
                         experiment_dir, 
                         f"agent_type{agent_type}_diff{difficulty}_seed{seed}_reward{reward_choice}.log"
                     )
-                    """ # Run the experiment
-                    setup_experiment(
-                        seed=seed,
-                        difficulty=difficulty,
-                        agent_type=agent_type,
-                        reward_choice=reward_choice,
-                        render_mode=None,# "human", # None,# "human", # None,# "human", # None,# "human", # None,# "human", # None,# "human", # None,# "human", # 
-                        timelimit=MAXTIME,
-                        logname=logname
-                    ) """
-                    # Parallelize the experiment (setup a list of executions to run below)
-                    jobs.append((seed, difficulty, agent_type,  reward_choice, MAXTIME, logname))
-    workers = max(1, os.cpu_count() - 1)
-    print(f"Running {len(jobs)} experiments using {workers} processes")
-    with Pool(processes=workers) as pool:
-        pool.map(run_single_experiment, jobs)
+                    if not PARALLEL:
+                        # Run the experiment
+                        setup_experiment(
+                            seed=seed,
+                            difficulty=difficulty,
+                            agent_type=agent_type,
+                            reward_choice=reward_choice,
+                            render_mode=None,# "human", # None,# "human", # None,# "human", # None,# "human", # None,# "human", # None,# "human", # None,# "human", # 
+                            timelimit=MAXTIME,
+                            logname=logname
+                        )
+                        with lock:
+                            counter.value += 1
+                            print(f"Concluded experiment {counter.value} out of {REPETITIONS*3*5} (approximately?)")
+                    else:
+                        # Parallelize the experiment (setup a list of executions to run below)
+                        jobs.append((seed, difficulty, agent_type,  reward_choice, MAXTIME, logname))
+    if PARALLEL:
+        # Parallelize the experiment (run the list of executions)
+        workers = max(1, os.cpu_count() - 1)
+        t_r_num = len(jobs)
+        jobs = [job + (t_r_num,) for job in jobs]  
+        # Append total number of jobs to each job tuple
+        print(f"Running {len(jobs)} experiments using {workers} processes")
+        with Pool(processes=workers) as pool:
+            pool.map(run_single_experiment, jobs)
 
 # Run the experiments when the script is executed
 if __name__ == "__main__":
     #print("Beginning experiment runs at time ", os.times())
     formatted_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
-    print(f"~Beginning experiment_runner at time: {formatted_time}~")
+    print(f"~Launching experiment_runner at time: {formatted_time}~")
     run_experiments()

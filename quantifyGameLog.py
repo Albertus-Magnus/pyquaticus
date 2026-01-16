@@ -485,5 +485,5 @@ def graphicmaker(foldername):
 ##############################
 if __name__ == "__main__":
     #analyze_log("match.log")
-    graphicmaker("experiment_results/experiment_20260114_111745/")
+    graphicmaker("experiment_results/experiment_20260115_215621/")
 ##############################
