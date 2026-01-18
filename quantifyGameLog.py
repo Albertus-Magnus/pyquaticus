@@ -3,10 +3,13 @@ from collections import defaultdict
 import math
 import os
 import re
+from matplotlib.colors import LinearSegmentedColormap
 import numpy as np
 import matplotlib.pyplot as plt
 from collections import defaultdict
 #import statistics
+
+BINS = 300
 
 # Regex patterns
 pos_pattern = re.compile(
@@ -203,15 +206,7 @@ def analyze_log(log_address):
     res['blue_positions'] = blue_positions
     res['red_positions']  = red_positions
 
-
     return res
-
-#def graphicmaker(foldername):
-    """
-    For every file in the given folder we compute the analysis and plot the average of all seeds for every agent type, difficulty and reward choice
-    Graphs are plot showing all the averages (labled according to agent type, difficulty, reward choice
-    example expected filename: agent_type0_diffmedium_seed7935_reward1.log
-    """
 
 def graphicmaker(foldername):
     """v1
@@ -376,22 +371,35 @@ def graphicmaker(foldername):
             c = sum(idxs) / len(idxs)
             ax.text(c, y, f"agent_type {atype}", ha="center", va="bottom", fontsize=10, fontweight="bold")
 
-    def plot_heatmap(positions, title, filename, bins=50):
+    def plot_heatmap(positions, title, filename, bins=BINS, cmap="hot"):#bins=50?
         if not positions:
             return
 
         xs = [p[0] for p in positions]
         ys = [p[1] for p in positions]
 
-        fig, ax = plt.subplots(figsize=(6, 5))
+        fig, ax = plt.subplots(figsize=(20, 10))
+        ax.set_facecolor('black')
 
-        h = ax.hist2d(xs, ys, bins=bins, cmap="hot")
+        h = ax.hist2d(xs, ys, bins=bins, cmap=cmap)
         plt.colorbar(h[3], ax=ax)
 
         ax.set_title(title)
         ax.set_xlabel("X")
         ax.set_ylabel("Y")
 
+        # Set fixed display area
+        ax.set_xlim(0, 160)
+        ax.set_ylim(0, 80)
+
+        #fig, ax = plt.subplots(figsize=(6, 1))
+
+        # Add border lines
+        ax.axhline(y=0, color='green', linestyle='-', linewidth=3)
+        ax.axhline(y=80, color='green', linestyle='-', linewidth=3)
+        ax.axvline(x=0, color='green', linestyle='-', linewidth=3)
+        ax.axvline(x=80, color='green', linestyle='-', linewidth=1)#middle line
+        ax.axvline(x=160, color='green', linestyle='-', linewidth=3)
         plt.tight_layout()
         plt.savefig(os.path.join(plotdir, filename))
         plt.close(fig)
@@ -437,20 +445,30 @@ def graphicmaker(foldername):
     # Heatmaps per experiment configuration
     for key in sorted_keys:
         atype, diff, reward = key
-        label = f"type{atype}_{diff}_r{reward}"
+        if atype == '0' or atype == 0: 
+            atype = "Ultra-defensive"
+        elif atype == '1' or atype == 1: 
+            atype = "MRHEA"
+        elif atype == '2' or atype == 2: 
+            atype = "RHEA"
+        label = f"{atype} vs {diff}, using reward {reward}" #TODO is this label OK? could be more natural language, but as long as i describe the labels might be fine...
 
-        pos = group_positions[key]
+        pos = group_positions[key] #TODO unmoving agents need to be excluded from heatmap.
 
         plot_heatmap(
             pos["blue"],
-            title=f"Blue heatmap — {label}",
-            filename=f"heatmap_blue_{label}.png"
+            title=f"Blue team positions - {label}",
+            filename=f"heatmap_blue_{label}.png",
+            #cmap="Berlin"
+            cmap = LinearSegmentedColormap.from_list('custom_heatmap', ['black', 'blue', 'cyan', 'white'], N=256) # blue coloring has to be adjusted like this for visibility. red was simpler...
         )
 
         plot_heatmap(
             pos["red"],
-            title=f"Red heatmap — {label}",
-            filename=f"heatmap_red_{label}.png"
+            title=f"Red team positions - {label}",
+            filename=f"heatmap_red_{label}.png",
+            #cmap="hot"
+            cmap = LinearSegmentedColormap.from_list('custom_heatmap', ['black', 'red', 'yellow', 'white'], N=256) #hot worked fine, but background black is beter for consistency
         )
 
 
@@ -485,5 +503,5 @@ def graphicmaker(foldername):
 ##############################
 if __name__ == "__main__":
     #analyze_log("match.log")
-    graphicmaker("experiment_results/experiment_20260115_215621/")
+    graphicmaker("experiment_results/experiment_5rep_600sec/")
 ##############################
