@@ -7,7 +7,7 @@ from matplotlib.colors import LinearSegmentedColormap
 import numpy as np
 import matplotlib.pyplot as plt
 from collections import defaultdict
-#import statistics
+import statistics
 
 BINS = 300
 
@@ -273,18 +273,6 @@ def graphicmaker(foldername):
         avg = dict()
         # gather all metrics present in at least one result
         metrics = set().union(*[set(r.keys()) for r in res_list])
-        '''for metric in metrics:
-            vals = [r[metric] for r in res_list if metric in r and r[metric] is not None]
-            if vals:
-                # numeric average
-                try:
-                    avg_val = float(sum(vals)) / len(vals)
-                except Exception:
-                    # fallback to statistics.mean for robustness
-                    avg_val = statistics.mean(vals)
-            else:
-                avg_val = None
-            avg[metric] = avg_val'''
         for metric in metrics:
             vals = [r[metric] for r in res_list if metric in r and r[metric] is not None]
 
@@ -294,7 +282,11 @@ def graphicmaker(foldername):
 
             # Only average numeric values
             if isinstance(vals[0], (int, float)):
-                avg[metric] = float(sum(vals)) / len(vals)
+                if metric in ['blue_total_dist', 'red_total_dist']:
+                    avg[metric] = float(sum(vals)) / len(vals)  # average for bar plots
+                    avg[metric + '_list'] = vals  # list for box plots
+                else:
+                    avg[metric] = float(sum(vals)) / len(vals)
             else:
                 # Non-numeric (e.g., position lists) -> do not average
                 avg[metric] = None
@@ -404,6 +396,36 @@ def graphicmaker(foldername):
         plt.savefig(os.path.join(plotdir, filename))
         plt.close(fig)
 
+    def plot_box(metric_blue, metric_red, title, ylabel, filename):
+        data_blue = [averaged[k][metric_blue + '_list'] for k in sorted_keys if averaged[k][metric_blue + '_list']]
+        data_red = [averaged[k][metric_red + '_list'] for k in sorted_keys if averaged[k][metric_red + '_list']]
+
+        fig, ax = plt.subplots(figsize=(max(8, len(sorted_keys)*0.7), 5))
+
+        # Positions for boxes (blue on left, red on right for each group)
+        positions_blue = [i * 2 for i in range(len(sorted_keys))]
+        positions_red = [i * 2 + 1 for i in range(len(sorted_keys))]
+
+        if data_blue:
+            ax.boxplot(data_blue, positions=positions_blue, patch_artist=True, 
+                       boxprops=dict(facecolor='tab:blue'), widths=0.6)
+        if data_red:
+            ax.boxplot(data_red, positions=positions_red, patch_artist=True, 
+                       boxprops=dict(facecolor='tab:red'), widths=0.6)
+
+        ax.set_xticks([i * 2 + 0.5 for i in range(len(sorted_keys))])
+        ax.set_xticklabels(labels, rotation=45, ha="right")
+        ax.set_ylabel(ylabel)
+        ax.set_title(title)
+
+        # Add separators and group headers
+        add_group_separators(ax, sorted_keys, labels)
+
+        plt.tight_layout()
+        outfile = os.path.join(plotdir, filename)
+        plt.savefig(outfile)
+        plt.close(fig)
+
     # END OF HELPERS
 
 
@@ -434,12 +456,20 @@ def graphicmaker(foldername):
         filename="def_avg_dist_blue_vs_red.png"
     )
 
-    # Team total distances (instead of Per-agent distances plot)
-    plot_pairs(
+    # Team total distances (changed to candlestick figure)
+    plot_box(
         "blue_total_dist", "red_total_dist",
         title="Total Distance Traveled (Blue vs Red)",
         ylabel="distance",
         filename="total_dist_blue_vs_red.png"
+    )
+    # changed back to bar plot
+    # TODO add standard deviation
+    plot_pairs(
+        "blue_total_dist", "red_total_dist",
+        title="Total Distance Traveled (Blue vs Red)",
+        ylabel="distance",
+        filename="total_dist.png"
     )
 
     # Heatmaps per experiment configuration
@@ -488,7 +518,9 @@ def graphicmaker(foldername):
             row = [atype, diff, reward]
             for mc in metric_columns:
                 val = averaged[key].get(mc, "")
-                row.append("" if val is None else val)
+                if isinstance(val, list):
+                    val = float(sum(val)) / len(val) if val else ""
+                row.append("" if val is None or val == "" else val)
             writer.writerow(row)
 
     # Optionally print summary of what was done (kept minimal)
@@ -503,5 +535,6 @@ def graphicmaker(foldername):
 ##############################
 if __name__ == "__main__":
     #analyze_log("match.log")
-    graphicmaker("experiment_results/experiment_5rep_600sec/")
+    #graphicmaker("experiment_results/experiment_5rep_600sec/")
+    graphicmaker("experiment_results/experiment_20260115_215357onesec")
 ##############################
