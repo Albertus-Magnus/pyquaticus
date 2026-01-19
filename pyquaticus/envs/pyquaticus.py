@@ -187,6 +187,8 @@ class PyQuaticusEnvBase(ParallelEnv, ABC):
         if seed is not None:
             random.seed(seed)
             self._np_random, self._np_random_seed = seeding.np_random(seed)
+            # Ensure numpy global RNG is seeded because code uses np.random.* a bunch of times
+            np.random.seed(int(self._np_random_seed))
 
     def _to_speed_heading(self, raw_action, player, act_space_match, act_space_str):
         """

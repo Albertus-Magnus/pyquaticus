@@ -329,7 +329,7 @@ def graphicmaker(foldername):
         ax.set_xticks(x)
         ax.set_xticklabels(labels, rotation=45, ha="right")
         ax.set_ylabel(ylabel)
-        ax.set_title(title)
+        ax.set_title(title, pad=18)
         ax.legend()
 
         # Add separators and group headers
@@ -536,5 +536,5 @@ def graphicmaker(foldername):
 if __name__ == "__main__":
     #analyze_log("match.log")
     #graphicmaker("experiment_results/experiment_5rep_600sec/")
-    graphicmaker("experiment_results/experiment_20260115_215357onesec")
+    graphicmaker("experiment_results/experiment_1min_5rep_laptop/")
 ##############################

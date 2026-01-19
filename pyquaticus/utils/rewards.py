@@ -469,21 +469,26 @@ def triple_caps_and_grabs(
     prev_num_oob3 = prev_state['agent_oob'][agent_id3]
     num_oob3 = state['agent_oob'][agent_id3]
     if num_oob1 > prev_num_oob1:
-        reward += -5.0
+        reward += -5000000.0
     if num_oob2 > prev_num_oob2:
-        reward += -5.0
+        reward += -5000000.0
     if num_oob3 > prev_num_oob3:
-        reward += -5.0
+        reward += -5000000.0
+    for agent_id in [agent_id1, agent_id2, agent_id3]:
+        position1 = np.array(state['agent_position'][agent_id])
+        # Slowly start punishing if close to out of bounds: (hardcoded for the left side currently)
+        if position1[0] > 155.0 or position1[1] > 75.0 or position1[0] < 5.0 or position1[1] < 5.0:
+            reward += -5000.0
     for t in [0,1]:
         prev_num_grabs = prev_state['grabs'][t]
         num_grabs = state['grabs'][t]
         if num_grabs > prev_num_grabs:
-            reward += 0.25 if t == team else -0.25
+            reward += 250.0 if t == team else -250.0
 
         prev_num_caps = prev_state['captures'][t]
         num_caps = state['captures'][t]
         if num_caps > prev_num_caps:
-            reward += 1.0 if t == team else -1.0
+            reward += 1000.0 if t == team else -1000.0
 
     return reward
 
