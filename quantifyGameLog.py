@@ -37,7 +37,7 @@ def analyze_log(log_address):
     red_positions  = []  # list of (x,y)
 
     # Track last-known positions and tag states
-    current_pos = {}                    # agent_id -> (x, y)
+    current_pos = {}                  
     prev_tag_state = defaultdict(lambda: False) #dictionary because more than one agent is tracked
     #prev_pos = defaultdict(lambda: [0.,0.])
     prev_pos = {}
