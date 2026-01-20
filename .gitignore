@@ -13,6 +13,7 @@ _version.py
 *.mp4
 *.avi
 __mapcache__/
+*.csv
 *.log
 rhea_test*.log
 ultra_def_test*.log
