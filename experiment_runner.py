@@ -5,8 +5,8 @@ import random
 from datetime import datetime
 from test.magnus_test import setup_experiment
 
-REPETITIONS = 5 #600.0 is standard, currently set for extensive experiments
-MAXTIME = 60.0 #600.0 is standard, currently set for quicker tests
+REPETITIONS = 50 #5 is standard, currently set for extensive experiments
+MAXTIME = 600.0 #600.0 is standard, currently set for quicker tests
 
 PARALLEL = True
 

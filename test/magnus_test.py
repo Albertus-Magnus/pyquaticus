@@ -176,4 +176,4 @@ def setup_experiment(
     env.close()
 
 if __name__ == "__main__":
-    setup_experiment(seed=5810, difficulty="medium", agent_type=1, reward_choice=2, render_mode="human", timelimit=600.)
+    setup_experiment(seed=5810, difficulty="hard", agent_type=1, reward_choice=1, render_mode="human", timelimit=600.)
