@@ -101,7 +101,7 @@ def run_experiments():
                         )
                         with lock:
                             counter.value += 1
-                            print(f"Concluded experiment {counter.value} out of {REPETITIONS*3*5} (approximately?)")
+                            print(f"Concluded experiment {counter.value} out of {REPETITIONS*3*5} (approximately)")
                     else:
                         # Parallelize the experiment (setup a list of executions to run below)
                         jobs.append((seed, difficulty, agent_type,  reward_choice, MAXTIME, logname))
