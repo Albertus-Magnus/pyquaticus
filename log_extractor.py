@@ -1,8 +1,11 @@
 import re
 import os
-import csv
+import json
 import math
 from collections import defaultdict
+
+#FOLDER = "experiment_results/experiment_5rep_600sec/"
+FOLDER = "experiment_results/experiment_20260119_600s_50r/"
 
 # Regex patterns (for extracting data from the logfiles)
 pos_pattern = re.compile(
@@ -190,20 +193,20 @@ def analyze_single_log(log_address):
     red_def_dist_norm  = red_def_dist_avg  / max_dist * 0.5
     blue_agr_dist_norm = blue_agr_dist_avg / max_dist * 0.5
     red_agr_dist_norm  = red_agr_dist_avg  / max_dist * 0.5
-    blue_agr_avg_dist = blue_def_dist_norm + blue_agr_dist_norm
-    red_agr_avg_dist  = red_def_dist_norm  + red_agr_dist_norm
+    blue_agrdef_dist = blue_def_dist_norm + blue_agr_dist_norm
+    red_agrdef_dist  = red_def_dist_norm  + red_agr_dist_norm
 
     # Some more calculations but here because output is printed
     blue_total_dist = 0.0
     red_total_dist = 0.0
     for a in blue_agents + red_agents:
-        print(f"Agent {a} distance traveled: {sum_distances[a]}")
+        #print(f"Agent {a} distance traveled: {sum_distances[a]}")
         if a in blue_agents:
             blue_total_dist += sum_distances[a]
         elif a in red_agents:
             red_total_dist += sum_distances[a]
-    print("Blue Team total distance traveled: ", blue_total_dist)   
-    print("Red Team total distance traveled: ", red_total_dist)
+    #print("Blue Team total distance traveled: ", blue_total_dist)   
+    #print("Red Team total distance traveled: ", red_total_dist)
     
     # Prepare results dictionary
     res = dict()
@@ -213,10 +216,10 @@ def analyze_single_log(log_address):
     res['red_score_per_tag'] = red_score_per_tag
     res['blue_def_avg_dist'] = blue_def_dist_avg
     res['red_def_avg_dist'] = red_def_dist_avg
-    res['blue_agr_avg_dist'] = blue_agr_avg_dist
-    res['red_agr_avg_dist'] = red_agr_avg_dist
-    res['blue_defagr_dist'] = (blue_agr_dist_norm + blue_def_dist_norm) #smaller is better, expected between [0, 1]
-    res['red_defagr_dist'] = (red_agr_dist_norm + red_def_dist_norm)
+    res['blue_agr_avg_dist'] = blue_agr_dist_norm
+    res['red_agr_avg_dist'] = red_agr_dist_norm
+    res['blue_defagr_dist'] = blue_agrdef_dist#(blue_agr_dist_norm + blue_def_dist_norm) #smaller is better, expected between [0, 1]
+    res['red_defagr_dist'] = red_agrdef_dist#(red_agr_dist_norm + red_def_dist_norm)
     res['blue_total_dist'] = blue_total_dist
     res['red_total_dist'] = red_total_dist
     # save all positions (for heatmap)
@@ -264,39 +267,43 @@ def analyze_log(log_address):
         'blue_total_dist', 'red_total_dist'
     ]
 
-    csv_path = os.path.join(log_address, 'extracted_data.csv')
-    with open(csv_path, 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile)
-        header = ['agent_type', 'difficulty', 'seed', 'reward'] + metric_keys + ['blue_positions', 'red_positions', 'tag_positions']
-        writer.writerow(header)
+    json_path = os.path.join(log_address, 'extracted_data.json')
+    data = []
 
-        for fn in sorted(os.listdir(log_address)):
-            m = filename_re.match(fn)
-            if not m:
-                continue
-            atype = m.group('atype')
-            diff = m.group('diff')
-            seed = m.group('seed')
-            reward = m.group('reward')
-            filepath = os.path.join(log_address, fn)
-            try:
-                res = analyze_single_log(filepath)
-            except Exception as e:
-                print(f"Error processing {fn}: {e}")
-                continue
-            # rez now contains the dictionary that is stored in the csv (one logfile, ergo one row)
-            row = [atype, diff, seed, reward]
-            for key in metric_keys:
-                row.append(res.get(key, ''))
-            row.append(str(res['blue_positions'])) #list of (x,y)
-            row.append(str(res['red_positions']))
-            row.append(str(res['tag_positions'])) #dictionary of agent_id to list of (tag-)positions
-            writer.writerow(row)
+    for fn in sorted(os.listdir(log_address)):
+        m = filename_re.match(fn)
+        if not m:
+            continue
+        atype = m.group('atype')
+        diff = m.group('diff')
+        seed = m.group('seed')
+        reward = m.group('reward')
+        filepath = os.path.join(log_address, fn)
+        try:
+            res = analyze_single_log(filepath)
+        except Exception as e:
+            print(f"Error processing {fn}: {e}")
+            continue
+        entry = {
+            'agent_type': atype,
+            'difficulty': diff,
+            'seed': seed,
+            'reward': reward
+        }
+        for key in metric_keys:
+            entry[key] = res.get(key, '')
+        entry['blue_positions'] = res['blue_positions']
+        entry['red_positions'] = res['red_positions']
+        entry['tag_positions'] = res['tag_positions']
+        data.append(entry)
 
-    print(f"Data extracted and saved to {csv_path}")
+    with open(json_path, 'w') as jf:
+        json.dump(data, jf, indent=2)
+
+    print(f"Data extracted and saved to {json_path}")
 # End of analyze_log()
 
 
 if __name__ == "__main__":
     #analyze_log("experiment_results/experiment_5rep_600sec/")
-    analyze_log("experiment_results/experiment_5rep_600sec/")
+    analyze_log(FOLDER)

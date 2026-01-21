@@ -8,302 +8,118 @@ import numpy as np
 import matplotlib.pyplot as plt
 from collections import defaultdict
 import statistics
+import json
+
+FOLDER = "exprimenet_results/experiment_20260119_600s_50r/"
+#FOLDER = "experiment_results/experiment_5rep_600sec/"
 
 BINS = 300
-
-# Regex patterns
-pos_pattern = re.compile(
-    r"\('agent_(\d+)', 'pos'\)\s*:\s*array\(\s*\[([^\]]+)\]\s*\)"
-)
-tag_pattern = re.compile(
-    r"\('agent_(\d+)', 'is_tagged'\)\s*:\s*(True|False)"
-)
-score_pattern = re.compile(
-    r"'blue_team_score':\s*(\d+),\s*'red_team_score':\s*(\d+)" #matches 'blue_team_score': 0, 'red_team_score': 0
-)
-flag_pattern = re.compile(
-    r"'blue_flag_pos'\s*:\s*array\(\s*\[([^\]]+)\]\s*\)\s*,\s*'red_flag_pos'\s*:\s*array\(\s*\[([^\]]+)\]\s*\)" #matches 'blue_flag_pos': array([20., 40.]), 'red_flag_pos': array([140., 40.])
-)
+#number of bins for heatmaps
+TAGBINS = 50
+#number of bins for heatmaps
 
 blue_agents = [0, 1, 2]
 red_agents  = [3, 4, 5]
 
-def dist(a, b):
-    return math.hypot(a[0] - b[0], a[1] - b[1])
-
-def analyze_log(log_address):
-    # collect all positions for heatmap
-    blue_positions = []  # list of (x,y)
-    red_positions  = []  # list of (x,y)
-
-    # Track last-known positions and tag states
-    current_pos = {}                  
-    prev_tag_state = defaultdict(lambda: False) #dictionary because more than one agent is tracked
-    #prev_pos = defaultdict(lambda: [0.,0.])
-    prev_pos = {}
-    tag_positions = defaultdict(list)   # agent_id -> [(x, y), ...]
-    bluescore = 0
-    redscore = 0
-    blue_def_dist = []
-    red_def_dist = []
-    sum_distances = defaultdict(lambda: 0.)
-    for a in blue_agents + red_agents:
-        sum_distances[a] = 0. #is a dictionary efficient enough here? ...probably
-
-    with open(log_address, "r") as f:
-        for line in f:
-
-            # Position updates
-            for m in pos_pattern.finditer(line):
-                agent_id = int(m.group(1))
-                nums = m.group(2).split(',')
-                x, y = float(nums[0]), float(nums[1])
-
-                #current_pos[agent_id] = (x, y)
-                # Update distance counter and afterwards prev_pos value:
-                #sum_distances[agent_id] += dist(prev_pos[agent_id], current_pos[agent_id])
-                new_pos = (x, y)
-                if agent_id in prev_pos:   # only accumulate after first real position
-                    sum_distances[agent_id] += dist(prev_pos[agent_id], new_pos)
-
-                prev_pos[agent_id] = new_pos
-                current_pos[agent_id] = new_pos
-                # collect all positions for heatmap
-                if agent_id in blue_agents:
-                    blue_positions.append(new_pos)
-                elif agent_id in red_agents:
-                    red_positions.append(new_pos)
-
-            # Tag updates
-            for m in tag_pattern.finditer(line):
-                agent_id = int(m.group(1))
-                is_tagged = (m.group(2) == "True")
-
-                # Detect False to True transition
-                if (not prev_tag_state[agent_id]) and is_tagged and agent_id in current_pos:
-                        tag_positions[agent_id].append(current_pos[agent_id])
-
-                prev_tag_state[agent_id] = is_tagged
-
-            # grab score (overwrite every frame, so score of last frame will be final value)
-            for m in score_pattern.finditer(line):
-                bluescore = int(m.group(1)) #first capture group contains blue team score
-                redscore = int(m.group(2)) #second capture group contains blue team score
-            
-            m = flag_pattern.search(line)
-            if m:
-                #find current flag positions
-                blue_nums = m.group(1).split(',')
-                red_nums  = m.group(2).split(',')
-                blue_cords = (float(blue_nums[0]), float(blue_nums[1]))
-                red_cords  = (float(red_nums[0]),  float(red_nums[1]))
-                # this should only compute if all agent positions are known
-                if all(a in current_pos for a in blue_agents + red_agents):#i guess just to be safe
-                    min_r_agent = -1
-                    min_r_dist = 2000000.0
-                    closest_to_r = 0
-                    min_b_agent = -1
-                    min_b_dist = 2000000.0
-                    closest_to_b = 3
-
-                    for red_id in red_agents:
-                        dist_to_flag = dist(current_pos[red_id], blue_cords) #find the closest red agent to the blue flag
-                        if(dist_to_flag < min_r_dist):
-                            min_r_agent = red_id
-                            min_r_dist = dist_to_flag
-                    #now min_r_agent is the closest red agent (id) to the blue flag.
-
-                    for blue_id in blue_agents:
-                        dist_to_flag = dist(current_pos[blue_id], red_cords) #find the closest blue agent to the red flag
-                        if(dist_to_flag < min_b_dist):
-                            min_b_agent = blue_id
-                            min_b_dist = dist_to_flag
-
-                    """ min_b_dist = dist(current_pos[closest_to_r], current_pos[min_r_agent]) #set to first distance to be compared (computes twice but should be efficient enough...)
-                    for blue_id in blue_agents:
-                        dist_to_agent = dist(current_pos[blue_id], current_pos[min_r_agent]) #find the closest blue agent to the "aggressive" or "dangerous" red agent
-                        if(dist_to_agent < min_b_dist):
-                            min_b_dist = dist_to_agent
-                    #now min_b_dist is the distance from the closest blue agent to the most "aggressive" red agent.
-
-                    min_r_dist = dist(current_pos[closest_to_b], current_pos[min_b_agent]) #set to first distance to be compared 
-                    for red_id in blue_agents:
-                        dist_to_agent = dist(current_pos[red_id], current_pos[min_b_agent]) #find the closest red agent to the "aggressive" or "dangerous" blue agent
-                        if(dist_to_agent < min_r_dist):
-                            min_r_dist = dist_to_agent      #THIS CODESNIPPET WAS WRONG - probably was confused by the bad naming and convoluded blue vs red logic. TODO Need to do some illustration in my pdf to explain this...
-                    #now min_r_dist is the distance from the closest red agent to the most "aggressive" blue agent. """
-                    # distance from closest blue to most aggressive red #STARTOF
-                    min_b_dist = float("inf")
-                    for blue_id in blue_agents:
-                        d = dist(current_pos[blue_id], current_pos[min_r_agent])
-                        if d < min_b_dist:
-                            min_b_dist = d
-                    # distance from closest red to most aggressive blue 
-                    min_r_dist = float("inf")
-                    for red_id in red_agents:
-                        d = dist(current_pos[red_id], current_pos[min_b_agent])
-                        if d < min_r_dist:
-                            min_r_dist = d #ENDOF
-                    
-                    blue_def_dist.append(min_b_dist)
-                    red_def_dist.append(min_r_dist)
-
-            
-
-    # Some last calculations
-    bluetags = len(tag_positions[0]) + len(tag_positions[1]) + len(tag_positions[2])
-    redtags = len(tag_positions[3]) + len(tag_positions[4]) + len(tag_positions[5])
-
-    # Avoid division by zero
-    if bluetags > 0:
-        blue_score_per_tag = bluescore / bluetags
-    else:
-        blue_score_per_tag = 0.0#or float("nan")
-
-    if redtags > 0:
-        red_score_per_tag = redscore / redtags
-    else:
-        red_score_per_tag = 0.0
-
-    blue_def_dist_avg = 0
-    for e in blue_def_dist:
-        blue_def_dist_avg += e
-    #blue_def_dist_avg = blue_def_dist_avg / len(blue_def_dist) #blue_def_dist_avg is the average distance from the closest blue agent to the most "aggressive" red agent.
-    blue_def_dist_avg = blue_def_dist_avg / len(blue_def_dist) if len(blue_def_dist) > 0 else 0.0 #blue_def_dist_avg is the average distance from the closest blue agent to the most "aggressive" red agent.
-    red_def_dist_avg = 0
-    for e in red_def_dist:
-        red_def_dist_avg += e
-    red_def_dist_avg = red_def_dist_avg / len(red_def_dist) if len(red_def_dist) > 0 else 0.0 #red_def_dist_avg is the average distance from the closest red agent to the most "aggressive" blue agent.
-
-    # Outputting results v2
-    print("--- Results: ---")
-    print("BLUE Team score/tags (indicates defensive capability of RED agents): ", blue_score_per_tag)
-    print("Red Team score/tags (indicates defensive capability of blue agents): ", red_score_per_tag)
-    print("Blue Team avg. defensive distance: ", blue_def_dist_avg)
-    print("Red Team avg. defensive distance: ", red_def_dist_avg)
-
-    blue_total_dist = 0.0
-    red_total_dist = 0.0
-    for a in blue_agents + red_agents:
-        print(f"Agent {a} distance traveled: {sum_distances[a]}")
-        if a in blue_agents:
-            blue_total_dist += sum_distances[a]
-        elif a in red_agents:
-            red_total_dist += sum_distances[a]
-    print("Blue Team total distance traveled: ", blue_total_dist)   
-    print("Red Team total distance traveled: ", red_total_dist)
-
-    res = dict()
-    res['blue_score_per_tag'] = blue_score_per_tag
-    res['red_score_per_tag']  = red_score_per_tag
-    res['blue_def_avg_dist']  = blue_def_dist_avg
-    res['red_def_avg_dist']   = red_def_dist_avg
-    #for a in blue_agents + red_agents:
-    #    res[f'agent_{a}_dist'] = sum_distances[a]
-    res['blue_total_dist'] = blue_total_dist
-    res['red_total_dist'] = red_total_dist
-    # collect all positions for heatmap
-    res['blue_positions'] = blue_positions
-    res['red_positions']  = red_positions
-
-    return res
-
-def graphicmaker(foldername):
-    """v1
-    For every file in the given folder we compute the analysis and plot the average of all seeds for every agent type, difficulty and reward choice
-    Graphs are plot showing all the averages (labled according to agent type, difficulty, reward choice
-    example expected filename: agent_type0_diffmedium_seed7935_reward1.log
+def scancsv(foldername):
     """
-    """v2
-    For every log file in foldername matching the naming pattern
-    agent_type{n}_diff{difficulty}_seed{seed}_reward{r}.log:
-      * run analyze_log(file)
-      * aggregate results by (agent_type, difficulty, reward)
-      * compute averages across seeds for every measured key
-      * produce and save plots (PNG) into foldername/analysis_plots/
-    Returns a dict: { group_key: averaged_result_dict }
+    Scans the file extracted_data.json in the given 
+    folder and returns a dictionary with the data 
+    from each file.
+    Expects the json to have been generated by analyze_log function.
     """
+    jsonfile = os.path.join(foldername, "extracted_data.json")
+    if not os.path.exists(jsonfile):
+        raise FileNotFoundError(f"JSON file not found: {jsonfile}")
 
-    # filename example: agent_type0_diffmedium_seed7935_reward1.log
-    _filename_re = re.compile(
-        r"agent_type(?P<atype>\d+)_diff(?P<diff>[^_]+)_seed(?P<seed>\d+)_reward(?P<reward>\d+)\.log$"
-    )
-
-    if not os.path.isdir(foldername):
-        raise ValueError(f"folder not found: {foldername}")
-
-    groups = defaultdict(list)  # (atype, diff, reward) -> list of result dicts
+    data = defaultdict(lambda: defaultdict(list))
+    group_positions = defaultdict(lambda: {'blue': [], 'red': [], 'tag': []})
     skipped = []
 
-    for fn in sorted(os.listdir(foldername)):
-        m = _filename_re.match(fn)
-        if not m:
-            # skip non-matching files
-            continue
-        atype = int(m.group("atype"))
-        diff = m.group("diff")
-        reward = int(m.group("reward"))
-        filepath = os.path.join(foldername, fn)
+    metric_cols = [
+        "red_score", "blue_score",
+        "blue_score_per_tag", "red_score_per_tag", "blue_def_avg_dist", "red_def_avg_dist",
+        "blue_agr_avg_dist", "red_agr_avg_dist", "blue_defagr_dist", "red_defagr_dist",
+        "blue_total_dist", "red_total_dist"
+    ]
+
+    try:
+        with open(jsonfile, 'r') as f:
+            entries = json.load(f)
+    except Exception as e:
+        raise RuntimeError(f"Failed to load JSON: {e}")
+    print(f"Loaded {len(entries)} entries from {jsonfile}")
+    # loads each game as an entry in a list
+
+    for idx, entry in enumerate(entries):
         try:
-            res = analyze_log(filepath)
+            agent_type = str(entry["agent_type"])
+            difficulty = entry["difficulty"]
+            reward = str(entry["reward"])
+            key = (agent_type, difficulty, reward)
+
+            # Parse metrics
+            for col in metric_cols:
+                val = entry.get(col, None)
+                if val is not None:
+                    if isinstance(val, list) and val:
+                        avg_val = statistics.mean(val)
+                    elif isinstance(val, (int, float)):
+                        avg_val = float(val)
+                    else:
+                        avg_val = np.nan
+                    data[key][col].append(avg_val)
+
+            # Parse positions
+            for pos_type in ["blue_positions", "red_positions"]:
+                pos_val = entry.get(pos_type, [])
+                if isinstance(pos_val, list):
+                    group_positions[key][pos_type.split('_')[0]].extend(pos_val)
+
+            # Parse tag_positions
+            tag_val = entry.get("tag_positions", {})
+            if isinstance(tag_val, dict):
+                group_positions[key]['tag'].append(tag_val)
+
         except Exception as e:
-            skipped.append((fn, str(e)))
-            continue
-        groups[(atype, diff, reward)].append(res)
+            skipped.append((f"entry {idx}", str(e)))
+    print(f"Processed {len(entries) - len(skipped)} entries, skipped {len(skipped)} due to errors.")
 
-    if not groups:
-        raise RuntimeError("No matching log files found or no results produced.")
-
-    # Compute averages for each group
-    averaged = dict()
-    # Also store concatenated positions per team
-    group_positions = dict()  # key -> {"blue": [...], "red": [...]}
-
-    # collect full set of agent keys to plot consistently
-    #all_agent_keys = set()
+    # Compute averages and prepare final dicts
+    averaged = {}
     all_metric_keys = set()
-    for key, res_list in groups.items():
-        # collect metric keys
-        for r in res_list:
-            #all_agent_keys.update(k for k in r.keys() if k.startswith("agent_") and k.endswith("_dist"))
-            all_metric_keys.update(r.keys())
+    for key, metrics in data.items():
+        averaged[key] = {}
+        for metric, values in metrics.items():
+            valid_vals = [v for v in values if not np.isnan(v)]
+            if valid_vals:
+                averaged[key][metric] = statistics.mean(valid_vals)
+                averaged[key][metric + '_list'] = valid_vals
+                all_metric_keys.add(metric)
+                #print(f"Key {key}, Metric {metric}: avg={averaged[key][metric]}, count={len(valid_vals)}")
+                #print outputs: Key ('2', 'medium', '2'), Metric red_total_dist: avg=9242.001740331978, count=5
+    #print("averaged =",averaged, "group_positions =",group_positions, "all_metric_keys =",all_metric_keys, "skipped =",skipped)
+    #print("group_positions example =", {k: v for k, v in list(group_positions.items())[:1]}) #even so is too long to print :/
+    #averaged* = ... {('0', 'easy', '1'): {'blue_score_per_tag': 3.5, 'blue_score_per_tag_list': [3.5, 3.5, 3.5, 3.5, 3.5], 'red_score_per_tag': 0.0, 'red_score_per_tag_list': [0.0, 0.0, 0.0, 0.0, 0.0], 'blue_def_avg_dist': 12.3, ...}, ...}
+    #group_positions* = defaultdict(<function scancsv.<locals>.<lambda> at 0x7f8c540c1af0>, {('0', 'easy', '1'): {'blue': [[12.3, 23.4], [13.4, 24.5], ...], 'red': [[78.9, 67.8], [79.0, 68.9], ...], 'tag': [{'3': [[45.6, 34.5], [46.7, 35.6], ...],
+    # ends definitely in= ... '4': [[32.2, 38.2], [32.7, 37.9], [37.1, 38.4], [25.9, 41.1]], '0': [], '2': []}]}})
+    #all_metric_keys = {'red_def_avg_dist', 'blue_defagr_dist', 'blue_def_avg_dist', 'red_score_per_tag', 'red_agr_avg_dist', 'red_total_dist', 'blue_total_dist', 'blue_agr_avg_dist', 'blue_score_per_tag', 'red_defagr_dist'} 
+    #skipped should be empty
+    return averaged, group_positions, all_metric_keys, skipped
 
-    # average aggregation
-    for key, res_list in groups.items():
-        avg = dict()
-        # gather all metrics present in at least one result
-        metrics = set().union(*[set(r.keys()) for r in res_list])
-        for metric in metrics:
-            vals = [r[metric] for r in res_list if metric in r and r[metric] is not None]
+def graphicmaker(foldername):
+    """
+    Accesses a csv file and makes plots from the data.
+    Expects the csv to have been generated by analyze_log function.
+    Produces plots and saves them in a subfolder "analysis_plots" 
+    inside the given folder.
+    """
 
-            if not vals:
-                avg[metric] = None
-                continue
+    averaged, group_positions, all_metric_keys, skipped = scancsv(foldername)
 
-            # Only average numeric values
-            if isinstance(vals[0], (int, float)):
-                if metric in ['blue_total_dist', 'red_total_dist']:
-                    avg[metric] = float(sum(vals)) / len(vals)  # average for bar plots
-                    avg[metric + '_list'] = vals  # list for box plots
-                else:
-                    avg[metric] = float(sum(vals)) / len(vals)
-            else:
-                # Non-numeric (e.g., position lists) -> do not average
-                avg[metric] = None
-
-        averaged[key] = avg
-        # get concatenated positions for heatmap
-        all_blue = []
-        all_red  = []
-        for r in res_list:
-            all_blue.extend(r.get("blue_positions", []))
-            all_red.extend(r.get("red_positions", []))
-
-        group_positions[key] = {
-            "blue": all_blue,
-            "red":  all_red
-        }
-
+    #print scores for debugging
+    for k in averaged.keys():
+        print(f"Key {k}: blue_score={averaged[k].get('blue_score', 'N/A')}, red_score={averaged[k].get('red_score', 'N/A')}")
 
     # Canonical sort order
     DIFF_ORDER = {"easy": 0, "medium": 1, "hard": 2}
@@ -439,13 +255,20 @@ def graphicmaker(foldername):
     #labels = [f"type{k[0]}_diff{k[1]}_r{k[2]}" for k in sorted_keys]
     labels = [f"type{k[0]}_{k[1]}_r{k[2]}" for k in sorted_keys]
 
+    # Team score per tag (blue_score_per_tag, red_score_per_tag)
+    plot_pairs(
+        "blue_score", "red_score",
+        title="Score (Average)",
+        ylabel="flag captures",
+        filename="score_avg.png"
+    )
 
     # Team score per tag (blue_score_per_tag, red_score_per_tag)
     plot_pairs(
         "blue_score_per_tag", "red_score_per_tag",
         title="Score per Tag (Blue vs Red)",
         ylabel="score / tag",
-        filename="score_per_tag_blue_vs_red.png"
+        filename="score_per_tag.png"
     )
 
     # Team defensive average distances
@@ -453,7 +276,21 @@ def graphicmaker(foldername):
         "blue_def_avg_dist", "red_def_avg_dist",
         title="Defensive Avg Distance (Blue vs Red)",
         ylabel="distance",
-        filename="def_avg_dist_blue_vs_red.png"
+        filename="def_avg_dist.png"
+    )
+    # Team aggressive average distances
+    plot_pairs(
+        "blue_agr_avg_dist", "red_agr_avg_dist",
+        title="Aggressive Avg Distance (Blue vs Red)",
+        ylabel="distance",
+        filename="agr_avg_dist.png"
+    )
+    # Team defensive + aggressive average distances
+    plot_pairs(
+        "blue_defagr_dist", "red_defagr_dist",
+        title="Defensive + Aggressive Avg Distance (Blue vs Red)",
+        ylabel="distance",
+        filename="defAndAgr_avg_dist.png"
     )
 
     # Team total distances (changed to candlestick figure)
@@ -461,7 +298,7 @@ def graphicmaker(foldername):
         "blue_total_dist", "red_total_dist",
         title="Total Distance Traveled (Blue vs Red)",
         ylabel="distance",
-        filename="total_dist_blue_vs_red.png"
+        filename="total_dist.png"
     )
     # changed back to bar plot
     # TODO add standard deviation
@@ -504,7 +341,7 @@ def graphicmaker(foldername):
 
     
 
-    # Save a small summary CSV with averaged numbers
+    """# Save a small summary CSV with averaged numbers
     import csv
     csvfile = os.path.join(plotdir, "averaged_results.csv")
     # columns = group_key fields + sorted metric keys
@@ -521,7 +358,7 @@ def graphicmaker(foldername):
                 if isinstance(val, list):
                     val = float(sum(val)) / len(val) if val else ""
                 row.append("" if val is None or val == "" else val)
-            writer.writerow(row)
+            writer.writerow(row)"""
 
     # Optionally print summary of what was done (kept minimal)
     if skipped:
@@ -534,7 +371,8 @@ def graphicmaker(foldername):
 
 ##############################
 if __name__ == "__main__":
-    #analyze_log("match.log")
     #graphicmaker("experiment_results/experiment_5rep_600sec/")
-    graphicmaker("experiment_results/experiment_20260119_210513/")
+    #graphicmaker("experiment_results/experiment_20260119_210513/")
+    graphicmaker(FOLDER)
+    #scancsv(FOLDER)
 ##############################
