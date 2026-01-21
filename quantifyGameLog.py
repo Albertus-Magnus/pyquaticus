@@ -11,8 +11,8 @@ from collections import defaultdict
 import statistics
 import json
 
-#FOLDER = "experiment_results/experiment_20260119_600s_50r/"
 FOLDER = "experiment_results/experiment_5rep_600sec/"
+#FOLDER = "experiment_results/experiment_20260119_600s_50r/"
 
 BINS = 300
 #number of bins for heatmaps
@@ -42,7 +42,7 @@ def scancsv(foldername):
         "blue_score_per_tag", "red_score_per_tag", "blue_def_avg_dist", "red_def_avg_dist",
         "blue_agr_avg_dist", "red_agr_avg_dist", "blue_defagr_dist", "red_defagr_dist",
         "blue_total_dist", "red_total_dist", "blue_triangle_area", "red_triangle_area",
-        "blue_cover_dist", "red_cover_dist"
+        "blue_cover_dist", "red_cover_dist", "blue_sides", "red_sides", "red_voronoi", "blue_voronoi"
     ]
 
     try:
@@ -179,7 +179,15 @@ def graphicmaker(foldername):
         y = ymax * 1.02
         for atype, idxs in centers.items():
             c = sum(idxs) / len(idxs)
-            ax.text(c, y, f"agent_type {atype}", ha="center", va="bottom", fontsize=10, fontweight="bold")
+            # change atype to agent name (natural language)
+            if atype == '0' or atype == 0: 
+                atype = "Ultra-defensive"
+            elif atype == '1' or atype == 1: 
+                atype = "MRHEA"
+            elif atype == '2' or atype == 2: 
+                atype = "RHEA"
+            # set label of grouped bar's
+            ax.text(c, y, f"{atype}", ha="center", va="bottom", fontsize=10, fontweight="bold")
 
     def plot_heatmap(positions, title, filename, bins=BINS, cmap="hot"):#bins=50?
         if not positions:
@@ -191,6 +199,7 @@ def graphicmaker(foldername):
         fig, ax = plt.subplots(figsize=(20, 10))
         ax.set_facecolor('black')
 
+        # Using the hist2d cmap functionality
         h = ax.hist2d(xs, ys, bins=bins, cmap=cmap)
         plt.colorbar(h[3], ax=ax)
 
@@ -260,13 +269,14 @@ def graphicmaker(foldername):
 
     for key in sorted_keys:
         atype, diff, reward = key
-        if atype == '0' or atype == 0: 
-            atype = "Ultra-defensive"
-        elif atype == '1' or atype == 1: 
-            atype = "MRHEA"
-        elif atype == '2' or atype == 2: 
-            atype = "RHEA"
-        labels.append(f"{atype} vs {diff}, using reward {reward}")
+        # if atype == '0' or atype == 0: 
+        #     atype = "Ultra-defensive"
+        # elif atype == '1' or atype == 1: 
+        #     atype = "MRHEA"
+        # elif atype == '2' or atype == 2: 
+        #     atype = "RHEA"
+        #labels.append(f"{atype} vs {diff}, using reward {reward}")
+        labels.append(f"vs {diff}, reward {reward}")
 
     # Team tri-coverage avg
     plot_pairs(
@@ -274,6 +284,14 @@ def graphicmaker(foldername):
         title="Tri-Coverage",
         ylabel="area between teammembers",
         filename="tri-coverage.png"
+    )
+
+    # Team voronoi-coverage avg
+    plot_pairs(
+        "blue_voronoi", "red_voronoi",
+        title="Voronoi-uniformity Coverage",
+        ylabel="uniformity of area (voronoi cells)",
+        filename="voronoi-coverage.png"
     )
 
     # Team tri-coverage avg (changed to candlestick figure)
@@ -290,6 +308,14 @@ def graphicmaker(foldername):
         title="Mean-Distance Coverage",
         ylabel="avg. distance between teammembers",
         filename="mean-dist-coverage.png"
+    )
+
+    # Team side percentage avg
+    plot_pairs(
+        "blue_sides", "red_sides",
+        title="Homebase-Percentage",
+        ylabel="avg. percentage of team on own side",
+        filename="side_perc.png"
     )
 
     # Team score per tag (blue_score_per_tag, red_score_per_tag)
@@ -429,7 +455,7 @@ def graphicmaker(foldername):
 
 ##############################
 if __name__ == "__main__":
-    if len(sys.argv) == 1:
+    if len(sys.argv) > 1:
         graphicmaker(sys.argv[0])
     #graphicmaker("experiment_results/experiment_5rep_600sec/")
     #graphicmaker("experiment_results/experiment_20260119_210513/")
