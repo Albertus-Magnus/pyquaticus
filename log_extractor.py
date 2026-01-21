@@ -211,7 +211,7 @@ def analyze_single_log(log_address):
                 b = dist(p1, p2)
                 c = dist(p2, p0)
                 #area = triangle_area(p0, p1, p2)
-                area = triangle_area2(a, b, c)
+                area = triangle_area2(a, b, c) / 180.*40. # Normalize tri-cover using half the arena area (biggest possible triangle)
                 blue_triangle_areas.append(area)
                 #blue_cover_dist.append(a + b + c)
                 # Normalize mean-dist-cover by 80+80+113.14 (longest imaginable mean distance between team members in 3v3
@@ -519,7 +519,7 @@ if __name__ == "__main__":
     timestamp = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
     print(f"Launching log_extractor at time: {timestamp}")
     if len(sys.argv) > 1:
-        analyze_log(sys.argv[0])
+        analyze_log(sys.argv[1])
     else:
         #analyze_log("experiment_results/experiment_5rep_600sec/") #braucht aktuell ca 7min... <-no, it was the 50rep one. argv is not working as intended... 40sec ist die Zeit für 5rep
         analyze_log(FOLDER)

@@ -157,6 +157,40 @@ def graphicmaker(foldername):
         outfile = os.path.join(plotdir, filename)
         plt.savefig(outfile)
         plt.close(fig)
+
+    def plot_mixed_pairs(metric_blue1, metric_blue2, metric_blue3, metric_red1, metric_red2, metric_red3, title, ylabel, filename):
+        blue_vals = [averaged[k].get(metric_blue1, np.nan) for k in sorted_keys]
+        red_vals  = [averaged[k].get(metric_red1,  np.nan) for k in sorted_keys]
+        blue_vals2 = [averaged[k].get(metric_blue2, np.nan) for k in sorted_keys]
+        red_vals2  = [averaged[k].get(metric_red2,  np.nan) for k in sorted_keys]
+        blue_vals3 = [averaged[k].get(metric_blue3, np.nan) for k in sorted_keys]
+        red_vals3  = [averaged[k].get(metric_red3,  np.nan) for k in sorted_keys]
+        for ind in range(len(blue_vals)):
+            blue_vals[ind] += blue_vals2[ind] + blue_vals3[ind]
+        for ind in range(len(red_vals)):
+            red_vals[ind] += red_vals2[ind] + red_vals3[ind]
+
+        x = np.arange(len(sorted_keys))
+        width = 0.35
+
+        fig, ax = plt.subplots(figsize=(max(8, len(x)*0.7), 5))
+
+        ax.bar(x - width/2, blue_vals, width, label="Blue", color="tab:blue")
+        ax.bar(x + width/2, red_vals,  width, label="Red",  color="tab:red")
+
+        ax.set_xticks(x)
+        ax.set_xticklabels(labels, rotation=45, ha="right")
+        ax.set_ylabel(ylabel)
+        ax.set_title(title, pad=18)
+        ax.legend()
+
+        # Add separators and group headers
+        add_group_separators(ax, sorted_keys, labels)
+
+        plt.tight_layout()
+        outfile = os.path.join(plotdir, filename)
+        plt.savefig(outfile)
+        plt.close(fig)
         
     def add_group_separators(ax, keys, labels):
         # Draw vertical lines when agent_type changes
@@ -372,6 +406,14 @@ def graphicmaker(foldername):
         filename="total_dist.png"
     )
 
+    # Combined quantity measure (voronoi + def&agr distance)
+    plot_mixed_pairs(
+        "blue_voronoi", "red_voronoi", "blue_defagr_dist", "red_defagr_dist", "blue_triangle_area", "red_triangle_area",
+        title="Combined Voronoi-DefAndAgrDist. score",
+        ylabel="mixed coverage",
+        filename="mixed_coverage.png"
+    )
+
     # Heatmaps per experiment configuration
     for key in sorted_keys:
         atype, diff, reward = key
@@ -456,7 +498,7 @@ def graphicmaker(foldername):
 ##############################
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        graphicmaker(sys.argv[0])
+        graphicmaker(sys.argv[1])
     #graphicmaker("experiment_results/experiment_5rep_600sec/")
     #graphicmaker("experiment_results/experiment_20260119_210513/")
     else:
