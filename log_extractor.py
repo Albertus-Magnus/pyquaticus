@@ -1,11 +1,13 @@
+from datetime import datetime
 import re
 import os
 import json
 import math
 from collections import defaultdict
+import sys
 
-#FOLDER = "experiment_results/experiment_5rep_600sec/"
-FOLDER = "experiment_results/experiment_20260119_600s_50r/"
+FOLDER = "experiment_results/experiment_5rep_600sec/"
+#FOLDER = "experiment_results/experiment_20260119_600s_50r/"
 
 # Regex patterns (for extracting data from the logfiles)
 pos_pattern = re.compile(
@@ -29,6 +31,24 @@ def dist(a, b):
     # probably there is a numpy function for this
     return math.hypot(a[0] - b[0], a[1] - b[1])
 
+def triangle_area(p1, p2, p3):
+    # a = dist(p1, p2)
+    # b = dist(p2, p3)
+    # c = dist(p3, p1)
+    # s = 0.5 * (a + b + c)
+    # return math.sqrt(s * (s - a) * (s - b) * (s - c))
+    return (abs((p1[0]*p2[1] + p2[0]*p3[1] + p3[0]*p1[1]) - (p2[0]*p1[1] + p3[0]*p2[1] + p1[0]*p3[1]))) / 2
+    # hopefully this is a correct triangle formula now, should be shoelace formula...
+
+def triangle_area2(a, b, c):
+    # Since we have to compute the sides of the triangle anyways for the mean 
+    # dist coverage measure (at least until one of the coverage measures is 
+    # retired), we can use the old formula.
+    s = 0.5 * (a + b + c)
+    return math.sqrt(s * (s - a) * (s - b) * (s - c))
+    #return (abs((p1[0]*p2[1] + p2[0]*p3[1] + p3[0]*p1[1]) - (p2[0]*p1[1] + p3[0]*p2[1] + p1[0]*p3[1]))) / 2
+    # hopefully this is a correct triangle formula now, should be shoelace formula...
+
 def analyze_single_log(log_address):
     # collect all positions for analysis
     blue_positions = [] # list of (x,y)
@@ -46,6 +66,10 @@ def analyze_single_log(log_address):
     blue_agr_dist = []
     red_agr_dist = []
     sum_distances = defaultdict(lambda: 0.)
+    blue_triangle_areas = []
+    red_triangle_areas = []
+    blue_cover_dist = []
+    red_cover_dist = []
     #for a in blue_agents + red_agents:
     #    sum_distances[a] = 0. #dont need this because defaultdict does it anyway
 
@@ -72,6 +96,33 @@ def analyze_single_log(log_address):
                     blue_positions.append(new_pos)
                 elif agent_id in red_agents:
                     red_positions.append(new_pos)
+
+            # Compute area of triangle formed by each team (for cohesion measure)
+            # print(len(current_pos)) #6 elements in current_pos, is overwritten every frame of the analysis
+            # TODO improve performance DONE but still bad :/
+            # In addition, there is the mean distance between agents that also has to be computed for the spatial coverage score (mean dist variant)
+            if all(a in current_pos for a in blue_agents):
+                p0 = current_pos[blue_agents[0]]
+                p1 = current_pos[blue_agents[1]]
+                p2 = current_pos[blue_agents[2]]
+                a = dist(p0, p1)
+                b = dist(p1, p2)
+                c = dist(p2, p0)
+                #area = triangle_area(p0, p1, p2)
+                area = triangle_area2(a, b, c)
+                blue_triangle_areas.append(area)
+                blue_cover_dist.append(a + b + c)
+            if all(a in current_pos for a in red_agents):
+                p0 = current_pos[red_agents[0]]
+                p1 = current_pos[red_agents[1]]
+                p2 = current_pos[red_agents[2]]
+                a = dist(p0, p1)
+                b = dist(p1, p2)
+                c = dist(p2, p0)
+                #area = triangle_area(p0, p1, p2)
+                area = triangle_area2(a, b, c)
+                red_triangle_areas.append(area)
+                red_cover_dist.append(a + b + c)
 
             # Tag updates
             for m in tag_pattern.finditer(line):
@@ -222,6 +273,19 @@ def analyze_single_log(log_address):
     res['red_defagr_dist'] = red_agrdef_dist#(red_agr_dist_norm + red_def_dist_norm)
     res['blue_total_dist'] = blue_total_dist
     res['red_total_dist'] = red_total_dist
+    blue_triangle_area_avg = sum(blue_triangle_areas) / len(blue_triangle_areas) if blue_triangle_areas and len(blue_triangle_areas) > 0 else 0.0
+    # blue_triangle_area_avg is normalized by arena-area * 0.5 because that is the largest triangle-coverage expected from the agents
+    blue_triangle_area_avg = blue_triangle_area_avg / (80.0 * 160.0 * 0.5)
+    red_triangle_area_avg = sum(red_triangle_areas) / len(red_triangle_areas) if red_triangle_areas and len(red_triangle_areas) > 0 else 0.0    
+    # blue_triangle_area_avg is normalized by arena-area * 0.5 because that is the largest triangle-coverage expected from the agents
+    red_triangle_area_avg = red_triangle_area_avg / (80.0 * 160.0 * 0.5) 
+    res['blue_triangle_area'] = blue_triangle_area_avg
+    res['red_triangle_area'] = red_triangle_area_avg
+    # Another approach at a team-wide spatial coverage score: average added distance between the teammembers
+    blue_cover_dist_avg = sum(blue_cover_dist) / len(blue_cover_dist) if blue_cover_dist and len(blue_cover_dist) > 0 else 0.0
+    red_cover_dist_avg = sum(red_cover_dist) / len(red_cover_dist) if red_cover_dist and len(red_cover_dist) > 0 else 0.0
+    res['blue_cover_dist'] = blue_cover_dist_avg
+    res['red_cover_dist'] = red_cover_dist_avg
     # save all positions (for heatmap)
     res['blue_positions'] = blue_positions
     res['red_positions'] = red_positions
@@ -264,7 +328,9 @@ def analyze_log(log_address):
         'blue_def_avg_dist', 'red_def_avg_dist',
         'blue_agr_avg_dist', 'red_agr_avg_dist',
         'blue_defagr_dist', 'red_defagr_dist',
-        'blue_total_dist', 'red_total_dist'
+        'blue_total_dist', 'red_total_dist',
+        'blue_triangle_area', 'red_triangle_area',
+        'blue_cover_dist', 'red_cover_dist'
     ]
 
     json_path = os.path.join(log_address, 'extracted_data.json')
@@ -305,5 +371,12 @@ def analyze_log(log_address):
 
 
 if __name__ == "__main__":
-    #analyze_log("experiment_results/experiment_5rep_600sec/")
-    analyze_log(FOLDER)
+    timestamp = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+    print(f"Launching log_extractor at time: {timestamp}")
+    if len(sys.argv) == 1:
+        analyze_log(sys.argv[0])
+    else:
+        #analyze_log("experiment_results/experiment_5rep_600sec/") #braucht aktuell ca 7min... <-no, it was the 50rep one. argv is not working as intended...
+        analyze_log(FOLDER)
+    timestamp = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+    print(f"log_extractor terminating at time: {timestamp}")

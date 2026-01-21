@@ -3,6 +3,7 @@ from collections import defaultdict
 import math
 import os
 import re
+import sys
 from matplotlib.colors import LinearSegmentedColormap
 import numpy as np
 import matplotlib.pyplot as plt
@@ -10,8 +11,8 @@ from collections import defaultdict
 import statistics
 import json
 
-FOLDER = "exprimenet_results/experiment_20260119_600s_50r/"
-#FOLDER = "experiment_results/experiment_5rep_600sec/"
+#FOLDER = "experiment_results/experiment_20260119_600s_50r/"
+FOLDER = "experiment_results/experiment_5rep_600sec/"
 
 BINS = 300
 #number of bins for heatmaps
@@ -40,7 +41,8 @@ def scancsv(foldername):
         "red_score", "blue_score",
         "blue_score_per_tag", "red_score_per_tag", "blue_def_avg_dist", "red_def_avg_dist",
         "blue_agr_avg_dist", "red_agr_avg_dist", "blue_defagr_dist", "red_defagr_dist",
-        "blue_total_dist", "red_total_dist"
+        "blue_total_dist", "red_total_dist", "blue_triangle_area", "red_triangle_area",
+        "blue_cover_dist", "red_cover_dist"
     ]
 
     try:
@@ -118,8 +120,8 @@ def graphicmaker(foldername):
     averaged, group_positions, all_metric_keys, skipped = scancsv(foldername)
 
     #print scores for debugging
-    for k in averaged.keys():
-        print(f"Key {k}: blue_score={averaged[k].get('blue_score', 'N/A')}, red_score={averaged[k].get('red_score', 'N/A')}")
+    #for k in averaged.keys():
+    #    print(f"Key {k}: blue_score={averaged[k].get('blue_score', 'N/A')}, red_score={averaged[k].get('red_score', 'N/A')}")
 
     # Canonical sort order
     DIFF_ORDER = {"easy": 0, "medium": 1, "hard": 2}
@@ -213,6 +215,7 @@ def graphicmaker(foldername):
         plt.close(fig)
 
     def plot_box(metric_blue, metric_red, title, ylabel, filename):
+        # Candlestick-style plot for blue and red metrics
         data_blue = [averaged[k][metric_blue + '_list'] for k in sorted_keys if averaged[k][metric_blue + '_list']]
         data_red = [averaged[k][metric_red + '_list'] for k in sorted_keys if averaged[k][metric_red + '_list']]
 
@@ -252,8 +255,42 @@ def graphicmaker(foldername):
     # prepare labels and sorted order for consistent plots
     #sorted_keys = sorted(averaged.keys(), key=lambda k: (k[0], k[1], k[2]))
     sorted_keys = sorted(averaged.keys(), key=sort_key)
-    #labels = [f"type{k[0]}_diff{k[1]}_r{k[2]}" for k in sorted_keys]
-    labels = [f"type{k[0]}_{k[1]}_r{k[2]}" for k in sorted_keys]
+    #labels = [f"type{k[0]}_{k[1]}_r{k[2]}" for k in sorted_keys]
+    labels = []
+
+    for key in sorted_keys:
+        atype, diff, reward = key
+        if atype == '0' or atype == 0: 
+            atype = "Ultra-defensive"
+        elif atype == '1' or atype == 1: 
+            atype = "MRHEA"
+        elif atype == '2' or atype == 2: 
+            atype = "RHEA"
+        labels.append(f"{atype} vs {diff}, using reward {reward}")
+
+    # Team tri-coverage avg
+    plot_pairs(
+        "blue_triangle_area", "red_triangle_area",
+        title="Tri-Coverage",
+        ylabel="area between teammembers",
+        filename="tri-coverage.png"
+    )
+
+    # Team tri-coverage avg (changed to candlestick figure)
+    plot_box(
+        "blue_triangle_area", "red_triangle_area",
+        title="Tri-Distance candlestick figure",
+        ylabel="area",
+        filename="triangle_candle.png"
+    )
+
+    # Team mean-dist coverage avg
+    plot_pairs(
+        "blue_cover_dist", "red_cover_dist",
+        title="Mean-Distance Coverage",
+        ylabel="avg. distance between teammembers",
+        filename="mean-dist-coverage.png"
+    )
 
     # Team score per tag (blue_score_per_tag, red_score_per_tag)
     plot_pairs(
@@ -298,7 +335,7 @@ def graphicmaker(foldername):
         "blue_total_dist", "red_total_dist",
         title="Total Distance Traveled (Blue vs Red)",
         ylabel="distance",
-        filename="total_dist.png"
+        filename="total_dist_candle.png"
     )
     # changed back to bar plot
     # TODO add standard deviation
@@ -318,10 +355,23 @@ def graphicmaker(foldername):
             atype = "MRHEA"
         elif atype == '2' or atype == 2: 
             atype = "RHEA"
-        label = f"{atype} vs {diff}, using reward {reward}" #TODO is this label OK? could be more natural language, but as long as i describe the labels might be fine...
+        label = f"{atype} vs {diff}, using reward {reward}" #TODO this label format for other plots as well
 
         pos = group_positions[key] #TODO unmoving agents need to be excluded from heatmap.
 
+        """
+        Result of the pos[] structure inquiry:
+        pos["blue"] -> list of positions
+        pos["tag"][integer for experiment number][integer for agent id] -> list of positions
+        """
+        #print("pos[tag][0]")
+        #print(len(pos["tag"]))
+        #print(pos["tag"][0])
+        #print("pos[tag]")
+        #print(type(pos["tag"]))
+        #print(pos["tag"])
+
+        #plot heatmap of agent positions:
         plot_heatmap(
             pos["blue"],
             title=f"Blue team positions - {label}",
@@ -329,7 +379,6 @@ def graphicmaker(foldername):
             #cmap="Berlin"
             cmap = LinearSegmentedColormap.from_list('custom_heatmap', ['black', 'blue', 'cyan', 'white'], N=256) # blue coloring has to be adjusted like this for visibility. red was simpler...
         )
-
         plot_heatmap(
             pos["red"],
             title=f"Red team positions - {label}",
@@ -339,26 +388,35 @@ def graphicmaker(foldername):
         )
 
 
-    
+        #plot heatmap of blue agent tag positions:
+        bluetags = []
+        redtags  = []
+        # combine the tag positions from all experiments for blue and red agents (separately)
+        for exp_num in pos["tag"]: #range(len(pos["tag"])):
+            for agent_id in blue_agents:
+                #bluetags.extend(pos["tag"][exp_num].get(str(agent_id), []))
+                bluetags = bluetags + exp_num[str(agent_id)]
+            for agent_id in red_agents:
+                redtags = redtags + exp_num[str(agent_id)]
 
-    """# Save a small summary CSV with averaged numbers
-    import csv
-    csvfile = os.path.join(plotdir, "averaged_results.csv")
-    # columns = group_key fields + sorted metric keys
-    metric_columns = sorted(list(all_metric_keys))
-    with open(csvfile, "w", newline="") as cf:
-        writer = csv.writer(cf)
-        header = ["agent_type", "difficulty", "reward"] + metric_columns
-        writer.writerow(header)
-        for key in sorted_keys:
-            atype, diff, reward = key
-            row = [atype, diff, reward]
-            for mc in metric_columns:
-                val = averaged[key].get(mc, "")
-                if isinstance(val, list):
-                    val = float(sum(val)) / len(val) if val else ""
-                row.append("" if val is None or val == "" else val)
-            writer.writerow(row)"""
+        #bluetags = pos["tag"][0] + pos["tag"][1] + pos["tag"][2]
+        #redtags  = pos["tag"][3] + pos["tag"][4] + pos["tag"][5]
+        plot_heatmap(
+            bluetags,
+            title=f"Blue agent tag positions - {label}",
+            filename=f"heatmap_blue_tags_{label}.png",
+            bins=TAGBINS,
+            cmap = LinearSegmentedColormap.from_list('custom_heatmap', ['black', 'blue', 'cyan', 'white'], N=256)
+        )
+        #plot heatmap of red agent tag positions:
+        plot_heatmap(
+            redtags,
+            title=f"Red agent tag positions - {label}",
+            filename=f"heatmap_red_tags_{label}.png",
+            bins=300,
+            cmap = LinearSegmentedColormap.from_list('custom_heatmap', ['black', 'red', 'yellow', 'white'], N=256)
+        )
+
 
     # Optionally print summary of what was done (kept minimal)
     if skipped:
@@ -371,8 +429,11 @@ def graphicmaker(foldername):
 
 ##############################
 if __name__ == "__main__":
+    if len(sys.argv) == 1:
+        graphicmaker(sys.argv[0])
     #graphicmaker("experiment_results/experiment_5rep_600sec/")
     #graphicmaker("experiment_results/experiment_20260119_210513/")
-    graphicmaker(FOLDER)
-    #scancsv(FOLDER)
+    else:
+        graphicmaker(FOLDER)
+        #scancsv(FOLDER)
 ##############################
