@@ -214,9 +214,11 @@ def analyze_single_log(log_address):
                 area = triangle_area2(a, b, c) / 180.*40. # Normalize tri-cover using half the arena area (biggest possible triangle)
                 blue_triangle_areas.append(area)
                 #blue_cover_dist.append(a + b + c)
-                # Normalize mean-dist-cover by 80+80+113.14 (longest imaginable mean distance between team members in 3v3
+                # Normalize mean-dist-cover by 80+80+113.14 (longest imaginable mean distance between team members in 3v3)
+                # TODO check if this is correct normalization: Isn't the longest distance around a triangle ~419? (divided by 3 is ~140)
                 #blue_cover_dist.append(1 - (273.14 / (a + b + c)))
-                blue_cover_dist.append(((a + b + c) / 273.14))
+                #blue_cover_dist.append(((a + b + c) / 273.14))
+                blue_cover_dist.append((((a + b + c) / 419) / 3))
                 # Voronoi uniformity:
                 points = np.array([p0,p1,p2])
                 blue_voronoi.append(voronoi_uniformity(points))

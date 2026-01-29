@@ -408,7 +408,8 @@ def graphicmaker(foldername):
 
     # Combined quantity measure (voronoi + def&agr distance)
     plot_mixed_pairs(
-        "blue_voronoi", "red_voronoi", "blue_defagr_dist", "red_defagr_dist", "blue_triangle_area", "red_triangle_area",
+        "blue_voronoi", "red_voronoi", "blue_defagr_dist", "red_defagr_dist", "blue_triangle_area", "red_triangle_area", 
+        #TODO Add weighting, perhaps change triangle to avg dist.
         title="Combined Voronoi-DefAndAgrDist. score",
         ylabel="mixed coverage",
         filename="mixed_coverage.png"
