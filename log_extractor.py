@@ -9,7 +9,7 @@ import numpy as np
 from scipy.spatial import Voronoi
 from shapely.geometry import Polygon
 
-FOLDER = "experiment_results/experiment_5rep_600sec/"
+FOLDER = "experiment_results/experiment_1min_5rep_laptop/"
 #FOLDER = "experiment_results/experiment_20260119_600s_50r/"
 
 # Regex patterns (for extracting data from the logfiles)
@@ -125,6 +125,7 @@ def voronoi_uniformity(points):
         return np.nan
 
     uniformity = areas.std() / areas.mean()
+    # standard deviation / mean  (~variation coefficient "Variationskoeffizient")
 
     #print("Cell areas:", areas)
     #print("Uniformity (CV):", uniformity)

@@ -11,7 +11,7 @@ from collections import defaultdict
 import statistics
 import json
 
-FOLDER = "experiment_results/experiment_5rep_600sec/"
+FOLDER = "experiment_results/experiment_1min_5rep_laptop/"
 #FOLDER = "experiment_results/experiment_20260119_600s_50r/"
 
 BINS = 300
@@ -408,9 +408,9 @@ def graphicmaker(foldername):
 
     # Combined quantity measure (voronoi + def&agr distance)
     plot_mixed_pairs(
-        "blue_voronoi", "red_voronoi", "blue_defagr_dist", "red_defagr_dist", "blue_triangle_area", "red_triangle_area", 
-        #TODO Add weighting, perhaps change triangle to avg dist.
-        title="Combined Voronoi-DefAndAgrDist. score",
+        "blue_voronoi", "red_voronoi", "blue_defagr_dist", "red_defagr_dist", "blue_triangle_area", "red_triangle_area",
+                #TODO Add weighting, perhaps change triangle to avg dist.
+        title="Combined Voronoi-Convex-DefAndAgrDist. score",
         ylabel="mixed coverage",
         filename="mixed_coverage.png"
     )
