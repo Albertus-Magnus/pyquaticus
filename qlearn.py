@@ -8,7 +8,7 @@ import random
 #########################
 
 # Define the gridworld environment
-class GridWorld:
+'''class GridWorld: #EXAMPLE
     def __init__(self):
         self.grid = np.array([
             [0, 0, 0, 1],  # Goal at (0, 3)
@@ -24,6 +24,40 @@ class GridWorld:
         return self.state
 
     def is_terminal(self, state):
+        return self.grid[state] == 1 or self.grid[state] == -1
+
+    def get_next_state(self, state, action):
+        next_state = list(state)
+        if action == 0:  # Move up
+            next_state[0] = max(0, state[0] - 1)
+        elif action == 1:  # Move right
+            next_state[1] = min(3, state[1] + 1)
+        elif action == 2:  # Move down
+            next_state[0] = min(3, state[0] + 1)
+        elif action == 3:  # Move left
+            next_state[1] = max(0, state[1] - 1)
+        return tuple(next_state)
+
+    def step(self, action):
+        next_state = self.get_next_state(self.state, action)
+        reward = self.grid[next_state]
+        self.state = next_state
+        done = self.is_terminal(next_state)
+        return next_state, reward, done'''
+class PyquaWorld:
+    def __init__(self):
+        self.grid = np.array([
+            [0, 0, 0, 1], #increase grid by one row and column to accomodate oob negative rewards?
+            [0, 0, 0, 1]    #need more scalable representation of state space (this is only location-space, even that barely)
+        ])
+        #self.start_state = (3, 0)
+        #self.state = self.start_state
+
+    def reset(self): #later...
+        self.state = self.start_state
+        return self.state
+
+    def is_terminal(self, state): #later, needs closer entanglement with pyquaticus game engine(?)
         return self.grid[state] == 1 or self.grid[state] == -1
 
     def get_next_state(self, state, action):
