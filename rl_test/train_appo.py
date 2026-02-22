@@ -19,7 +19,7 @@ import pygame
 import ray
 #from ray.rllib.algorithms.ppo import PPOConfig
 from ray.tune.logger import pretty_print
-from ray.tune.registry import register_env, register_policy
+from ray.tune.registry import register_env
 from pyquaticus.envs.rllib_pettingzoo_wrapper import ParallelPettingZooWrapper
 import sys
 import time
@@ -30,11 +30,50 @@ from ray import air, tune
 #from ray.rllib.algorithms.ppo import PPOTF2Policy, PPOConfig
 from ray.rllib.algorithms.appo import APPOConfig, APPOTorchPolicy
 from ray.rllib.policy.policy import PolicySpec, Policy
+from ray.rllib.algorithms.appo import APPO
 import os
 import pyquaticus.utils.rewards as rew
 from pyquaticus.base_policies.base_policy_wrappers import DefendGen, AttackGen
 from pyquaticus.config import config_dict_std
 import logging
+
+# Patch for tree library to handle mixed str/tuple keys #Start of patch
+import tree
+_original_map_structure = tree.map_structure
+
+def _patched_map_structure(func, *structures, **kwargs):
+    """Patched version that handles mixed key types"""
+    # Flatten keeping type information
+    def _safe_flatten(s):
+        if isinstance(s, dict):
+            items = []
+            for k, v in s.items():
+                if isinstance(v, dict):
+                    flattened = _safe_flatten(v)
+                    items.extend([(k, k2, vv) for k2, vv in flattened])
+                else:
+                    items.append(((k,), v))
+            return items
+        return [((), s)]
+    
+    try:
+        return _original_map_structure(func, *structures, **kwargs)
+    except TypeError as e:
+        if "'<' not supported between instances of 'str' and 'tuple'" in str(e):
+            # Fallback: process structures without sorting
+            if isinstance(structures[0], dict):
+                result = {}
+                for key in structures[0]:
+                    values = tuple(s[key] if isinstance(s, dict) else s for s in structures)
+                    result[key] = func(*values)
+                return result
+            else:
+                return func(*structures)
+        raise
+
+tree.map_structure = _patched_map_structure
+# End of patch
+
 class RandPolicy(Policy):
     """
     Example wrapper for training against a random policy.
@@ -88,7 +127,7 @@ if __name__ == '__main__':
     
     env_creator = lambda config: pyquaticus_v0.PyQuaticusEnv(config_dict=config_dict,render_mode=RENDER_MODE, reward_config=reward_config, team_size=3)
     env = ParallelPettingZooWrapper(pyquaticus_v0.PyQuaticusEnv(config_dict=config_dict,render_mode=RENDER_MODE, reward_config=reward_config, team_size=3))
-    register_env('pyquaticus', lambda config: ParallelPettingZooWrapper(env_creator(config)))
+    register_env('pyquaticus', lambda config: ParallelPettingZooWrapper(env_creator(config))) #TODO check if registered correctly (policy?)
     obs_space = env.observation_space['agent_0']
     act_space = env.action_space['agent_0']
     def policy_mapping_fn(agent_id, episode, worker, **kwargs):
