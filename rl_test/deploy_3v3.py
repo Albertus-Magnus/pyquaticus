@@ -72,6 +72,9 @@ if __name__ == '__main__':
     #Ex. Load in Heurisitc
     #H_one = BaseDefender('agent_0', Team.RED_TEAM, mode='easy')
     #H_two = BaseAttacker('agent_1', Team.RED_TEAM, mode='easy')
+    #H_one = BaseDefender('agent_3', Team.RED_TEAM, mode='easy')#trying (so far faililng, TODO) to get heuristic opponents working...
+    #H_two = BaseAttacker('agent_4', Team.RED_TEAM, mode='easy')
+    #H_three = Heuristic_CTF_Agent('agent_5', Team.RED_TEAM, mode='easy')
     #Load in learned policies
     policy_one = Policy.from_checkpoint(os.path.abspath(args.policy_one))
     policy_two = Policy.from_checkpoint(os.path.abspath(args.policy_two))
@@ -92,10 +95,14 @@ if __name__ == '__main__':
         #Ex. Compute Heuristic agent actions
         #two = H_one.compute_action(new_obs)
         #three = H_two.compute_action(new_obs)
+        #three = H_one.compute_action(new_obs) #trying (so far faililng, TODO) to get heuristic opponents working...
+        #four = H_two.compute_action(new_obs)
+        #five = H_three.compute_action(new_obs)
         
         #Step the environment
         #Opponents Don't Move:
         obs, reward, term, trunc, info = env.step({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':-1, 'agent_4':-1, 'agent_5':-1})
+        #obs, reward, term, trunc, info = env.step({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three, 'agent_4':four, 'agent_5':five})
         k =  list(term.keys())
         if step >= max_step:
             break
