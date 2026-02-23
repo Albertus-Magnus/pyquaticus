@@ -154,7 +154,8 @@ if __name__ == '__main__':
     algo = ppo_config.build_algo()
     start = 0
     end = 0
-    for i in range(8001):
+    #for i in range(8001):
+    for i in range(360): #ca an hour of training, this is the amount for today's demo
         print("Looping: ", i)
         start = time.time()
         algo.train()
