@@ -3,121 +3,31 @@ import numpy as np
 import random
 
 #########################
-# Q-learning example taken from a website tutorial, the literal table-environment has to be replaced with a pyquaticus state representation and the correct action space.
-# First without taking into account the multi-agent nature of the problem, just to get a working example of Q-learning in a simple environment. Then we can extend it to opponent agents.
+# Q-learning own implementation to work with pyquaticus. Requires some representation of the state space and action space, as well as a reward function (or compatibility with pyquaticus reward functions). This will for now be a very basic implementation, without any opponent agents or multi-agent considerations. Just to get a working example of Q-learning in a simple environment (hopefully avoiding state space explosion). 
+# Later we will extend it to opponent agents. Custom reward is also later, first use reward that is written down in training data.
 #########################
 
-# Define the gridworld environment
-'''class GridWorld: #EXAMPLE
-    def __init__(self):
-        self.grid = np.array([
-            [0, 0, 0, 1],  # Goal at (0, 3)
-            [0, -1, 0, 0],  # Wall with reward -1
-            [0, 0, 0, 0],
-            [0, 0, 0, 0]  # Start at (3, 0)
-        ])
-        self.start_state = (3, 0)
-        self.state = self.start_state
-
-    def reset(self):
-        self.state = self.start_state
-        return self.state
-
-    def is_terminal(self, state):
-        return self.grid[state] == 1 or self.grid[state] == -1
-
-    def get_next_state(self, state, action):
-        next_state = list(state)
-        if action == 0:  # Move up
-            next_state[0] = max(0, state[0] - 1)
-        elif action == 1:  # Move right
-            next_state[1] = min(3, state[1] + 1)
-        elif action == 2:  # Move down
-            next_state[0] = min(3, state[0] + 1)
-        elif action == 3:  # Move left
-            next_state[1] = max(0, state[1] - 1)
-        return tuple(next_state)
-
-    def step(self, action):
-        next_state = self.get_next_state(self.state, action)
-        reward = self.grid[next_state]
-        self.state = next_state
-        done = self.is_terminal(next_state)
-        return next_state, reward, done'''
-class PyquaWorld:
-    def __init__(self):
-        self.grid = np.array([
-            [0, 0, 0, 1], #increase grid by one row and column to accomodate oob negative rewards?
-            [0, 0, 0, 1]    #need more scalable representation of state space (this is only location-space, even that barely)
-        ])
-        #self.start_state = (3, 0)
-        #self.state = self.start_state
-
-    def reset(self): #later...
-        self.state = self.start_state
-        return self.state
-
-    def is_terminal(self, state): #later, needs closer entanglement with pyquaticus game engine(?)
-        return self.grid[state] == 1 or self.grid[state] == -1
-
-    def get_next_state(self, state, action):
-        next_state = list(state)
-        if action == 0:  # Move up
-            next_state[0] = max(0, state[0] - 1)
-        elif action == 1:  # Move right
-            next_state[1] = min(3, state[1] + 1)
-        elif action == 2:  # Move down
-            next_state[0] = min(3, state[0] + 1)
-        elif action == 3:  # Move left
-            next_state[1] = max(0, state[1] - 1)
-        return tuple(next_state)
-
-    def step(self, action):
-        next_state = self.get_next_state(self.state, action)
-        reward = self.grid[next_state]
-        self.state = next_state
-        done = self.is_terminal(next_state)
-        return next_state, reward, done
-    
-
-##############
-#learning code
-##############
-class QLearningAgent:
-    def __init__(self, learning_rate=0.1, discount_factor=0.9, exploration_rate=0.1):
-        self.q_table = np.zeros((4, 4, 4))  # Q-values for each state-action pair
-        self.learning_rate = learning_rate
-        self.discount_factor = discount_factor
-        self.exploration_rate = exploration_rate
-
-    def choose_action(self, state):
-        if random.uniform(0, 1) < self.exploration_rate:
-            return random.randint(0, 3)  # Explore
-        else:
-            return np.argmax(self.q_table[state])  # Exploit
-
-    def update_q_value(self, state, action, reward, next_state):
-        max_future_q = np.max(self.q_table[next_state])  # Best Q-value for next state
-        current_q = self.q_table[state][action]
-        # Q-learning formula
-        self.q_table[state][action] = current_q + self.learning_rate * (
-            reward + self.discount_factor * max_future_q - current_q
-        )
-
-#########
-# Training the Q-learning agent
-#########
-env = GridWorld()
-agent = QLearningAgent()
-
-episodes = 1000  # Number of training episodes
-
-for episode in range(episodes):
-    state = env.reset()  # Reset the environment at the start of each episode
-    done = False
-
-    while not done:
-        action = agent.choose_action(state)  # Choose an action
-        next_state, reward, done = env.step(action)  # Take the action and observe next state, reward
-        agent.update_q_value(state, action, reward, next_state)  # Update Q-values
-        state = next_state  # Move to the next state
+# Build a q-table from a file of info and reward (etc?) logs and safe that table (is now a q-learn policy)
+class QPyquaBuilder:
+    def __init__(self, x=160, y=80, x_cells=8, y_cells=8):
+        '''
+            x, y describe the map size. 
+            x_cells is the number of cell columns in the grid divided by two (per map-half).
+            y_cells is the number of cell rows in the grid.
+        '''
+        # As first step we must divide the map into a grid of cells.
+        # The map is 160 by 80, the longer side (x-axis) is divided into the own half and the enemy half, where cells should only be located on one half at a time.
+        #worldgrid = np.array([
+        # Divide the map into a grid of cells, assuming x-achsis is divided into two team sides:
+        self.x_cellsize = (x / 2) / x_cells # zB: 160 / 2 / 8 = 10
+        self.y_cellsize = y / y_cells # zB: 80 / 8 = 10
+        # Cellsize optimally should align with the border between map halves.
+        self.cellgrid = np.zeros((x_cells, y_cells)) # This is just a grid to represent the map-dividing cells, not the actual q-table. At least for each represented agent position we need one of those for the full (but still oversimplified) state.
+        self.oobool = False # Necessary if position temporarily leaves the grid. Stored in addition to the map, because probably(?) only one state necessary.
+        
+        ''' The Q-table needs account for 
+                - the position of the agent (for which the rewards are tabled).
+                - the positions of 2 (3?) opponents.
+                - 
+            (Probably store the qtable as this-class-object for now?, not too much in table form)
+        '''

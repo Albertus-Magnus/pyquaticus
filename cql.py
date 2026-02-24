@@ -1,82 +1,126 @@
-from ray.rllib.algorithms.cql import CQLConfig
-from ray.tune import CLIReporter
-import ray
-import argparse
-import gymnasium as gym
+from pyquaticus.utils.rewards import triple_aggressive_rew, triple_caps_and_grabs
 import numpy as np
-import pygame
-import ray
-from ray.rllib.algorithms.ppo import PPOConfig
-from ray.tune.logger import pretty_print
-from ray.tune.registry import register_env
-from pyquaticus.envs.rllib_pettingzoo_wrapper import ParallelPettingZooWrapper
-import sys
-import time
-from pyquaticus.envs.pyquaticus import Team
-import pyquaticus
-from pyquaticus import pyquaticus_v0
-from ray import air, tune
-from ray.rllib.algorithms.ppo import PPOTF2Policy, PPOConfig
-from ray.rllib.policy.policy import PolicySpec, Policy
-import os
-import pyquaticus.utils.rewards as rew
-from pyquaticus.base_policies.base_policy_wrappers import DefendGen, AttackGen
-from pyquaticus.config import config_dict_std
-import logging
-# (a lot of unnecessary imports, but better than searching one - copypasted from train_3v3.py)
+import random
 
-def train_cql():
-    """Train a CQL agent on the pyquaticus game."""
-    ray.init()
-    #'''
-    reward_config = {'agent_0':rew.caps_and_grabs, 'agent_1':rew.caps_and_grabs, 'agent_2':rew.caps_and_grabs, 'agent_3':None, 'agent_4':None, 'agent_5':None} # Example Reward Config
-    RENDER_MODE = 'human' #if args.render else None #set to 'human' if you want rendered output
+#########################
+# Q-learning example taken from a website tutorial, the literal table-environment has to be replaced with a pyquaticus state representation and the correct action space.
+# First without taking into account the multi-agent nature of the problem, just to get a working example of Q-learning in a simple environment. Then we can extend it to opponent agents.
+#########################
+
+# Define the gridworld environment
+'''class GridWorld: #EXAMPLE
+    def __init__(self):
+        self.grid = np.array([
+            [0, 0, 0, 1],  # Goal at (0, 3)
+            [0, -1, 0, 0],  # Wall with reward -1
+            [0, 0, 0, 0],
+            [0, 0, 0, 0]  # Start at (3, 0)
+        ])
+        self.start_state = (3, 0)
+        self.state = self.start_state
+
+    def reset(self):
+        self.state = self.start_state
+        return self.state
+
+    def is_terminal(self, state):
+        return self.grid[state] == 1 or self.grid[state] == -1
+
+    def get_next_state(self, state, action):
+        next_state = list(state)
+        if action == 0:  # Move up
+            next_state[0] = max(0, state[0] - 1)
+        elif action == 1:  # Move right
+            next_state[1] = min(3, state[1] + 1)
+        elif action == 2:  # Move down
+            next_state[0] = min(3, state[0] + 1)
+        elif action == 3:  # Move left
+            next_state[1] = max(0, state[1] - 1)
+        return tuple(next_state)
+
+    def step(self, action):
+        next_state = self.get_next_state(self.state, action)
+        reward = self.grid[next_state]
+        self.state = next_state
+        done = self.is_terminal(next_state)
+        return next_state, reward, done
+        
+    [Further steps not copied here, contained in the tutorial]'''
+
+class PyquaWorld:
+    def __init__(self):
+        self.grid = np.array([
+            [0, 0, 0, 1], #increase grid by one row and column to accomodate oob negative rewards?
+            [0, 0, 0, 1]    #need more scalable representation of state space (this is only location-space, even that barely)
+        ])
+        #self.start_state = (3, 0)
+        #self.state = self.start_state
+
+    def reset(self): #later...
+        self.state = self.start_state
+        return self.state
+
+    def is_terminal(self, state): #later, needs closer entanglement with pyquaticus game engine(?)
+        return self.grid[state] == 1 or self.grid[state] == -1
+
+    def get_next_state(self, state, action):
+        next_state = list(state)
+        if action == 0:  # Move up
+            next_state[0] = max(0, state[0] - 1)
+        elif action == 1:  # Move right
+            next_state[1] = min(3, state[1] + 1)
+        elif action == 2:  # Move down
+            next_state[0] = min(3, state[0] + 1)
+        elif action == 3:  # Move left
+            next_state[1] = max(0, state[1] - 1)
+        return tuple(next_state)
+
+    def step(self, action):
+        next_state = self.get_next_state(self.state, action)
+        reward = self.grid[next_state]
+        self.state = next_state
+        done = self.is_terminal(next_state)
+        return next_state, reward, done
     
-    config_dict = config_dict_std
-    config_dict['sim_speedup_factor'] = 4
-    config_dict['max_score'] = 3
-    config_dict['max_time']=20#240
-    config_dict['tagging_cooldown'] = 60
-    config_dict['tag_on_oob']=True
 
+##############
+#learning code
+##############
+class QLearningAgent:
+    def __init__(self, learning_rate=0.1, discount_factor=0.9, exploration_rate=0.1):
+        self.q_table = np.zeros((4, 4, 4))  # Q-values for each state-action pair
+        self.learning_rate = learning_rate
+        self.discount_factor = discount_factor
+        self.exploration_rate = exploration_rate
 
-    #   Running this file currently throws an error:
-    #   AttributeError: 'Discrete' object has no attribute 'low'), taking actor 1 out of service.
-    #   Is this because the action space of the environment is currently a Discrete space, which is not compatible with the CQL implementation?
+    def choose_action(self, state):
+        if random.uniform(0, 1) < self.exploration_rate:
+            return random.randint(0, 3)  # Explore
+        else:
+            return np.argmax(self.q_table[state])  # Exploit
 
-    env_creator = lambda config: pyquaticus_v0.PyQuaticusEnv(config_dict=config_dict,render_mode=RENDER_MODE, reward_config=reward_config, team_size=3)
-    env = ParallelPettingZooWrapper(pyquaticus_v0.PyQuaticusEnv(config_dict=config_dict,render_mode=RENDER_MODE, reward_config=reward_config, team_size=3))
-    register_env('pyquaticus', lambda config: ParallelPettingZooWrapper(env_creator(config)))
-    #from ray.rllib.algorithms.cql import CQLConfig
-    config = CQLConfig().training(gamma=0.9, lr=0.01)
-    config = config.resources(num_gpus=0)
-    config = config.env_runners(num_env_runners=4)
-    config = config.api_stack(enable_rl_module_and_learner=False,enable_env_runner_and_connector_v2=False)
-    print(config.to_dict())
-    # Build an Algorithm object from the config and run 1 training iteration.
-    algo = config.build(env="pyquaticus")
-    algo.train()
-    #'''
-    '''config = (
-        CQLConfig()
-        .environment("pyquaticus")
-        .framework("torch")
-        .rollouts(num_rollout_workers=0)
-        .training(
-            lr=1e-4,
-            train_batch_size=256,
+    def update_q_value(self, state, action, reward, next_state):
+        max_future_q = np.max(self.q_table[next_state])  # Best Q-value for next state
+        current_q = self.q_table[state][action]
+        # Q-learning formula
+        self.q_table[state][action] = current_q + self.learning_rate * (
+            reward + self.discount_factor * max_future_q - current_q
         )
-        .evaluation(eval_num_workers=0)
-    )'''
-    
-    #algo = config.build()
-    
-    #for _ in range(10):
-    #    result = algo.train()
-    #    print(f"Episode Reward Mean: {result['episode_reward_mean']}")
-    
-    #ray.shutdown()
 
+#########
+# Training the Q-learning agent
+#########
+env = GridWorld()
+agent = QLearningAgent()
 
-if __name__ == "__main__":
-    train_cql()
+episodes = 1000  # Number of training episodes
+
+for episode in range(episodes):
+    state = env.reset()  # Reset the environment at the start of each episode
+    done = False
+
+    while not done:
+        action = agent.choose_action(state)  # Choose an action
+        next_state, reward, done = env.step(action)  # Take the action and observe next state, reward
+        agent.update_q_value(state, action, reward, next_state)  # Update Q-values
+        state = next_state  # Move to the next state
