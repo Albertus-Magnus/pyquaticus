@@ -133,7 +133,7 @@ if __name__ == '__main__':
     config.multi_agent(policies=policies, policy_mapping_fn=policy_mapping_fn, policies_to_train=["agent-0-policy", "agent-1-policy", "agent-2-policy"],)
     print("marker 6--")
     #algo = ppo_config.build_algo()
-    algo = config.build_algo() #error happening here-> "AttributeError: 'Discrete' object has no attribute 'low')"
+    algo = config.build_algo() #error happening here-> "AttributeError: 'Discrete' object has no attribute 'low')" [caused by RLlib CQL not being intended for discrete actions; hence I'm abandoning this approach]
     print("marker 7--")
     start = 0
     end = 0
