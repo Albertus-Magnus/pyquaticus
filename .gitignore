@@ -19,3 +19,4 @@ rhea_test*.log
 ultra_def_test*.log
 policy_state.pkl
 algorithm_state.pkl
+*.npy

@@ -18,6 +18,8 @@ class QPyquaBuilder:
             x_cells is the number of cell columns in the grid divided by two (per map-half).
             y_cells is the number of cell rows in the grid.
         '''
+        self.x_cells = x_cells #they'll come in useful, after all...
+        self.y_cells = y_cells
         # As first step we must divide the map into a grid of cells.
         # The map is 160 by 80, the longer side (x-axis) is divided into the own half and the enemy half, where cells should only be located on one half at a time.
         #worldgrid = np.array([
@@ -25,9 +27,8 @@ class QPyquaBuilder:
         self.x_cellsize = (x / 2) / x_cells # zB: 160 / 2 / 8 = 10
         self.y_cellsize = y / y_cells # zB: 80 / 8 = 10
         # Cellsize optimally should align with the border between map halves.
-        cellgrid = np.zeros((x_cells, y_cells)) # This is just a grid to represent the map-dividing cells, not the actual q-table. At least for each represented agent position we need one of those for the full (but still oversimplified) state.
+        #cellgrid = np.zeros((x_cells, y_cells)) # This is just a grid to represent the map-dividing cells, not the actual q-table. At least for each represented agent position we need one of those for the full (but still oversimplified) state.
         # cellgrid not strictly necessary, just a reminder of the logic right now
-        self.oobool = False # Necessary if position temporarily leaves the grid. Stored in addition to the map, because probably(?) only one state necessary.
         # Note: the oob-bool will also be used for the tagged-state (similar to how pyquaticus uses it anyways?)
         # TODO PROBLEM: on opponents the tagged must not be oob! (could encounter them on their map-half)
         ''' The Q-table needs account for 
@@ -42,7 +43,19 @@ class QPyquaBuilder:
         # (Calculation assuming 2 tracked opponent agents and one oob state in addition to position.)
         # (All states exist with opponent flag grabbed (by this agent, team actions are not tracked) and with opponent flag at status quo, thus all states times two.)
         
-        '''Action space consists of 8 directions at full speed and one "direction" for zero speed.'''
+        ''' 
+            Action space consists of 8 directions at full speed and one "direction" for zero speed.
+            (speed left, heading right)
+            action0: [0.0,    0]
+            action1: [1.0,    0]
+            action2: [1.0,   45]
+            action3: [1.0,   90]
+            action4: [1.0,  135]
+            action5: [1.0,  180]
+            action6: [1.0, -135]
+            action7: [1.0,  -90]
+            action8: [1.0,  -45]
+        '''
         self.actionsize = 9
 
         #q_table_size = self.statesize * self.actionsize    #This might be an enourmous size, depending on number of map grid cells :-/
@@ -135,15 +148,127 @@ class QPyquaBuilder:
     # End of access_file()
 
 if __name__ == '__main__':
+    x_length = 160
+    y_length = 80
     q_object = QPyquaBuilder()
-    logdata = q_object.access_file("experiment_results/experiment_1min_5rep_laptop/agent_type0_diffeasy_seed1603_reward1.log")
+    #logdata = q_object.access_file("experiment_results/experiment_1min_5rep_laptop/agent_type0_diffeasy_seed1603_reward1.log")
+    logdata = q_object.access_file("experiment_results/experiment_5rep_600sec/agent_type0_diffeasy_seed1127_reward1.log")
     # (Example log file, will call them all with a loop somewhere else. TODO)
     #print(logdata) #appears to be the correctly read-in file :)
     #print(list(logdata[0]['obs']['agent_0'].keys() ))
+    print((logdata[0]['info']['agent_0']['global_state'][('agent_0', 'pos')] )) #returns [64.77070303, 23.29377587]
+    # info is logdata[0]['info']['agent_0']['global_state']
+    # [('agent_0', 'pos'), ('agent_0', 'heading'), ('agent_0', 'scrimmage_line_bearing'), ('agent_0', 'scrimmage_line_distance'), ('agent_0', 'speed'), ('agent_0', 'has_flag'), ('agent_0', 'on_side'), ('agent_0', 'oob'), ('agent_0', 'tagging_cooldown'), ('agent_0', 'is_tagged'), ('agent_1', 'pos'), ('agent_1', 'heading'), ('agent_1', 'scrimmage_line_bearing'), ('agent_1', 'scrimmage_line_distance'), ('agent_1', 'speed'), ('agent_1', 'has_flag'), ('agent_1', 'on_side'), ('agent_1', 'oob'), ('agent_1', 'tagging_cooldown'), ('agent_1', 'is_tagged'), ('agent_2', 'pos'), ('agent_2', 'heading'), ('agent_2', 'scrimmage_line_bearing'), ('agent_2', 'scrimmage_line_distance'), ('agent_2', 'speed'), ('agent_2', 'has_flag'), ('agent_2', 'on_side'), ('agent_2', 'oob'), ('agent_2', 'tagging_cooldown'), ('agent_2', 'is_tagged'), ('agent_3', 'pos'), ('agent_3', 'heading'), ('agent_3', 'scrimmage_line_bearing'), ('agent_3', 'scrimmage_line_distance'), ('agent_3', 'speed'), ('agent_3', 'has_flag'), ('agent_3', 'on_side'), ('agent_3', 'oob'), ('agent_3', 'tagging_cooldown'), ('agent_3', 'is_tagged'), ('agent_4', 'pos'), ('agent_4', 'heading'), ('agent_4', 'scrimmage_line_bearing'), ('agent_4', 'scrimmage_line_distance'), ('agent_4', 'speed'), ('agent_4', 'has_flag'), ('agent_4', 'on_side'), ('agent_4', 'oob'), ('agent_4', 'tagging_cooldown'), ('agent_4', 'is_tagged'), ('agent_5', 'pos'), ('agent_5', 'heading'), ('agent_5', 'scrimmage_line_bearing'), ('agent_5', 'scrimmage_line_distance'), ('agent_5', 'speed'), ('agent_5', 'has_flag'), ('agent_5', 'on_side'), ('agent_5', 'oob'), ('agent_5', 'tagging_cooldown'), ('agent_5', 'is_tagged'), 'blue_flag_home', 'red_flag_home', 'blue_flag_pos', 'red_flag_pos', 'blue_flag_pickup', 'red_flag_pickup', 'blue_team_score', 'red_team_score']
     # apparently a list of dictionaries (keys: obs,info,reward) 
-    # of dictionaries (keys: agent_0, agent_1,...) of dictionaries (keys:
+    # of dictionaries (for obs!) (keys: agent_0, agent_1,...) of dictionaries (keys:
     #   'opponent_home_bearing', 'opponent_home_distance', 'own_home_bearing', 'own_home_distance', 'wall_0_bearing', 'wall_0_distance', 'wall_1_bearing', 'wall_1_distance', 'wall_2_bearing', 'wall_2_distance', 'wall_3_bearing', 'wall_3_distance', 'scrimmage_line_bearing', 'scrimmage_line_distance', 'speed', 'has_flag', 'on_side', 'tagging_cooldown', 'is_tagged', 'team_score', 'opponent_score', ('teammate_0', 'bearing'), ('teammate_0', 'distance'), ('teammate_0', 'relative_heading'), ('teammate_0', 'speed'), ('teammate_0', 'has_flag'), ('teammate_0', 'on_side'), ('teammate_0', 'tagging_cooldown'), ('teammate_0', 'is_tagged'), ('teammate_1', 'bearing'), ('teammate_1', 'distance'), ('teammate_1', 'relative_heading'), ('teammate_1', 'speed'), ('teammate_1', 'has_flag'), ('teammate_1', 'on_side'), ('teammate_1', 'tagging_cooldown'), ('teammate_1', 'is_tagged'), ('opponent_0', 'bearing'), ('opponent_0', 'distance'), ('opponent_0', 'relative_heading'), ('opponent_0', 'speed'), ('opponent_0', 'has_flag'), ('opponent_0', 'on_side'), ('opponent_0', 'tagging_cooldown'), ('opponent_0', 'is_tagged'), ('opponent_1', 'bearing'), ('opponent_1', 'distance'), ('opponent_1', 'relative_heading'), ('opponent_1', 'speed'), ('opponent_1', 'has_flag'), ('opponent_1', 'on_side'), ('opponent_1', 'tagging_cooldown'), ('opponent_1', 'is_tagged'), ('opponent_2', 'bearing'), ('opponent_2', 'distance'), ('opponent_2', 'relative_heading'), ('opponent_2', 'speed'), ('opponent_2', 'has_flag'), ('opponent_2', 'on_side'), ('opponent_2', 'tagging_cooldown'), ('opponent_2', 'is_tagged')
     # ) of diverse types.
-    #TODO read through frames and edit table
-    #TODO create 2v2 training data or adapt to 3v3 
+    #DONE read through frames and edit table
+    #DONE create 2v2 training data or adapt to 3v3 [we will use 3v3 training data but ignore the third opponent for now, got a ArrayMemoryError with 3 opponents...]
     #then train, then eod :)
+
+    #right now hardcoded to read for agent_0 only (and 2 opponents, ignoring 1 opponent to utilize existing logs - 3 opponents was too large)
+    previous_reward = logdata[0]['reward']['agent_0'] #set to first frame reward (should have same effect as skipping first frame)
+    prev_xcell = int(logdata[0]['info']['agent_0']['global_state'][('agent_0', 'pos')][0] / q_object.x_cellsize)
+    prev_ycell = int(logdata[0]['info']['agent_0']['global_state'][('agent_0', 'pos')][0] / q_object.x_cellsize) #first position shouldn't be oob...
+    for frame in logdata:
+        obs = frame['obs']['agent_0']
+        reward = frame['reward']['agent_0'] 
+        info = frame['info']['agent_0']['global_state']
+        #print(obs)
+        #print(reward)
+        #print(info)
+        # Needed to decide qtable id: ('agent_0', 'has_flag')('agent_0', 'oob')('agent_0', 'is_tagged') (and below ones)
+        # edit q-table with this data (need to create a state representation first, then find the action taken, then update the q-table with the reward and learning rate, etc.)
+        has_flag = info[('agent_0', 'has_flag')]
+        self_oob = info[('agent_0', 'oob')]
+        is_tagged = info[('agent_0', 'is_tagged')]
+        heading = info[('agent_0', 'heading')]
+        speed = info[('agent_0', 'speed')]
+
+        #sort location to grid:
+        x_cell = int( info[('agent_0', 'pos')][0] / q_object.x_cellsize )
+        # x / cellwidth (round down) is the index of the cell from "left to right" (x-achsis cell id)
+        # after the last cell one index is reserved for oob and (if not opponent) tag state. (if x,y coded is x_max+1,y_max)
+        y_cell = int( info[('agent_0', 'pos')][1] / q_object.y_cellsize )
+        if info[('agent_0', 'oob')] == True:
+            x_cell = q_object.x_cells # oob state is one x cell after the last cell, y_cell is last y cell + 0
+            y_cell = q_object.y_cells - 1 #oob
+
+        #opponent data (just position+oob)
+        x_cell_opp1 = int( info[('agent_3', 'pos')][0] / q_object.x_cellsize )
+        y_cell_opp1 = int( info[('agent_3', 'pos')][1] / q_object.y_cellsize )
+        if info[('agent_3', 'oob')] == True:
+            x_cell_opp1 = q_object.x_cells # oob state is one x cell after the last cell, y_cell is last y cell + 0
+            y_cell_opp1 = q_object.y_cells - 1 #oob
+        x_cell_opp2 = int( info[('agent_4', 'pos')][0] / q_object.x_cellsize )
+        y_cell_opp2 = int( info[('agent_4', 'pos')][1] / q_object.y_cellsize )
+        if info[('agent_4', 'oob')] == True:
+            x_cell_opp2 = q_object.x_cells # oob state is one x cell after the last cell, y_cell is last y cell + 0
+            y_cell_opp2 = q_object.y_cells - 1 #oob
+        
+        #TODO heading and speed in the info-log are mapped in some strange way to the ACTION_MAP I took from elsewhere in the code.     [best way: print action and print info with step number. Then look]
+        #Figure out how to accurately find the according action. For now this is a bit sus implemented (to test if the rest works).
+        # Heading and speed (for now, not optimal solution!) are mapped to the closest action in the ACTION_MAP:
+        ACTION_MAP = {
+            0: [0.0,    0],
+            1: [1.0,    0],
+            2: [1.0,   45],
+            3: [1.0,   90],
+            4: [1.0,  135],
+            5: [1.0,  180],
+            6: [1.0, -135],
+            7: [1.0,  -90],
+            8: [1.0,  -45]
+        }
+        action_taken = None
+        for action_id, (a_speed, a_heading) in ACTION_MAP.items():
+            if a_speed > 0.5 and abs(a_heading - heading) < (45 / 2): #some tolerance for mapping (currently), not optimal but should work for now
+                action_taken = action_id
+                break
+            if a_speed < 0.5:
+                action_taken = 0
+        # need to find out how action heading works, also speed (is max speed 10.0 or 1.0 on input and what on output/log?)
+        if action_taken is None:
+            print("Warning: action not found for heading", heading, "and speed", speed)
+            action_taken = 0 # default to no movement if not found (should not happen)
+
+        # Compute state id for q-table: (concerns the state of the previous frame)
+        #location_space_size = q_object.x_cells * q_object.y_cells + 1 # +1 for oob state
+        state_id = prev_xcell + prev_ycell * q_object.x_cells + \
+        x_cell_opp1 + y_cell_opp1 * q_object.x_cells * (q_object.x_cells + 1) + \
+        x_cell_opp2 + y_cell_opp2 * q_object.x_cells * (q_object.x_cells + 1) * (q_object.x_cells + 1) + \
+        int(has_flag) * (q_object.x_cells + 1) ** 3
+        # Does this encoding make sense? Idk, my head is smoking now. This will be a nightmare if I have to look at it again, perhaps a dictionary would be better (but not for memory & performance?)
+
+        # Using reward['agent_0'] and previous_reward, update q-table with learning rate alpha and discount factor gamma:
+        alpha = 0.1 # learning rate
+        gamma = 0.9 # discount factor
+        reward_value = reward - previous_reward # this is the reward for the current action
+        old_q_value = q_object.q_table[state_id][action_taken]
+        # Q-learning update rule:
+        q_object.q_table[state_id][action_taken] = old_q_value + alpha * (reward_value + gamma * np.max(q_object.q_table[state_id]) - old_q_value)
+        #TODO check correctness of update rule (lookup B. loss function)
+
+        #set previous-values for next frame:
+        previous_reward = reward
+        prev_xcell = x_cell
+        prev_ycell = y_cell
+
+    # Q-table can now be saved and used for action selection in a policy.
+    #storing q-table as a numpy file for now, can be loaded in a policy class later:
+    np.save("q_table.npy", q_object.q_table)
+    print(q_object.q_table) #does not print whole table
+    
+    import matplotlib.pyplot as plt
+
+    # Visualize the q-table
+    plt.figure(figsize=(12, 6))
+    plt.imshow(q_object.q_table, cmap='viridis', aspect='auto')
+    plt.colorbar(label='Q-value')
+    plt.xlabel('Action')
+    plt.ylabel('State')
+    plt.title('Q-Table Visualization')
+    #plt.tight_layout()
+    #plt.savefig('q_table_visualization.png', dpi=150)
+    plt.show() #also is not very helpful, need to find a better way to visualize it, if that is necessary... (TODO?)
