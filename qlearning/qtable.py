@@ -12,7 +12,7 @@ from pyquaticus.config import config_dict_std, ACTION_MAP
 
 class QTable:
     def __init__(self):
-        self.statesize = 4^4 # = 256 results in 1024 q-values
+        #self.statesize = 4^4 # = 256 results in 1024 q-values
         # 2 booleans (for flag grabbed status), 2 headings (four angle-options each) for opp. agents and one self-position variable (four values, either area-based or objective-angle based, see below)
         ''' 
             Action space consists of 4 directions (backwards is effectively similar to zero speed?).
@@ -22,14 +22,46 @@ class QTable:
             [1.0,  180]
             [1.0,  -90]
         '''
-        self.actionsize = 4
+        #self.actionsize = 4
         #self.q_table = np.zeros((self.statesize, self.actionsize)) #nope, we want to have it 6-dimensional
-        self.qtable = np.zeros((4, 4, 4, 2, 2, self.actionsize))
+        self.qtable = np.zeros((4, 4, 4, 2, 2, 4))
+        ''' This multi-dimensional table stores the qvalues according to the following mapping:
+            self-position (relative heading towards objective): 0-3 [order of angles todo]
+            opponent 1 (relative heading towards opp1): 0-3
+            opponent 2 (relative heading towards opp2): 0-3
+            own flag grabbed: Bool
+            opponent flag grabbed: Bool
+            action space: 0-3
+        '''
         print("Q-Table created, size",self.qtable.size)
+    #End of init()
 
-    #def access_file(self, filename):
-        #can be found in qlearn.py
+    def set_q_value(self, ownpos, opp1, opp2, b_flag, r_flag, action, reward: float):
+        """Adjusts the value of a q-value in this QTable object.
+        
+        :ownpos: is self-position (relative heading towards objective): 0-3 [order of angles todo]
+            
+        :opp1: is opponent 1 (relative heading towards opp1): 0-3
+            
+        :opp2: is opponent 2 (relative heading towards opp2): 0-3
+            
+        :b_flag: is own flag grabbed: Bool
+            
+        :r_flag: is opponent flag grabbed: Bool
+            
+        :action: is action space: 0-3
 
+        :reward: is the reward that was found with the selected action
+
+        reward is from frame n+1, the rest of the values are from frame n (action being the action between these frames, so selected in frame n).
+        """
+        old_q = self.qtable[ownpos][opp1][opp2][b_flag][r_flag][action]
+
+        #TODO calculation of loss etc as per the qlearn algorithm
+        # Loss function is used to compute new q-value:
+        new_q = -1 #math is hard...
+
+        self.qtable[ownpos][opp1][opp2][b_flag][r_flag][action] = new_q
 #End of QTable()
 
 class QlearnPolicy(BaseAgentPolicy):
@@ -37,15 +69,14 @@ class QlearnPolicy(BaseAgentPolicy):
         self,
         agent_id: str,
         env: Union[PyQuaticusEnv, PyQuaticusMoosBridge],
+        q_table: QTable,
         flag_keepout: float = config_dict_std["flag_keepout"],
         catch_radius: float = config_dict_std["catch_radius"],
-        continuous: bool = False,
-        #mode: str = "easy",
-        #defensiveness: float = 20.0,
+        continuous: bool = False
     ):
         super().__init__(agent_id, env)
-        self.env = env #is there a reason this isnt in super init? 
-        self.qtable = QPyquaBuilder()
+        self.env = env #is there a reason this isnt in super init? <-prob. not supposed to have this info in-comp.
+        self.qtable = q_table
 
     def compute_action(self, obs, info: dict[str, dict]):
         # Returns an action index (since we are aiming at discrete agent implementation), according to the ACTION_MAP from config:
@@ -63,6 +94,5 @@ if __name__ == '__main__':
     # During (online-)training two agents are using one shared q-table. 
     # When all actions are executed the new reward is entered into (?!) two q-values(?!).
 
-    # Q-table can now be saved and used for action selection in a policy.
-    #storing q-table as a numpy file for now, can be loaded in a policy class later:
-    np.save("q_table.npy", q_object.q_table)
+    # Q-table can be saved to file and used for action selection in a policy.
+    #np.save("q_table.npy", q_table)
