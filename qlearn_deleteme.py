@@ -12,38 +12,72 @@ from pyquaticus.config import config_dict_std, ACTION_MAP
 
 #########################
 # Q-learning own implementation to work with pyquaticus. Requires some representation of the state space and action space, as well as a reward function (or compatibility with pyquaticus reward functions). This will for now be a very basic implementation, without any opponent agents or multi-agent considerations. Just to get a working example of Q-learning in a simple environment (hopefully avoiding state space explosion). 
-# Online-Training is the aim, the q-table can be print to file and deployed.
+# Later we will extend it to opponent agents. Custom reward is also later, first use reward that is written down in training data.
 #########################
 
 # Build a q-table from a file of info and reward (etc?) logs and safe that table (is now a q-learn policy)
 class QPyquaBuilder:
-    def __init__(self, x=160, y=80):
+    def __init__(self, x=160, y=80, x_cells=8, y_cells=8):
         '''
             Input:
-            x, y describe the map size.
+            x, y describe the map size. 
+            x_cells is the number of cell columns in the grid divided by two (per map-half).
+            y_cells is the number of cell rows in the grid.
         '''
-        #self.statesize = ((x_cells * 2 * y_cells + 1) ** 3) * 2
-        self.statesize = 4^4 # = 256 results in 1024 q-values
-        # 2 booleans (for flag grabbed status), 2 headings (four angle-options each) for opp. agents and one self-position variable (four values, either area-based or objective-angle based, see below)
+        self.x_cells = x_cells #they'll come in useful, after all...
+        self.y_cells = y_cells
+        # As first step we must divide the map into a grid of cells.
+        # The map is 160 by 80, the longer side (x-axis) is divided into the own half and the enemy half, where cells should only be located on one half at a time.
+        #worldgrid = np.array([
+        # Divide the map into a grid of cells, assuming x-achsis is divided into two team sides:
+        self.x_cellsize = (x / 2) / x_cells # zB: 160 / 2 / 8 = 10
+        self.y_cellsize = y / y_cells # zB: 80 / 8 = 10
+        # Cellsize optimally should align with the border between map halves.
+        #cellgrid = np.zeros((x_cells, y_cells)) # This is just a grid to represent the map-dividing cells, not the actual q-table. At least for each represented agent position we need one of those for the full (but still oversimplified) state.
+        # cellgrid not strictly necessary, just a reminder of the logic right now
+        # Note: the oob-bool will also be used for the tagged-state (similar to how pyquaticus uses it anyways?)
+        # TODO PROBLEM: on opponents the tagged must not be oob! (could encounter them on their map-half)
+        ''' The Q-table needs account for 
+                - the position of the agent (for which the rewards are tabled).
+                - the positions of 2 (3?) opponents.
+                - opponent flag state (holding flag or not).
+            (Probably store the qtable as this-class-object for now?, not in table form)
+            (Actually, we need a table because the q-values have to be stored. But we need to create that using these variables created above...)
+        '''
+        self.statesize = ((x_cells * 2 * y_cells + 1) ** 3) * 2
+        #print("statesize=",self.statesize)
+        # (Calculation assuming 2 tracked opponent agents and one oob state in addition to position.)
+        # (All states exist with opponent flag grabbed (by this agent, team actions are not tracked) and with opponent flag at status quo, thus all states times two.)
         
         ''' 
-            Action space consists of 4 directions (backwards is effectively similar to zero speed?).
+            Action space consists of 8 directions at full speed and one "direction" for zero speed.
             (speed left, heading right)
-            [1.0,    0]
-            [1.0,   90]
-            [1.0,  180]
-            [1.0,  -90]
+            action0: [0.0,    0]
+            action1: [1.0,    0]
+            action2: [1.0,   45]
+            action3: [1.0,   90]
+            action4: [1.0,  135]
+            action5: [1.0,  180]
+            action6: [1.0, -135]
+            action7: [1.0,  -90]
+            action8: [1.0,  -45]
         '''
-        self.actionsize = 4
+        self.actionsize = 9
 
+        #q_table_size = self.statesize * self.actionsize    #This might be an enourmous size, depending on number of map grid cells :-/
         #print(self.statesize * self.actionsize)
         self.q_table = np.zeros((self.statesize, self.actionsize))
         print("Q-Table created, size",self.statesize * self.actionsize)
+        #self.q_table[0][0] = 1
+        #self.q_table[self.statesize-1][self.actionsize-1]
+        #print("memory fine..?")
+        #for i in range(self.statesize):
+        #    self.q_table[i][0] = i^5 #this might be a naive test, but seems like the q-table size is fine for now...
+        #print("laufzeit fine..?")
 
     def access_file(self, filename):
         """
-        Note: not the way to do training anymore. 
-        Function created with Copilot to input a logfile for q-list creation/processing.
+        Created with Copilot to input a logfile for q-list creation/processing.
         Parse a pyquaticus .log file and return a list of frames:
         [ { 'obs': ..., 'reward': ..., 'info': ... }, ... ]
         Each block is parsed with ast.literal_eval after converting array([...]) -> [...].
