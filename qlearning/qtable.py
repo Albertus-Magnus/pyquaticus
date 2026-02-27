@@ -2,13 +2,17 @@ from typing import Union
 
 from pyquaticus.envs.pyquaticus import PyQuaticusEnv
 from pyquaticus.moos_bridge.pyquaticus_moos_bridge import PyQuaticusMoosBridge
-from pyquaticus.utils.rewards import triple_aggressive_rew, triple_caps_and_grabs
+#from pyquaticus.utils.rewards import triple_aggressive_rew, triple_caps_and_grabs
 import numpy as np
 import random
 import ast
 import re
 from pyquaticus.base_policies.base_policy import BaseAgentPolicy
 from pyquaticus.config import config_dict_std, ACTION_MAP
+
+LEARNING_RATE = 0.1
+DISCOUNT_FACTOR = 0.9
+INITIAL_Q_VALUE = 1.0 #high initial q-value encourages exploration, low (even negative) encourages exploitation
 
 class QTable:
     def __init__(self):
@@ -25,6 +29,9 @@ class QTable:
         #self.actionsize = 4
         #self.q_table = np.zeros((self.statesize, self.actionsize)) #nope, we want to have it 6-dimensional
         self.qtable = np.zeros((4, 4, 4, 2, 2, 4))
+        # Set q-values to initial value (not necessarily zero)
+        # initial q-value high encourages exploration, low (even negative) encourages exploitation
+        self.qtable = np.full_like(self.qtable, INITIAL_Q_VALUE) 
         ''' This multi-dimensional table stores the qvalues according to the following mapping:
             self-position (relative heading towards objective): 0-3 [order of angles todo]
             opponent 1 (relative heading towards opp1): 0-3
@@ -57,10 +64,13 @@ class QTable:
         """
         old_q = self.qtable[ownpos][opp1][opp2][b_flag][r_flag][action]
 
-        #TODO calculation of loss etc as per the qlearn algorithm
+        # Calculation of loss etc as per the qlearn algorithm
+        opt_future_value = -100000000000. #"." cause reward is continuous
+        for i in range(4): #for every action do...
+            opt_future_value = max(opt_future_value, self.qtable[ownpos][opp1][opp2][b_flag][r_flag][ i ])
         # Loss function is used to compute new q-value:
-        new_q = -1 #math is hard...
-
+        new_q = (1 - LEARNING_RATE) * old_q + LEARNING_RATE * (reward + DISCOUNT_FACTOR * opt_future_value)
+        #print(f"Updating Q-value for state ({ownpos}, {opp1}, {opp2}, {b_flag}, {r_flag}) and action {action} from {old_q} to {new_q} based on reward {reward} and optimal future value {opt_future_value}.")
         self.qtable[ownpos][opp1][opp2][b_flag][r_flag][action] = new_q
 #End of QTable()
 
@@ -91,6 +101,7 @@ class QlearnPolicy(BaseAgentPolicy):
 
 if __name__ == '__main__':
     q_table = QTable()
+    q_table.set_q_value(1,1,1,1,1,1,1)
     # During (online-)training two agents are using one shared q-table. 
     # When all actions are executed the new reward is entered into (?!) two q-values(?!).
 
