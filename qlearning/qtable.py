@@ -10,9 +10,14 @@ import re
 from pyquaticus.base_policies.base_policy import BaseAgentPolicy
 from pyquaticus.config import config_dict_std, ACTION_MAP
 
+# Parameters for Q-Learning:
 LEARNING_RATE = 0.1
 DISCOUNT_FACTOR = 0.9
 INITIAL_Q_VALUE = 1.0 #high initial q-value encourages exploration, low (even negative) encourages exploitation
+
+# Agent IDs for 2v2:
+# self: agent_0 or agent_1
+# opponents: agent_2 and agent_2
 
 class QTable:
     def __init__(self):
@@ -85,8 +90,45 @@ class QlearnPolicy(BaseAgentPolicy):
         continuous: bool = False
     ):
         super().__init__(agent_id, env)
+        #self.agent_id = agent_id
         self.env = env #is there a reason this isnt in super init? <-prob. not supposed to have this info in-comp.
         self.qtable = q_table
+
+    def headingDiff(heading, pos1, pos2): #TODO check if math correct
+        # heading can range from -180 to 180, we want to compute with 360-range values
+        heading = heading + 180.0
+        #heading += 0.0000001 #add this if float leads to very small negative values...
+        #compute angle (relative to coordinate system north) from pos1 to pos2
+        angle = np.arctan2(pos2[1] - pos1[1], pos2[0] - pos1[0]) * 180 / np.pi #TODO check math
+        #compute difference between heading and angle
+        diff = (heading - angle) % 360
+        diff = diff - 180.0 #outside this function the headings/angles are in -180 to 180 range(?)
+        return diff
+    
+    def headingToState(heading: float): #TODO test (check if heading is already 360 or something pi)
+        """
+        [Note: first part of functionality went to headingDiff(), now just -180to180 angle to (0-3) state]
+        Computes the difference in angle between :heading: and the line between :pos1: and :pos2:.
+        Then divides the 360-degree field into four values (0-3) and returns which one the difference is.
+                heading
+            return3  |  return0
+            --------/_\--------   (agent is /_\)
+            return2  |  return1
+        """
+        # heading can range from -180 to 180, we want to compute with 360-range values
+        # (and we want to do it explicitely, to ease confusion)
+        heading = heading + 180.0
+        #divide into four areas and return which one the difference is
+        if heading < 90:
+            state = 0
+        elif heading >= 90 and heading < 180:
+            state = 1
+        elif heading >= 180 and heading < 270:
+            state = 2
+        else: #heading >= 270 and heading =< 360:  
+            state = 3
+        #print("Assigned state {state} for difference {diff} between heading {heading} and angle {angle}.")#print doesnt work with separation to headingDiff()
+        return state
 
     def compute_action(self, obs, info: dict[str, dict]):
         # Returns an action index (since we are aiming at discrete agent implementation), according to the ACTION_MAP from config:
@@ -97,11 +139,41 @@ class QlearnPolicy(BaseAgentPolicy):
         #  [0.5,  135], [0.5,   90], [0.5,  45], 
         #  [0.5,    0], [0.5,  -45], [0.5, -90], 
         #  [0.5, -135], [0.0,    0]] #TODO apply this action-id thing to remove the discrete error from my standard pyquaticus runs
+        ''' ownpos is the relative heading towards the objective, divided into 4 areas
+            pos3  |  pos0
+            -----/_\-----   (agent is /_\)
+            pos2  |  pos1
+        '''
+        #compute ownpos:
+        if obs[self.id]['has_flag']:#TODO run test on correctness of adress of value
+            # heading towards objective (positional awareness variable) is towards enemy base normally...
+            ownpos = self.headingToState(obs[self.id]['opponent_home_bearing'])
+        else:
+            # ...and towards own base (or map half) if agent has grabbed the enemy flag
+            ownpos = self.headingToState(obs[self.id]['own_home_bearing']) #TODO continue HERE
+        #for loop for self.qtable[ownpos][opp1][opp2][b_flag][r_flag][i]
         return self.qtable.lookup_action(obs, info)
+    #End of compute_action()
+
+    # obs keys: ['opponent_home_bearing', 'opponent_home_distance', 'own_home_bearing', 'own_home_distance', 'wall_0_bearing', 
+    # 'wall_0_distance', 'wall_1_bearing', 'wall_1_distance', 'wall_2_bearing', 'wall_2_distance', 'wall_3_bearing', 
+    # 'wall_3_distance', 'scrimmage_line_bearing', 'scrimmage_line_distance', 'speed', 'has_flag', 'on_side', 'tagging_cooldown', 
+    # 'is_tagged', 'team_score', 'opponent_score', ('teammate_0', 'bearing'), ('teammate_0', 'distance'), 
+    # ('teammate_0', 'relative_heading'), ('teammate_0', 'speed'), ('teammate_0', 'has_flag'), ('teammate_0', 'on_side'), 
+    # ('teammate_0', 'tagging_cooldown'), ('teammate_0', 'is_tagged'), ('teammate_1', 'bearing'), ('teammate_1', 'distance'), 
+    # ('teammate_1', 'relative_heading'), ('teammate_1', 'speed'), ('teammate_1', 'has_flag'), ('teammate_1', 'on_side'), 
+    # ('teammate_1', 'tagging_cooldown'), ('teammate_1', 'is_tagged'), ('opponent_0', 'bearing'), ('opponent_0', 'distance'), 
+    # ('opponent_0', 'relative_heading'), ('opponent_0', 'speed'), ('opponent_0', 'has_flag'), ('opponent_0', 'on_side'), 
+    # ('opponent_0', 'tagging_cooldown'), ('opponent_0', 'is_tagged'), ('opponent_1', 'bearing'), ('opponent_1', 'distance'), 
+    # ('opponent_1', 'relative_heading'), ('opponent_1', 'speed'), ('opponent_1', 'has_flag'), ('opponent_1', 'on_side'), 
+    # ('opponent_1', 'tagging_cooldown'), ('opponent_1', 'is_tagged'), ('opponent_2', 'bearing'), ('opponent_2', 'distance'), 
+    # ('opponent_2', 'relative_heading'), ('opponent_2', 'speed'), ('opponent_2', 'has_flag'), ('opponent_2', 'on_side'), 
+    # ('opponent_2', 'tagging_cooldown'), ('opponent_2', 'is_tagged')]
 
 if __name__ == '__main__':
     q_table = QTable()
     q_table.set_q_value(1,1,1,1,1,1,1)
+
     # During (online-)training two agents are using one shared q-table. 
     # When all actions are executed the new reward is entered into (?!) two q-values(?!).
 

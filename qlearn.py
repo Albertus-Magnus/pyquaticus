@@ -125,6 +125,25 @@ class QPyquaBuilder:
         # (Example log file, will call them all with a loop somewhere else. TODO)
         #print(logdata) #appears to be the correctly read-in file :)
         #print(list(logdata[0]['obs']['agent_0'].keys() ))
+        # returned ['opponent_home_bearing', 'opponent_home_distance', 'own_home_bearing', 'own_home_distance', 'wall_0_bearing', 
+        # 'wall_0_distance', 'wall_1_bearing', 'wall_1_distance', 'wall_2_bearing', 'wall_2_distance', 'wall_3_bearing', 
+        # 'wall_3_distance', 'scrimmage_line_bearing', 'scrimmage_line_distance', 'speed', 'has_flag', 'on_side', 'tagging_cooldown', 
+        # 'is_tagged', 'team_score', 'opponent_score', ('teammate_0', 'bearing'), ('teammate_0', 'distance'), 
+        # ('teammate_0', 'relative_heading'), ('teammate_0', 'speed'), ('teammate_0', 'has_flag'), ('teammate_0', 'on_side'), 
+        # ('teammate_0', 'tagging_cooldown'), ('teammate_0', 'is_tagged'), ('teammate_1', 'bearing'), ('teammate_1', 'distance'), 
+        # ('teammate_1', 'relative_heading'), ('teammate_1', 'speed'), ('teammate_1', 'has_flag'), ('teammate_1', 'on_side'), 
+        # ('teammate_1', 'tagging_cooldown'), ('teammate_1', 'is_tagged'), ('opponent_0', 'bearing'), ('opponent_0', 'distance'), 
+        # ('opponent_0', 'relative_heading'), ('opponent_0', 'speed'), ('opponent_0', 'has_flag'), ('opponent_0', 'on_side'), 
+        # ('opponent_0', 'tagging_cooldown'), ('opponent_0', 'is_tagged'), ('opponent_1', 'bearing'), ('opponent_1', 'distance'), 
+        # ('opponent_1', 'relative_heading'), ('opponent_1', 'speed'), ('opponent_1', 'has_flag'), ('opponent_1', 'on_side'), 
+        # ('opponent_1', 'tagging_cooldown'), ('opponent_1', 'is_tagged'), ('opponent_2', 'bearing'), ('opponent_2', 'distance'), 
+        # ('opponent_2', 'relative_heading'), ('opponent_2', 'speed'), ('opponent_2', 'has_flag'), ('opponent_2', 'on_side'), 
+        # ('opponent_2', 'tagging_cooldown'), ('opponent_2', 'is_tagged')]
+        #print(logdata[0]['obs']['agent_0']['opponent_home_bearing']) 
+        # the above line returns -48.13549024484041
+        # or 4.857072965975732, -173.89483662036923, 12.830624664076112, -125.44342695408903, 63.586015467142175
+        # ergo from -180 to 0 to 180 is the heading range
+
         #print((logdata[0]['info']['agent_0']['global_state'][('agent_0', 'pos')] )) #returns [64.77070303, 23.29377587]
         # info is logdata[0]['info']['agent_0']['global_state']
         # [('agent_0', 'pos'), ('agent_0', 'heading'), ('agent_0', 'scrimmage_line_bearing'), ('agent_0', 'scrimmage_line_distance'), ('agent_0', 'speed'), ('agent_0', 'has_flag'), ('agent_0', 'on_side'), ('agent_0', 'oob'), ('agent_0', 'tagging_cooldown'), ('agent_0', 'is_tagged'), ('agent_1', 'pos'), ('agent_1', 'heading'), ('agent_1', 'scrimmage_line_bearing'), ('agent_1', 'scrimmage_line_distance'), ('agent_1', 'speed'), ('agent_1', 'has_flag'), ('agent_1', 'on_side'), ('agent_1', 'oob'), ('agent_1', 'tagging_cooldown'), ('agent_1', 'is_tagged'), ('agent_2', 'pos'), ('agent_2', 'heading'), ('agent_2', 'scrimmage_line_bearing'), ('agent_2', 'scrimmage_line_distance'), ('agent_2', 'speed'), ('agent_2', 'has_flag'), ('agent_2', 'on_side'), ('agent_2', 'oob'), ('agent_2', 'tagging_cooldown'), ('agent_2', 'is_tagged'), ('agent_3', 'pos'), ('agent_3', 'heading'), ('agent_3', 'scrimmage_line_bearing'), ('agent_3', 'scrimmage_line_distance'), ('agent_3', 'speed'), ('agent_3', 'has_flag'), ('agent_3', 'on_side'), ('agent_3', 'oob'), ('agent_3', 'tagging_cooldown'), ('agent_3', 'is_tagged'), ('agent_4', 'pos'), ('agent_4', 'heading'), ('agent_4', 'scrimmage_line_bearing'), ('agent_4', 'scrimmage_line_distance'), ('agent_4', 'speed'), ('agent_4', 'has_flag'), ('agent_4', 'on_side'), ('agent_4', 'oob'), ('agent_4', 'tagging_cooldown'), ('agent_4', 'is_tagged'), ('agent_5', 'pos'), ('agent_5', 'heading'), ('agent_5', 'scrimmage_line_bearing'), ('agent_5', 'scrimmage_line_distance'), ('agent_5', 'speed'), ('agent_5', 'has_flag'), ('agent_5', 'on_side'), ('agent_5', 'oob'), ('agent_5', 'tagging_cooldown'), ('agent_5', 'is_tagged'), 'blue_flag_home', 'red_flag_home', 'blue_flag_pos', 'red_flag_pos', 'blue_flag_pickup', 'red_flag_pickup', 'blue_team_score', 'red_team_score']
