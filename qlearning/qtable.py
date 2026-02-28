@@ -144,15 +144,35 @@ class QlearnPolicy(BaseAgentPolicy):
             -----/_\-----   (agent is /_\)
             pos2  |  pos1
         '''
-        #compute ownpos:
+        # To figure out the best reward we need ownpos, opp1, opp2, b_flag, r_flag, action
+        # compute ownpos:
         if obs[self.id]['has_flag']:#TODO run test on correctness of adress of value
             # heading towards objective (positional awareness variable) is towards enemy base normally...
             ownpos = self.headingToState(obs[self.id]['opponent_home_bearing'])
         else:
             # ...and towards own base (or map half) if agent has grabbed the enemy flag
             ownpos = self.headingToState(obs[self.id]['own_home_bearing']) #TODO continue HERE
+        # compute opp1 (angle (0-3) between own heading and bearing towards opponent 1)
+        opp1_bearing = self.headingToState(obs[self.id][('opponent_1', 'relative_heading')]) #TODO check if address correct
+        # compute opp2
+        opp2_bearing = self.headingToState(obs[self.id][('opponent_2', 'relative_heading')]) #TODO same
+        # compute b_flag (bool whether opponent has grabbed the blue flag)
+        b_flag = obs[self.id][('opponent_0', 'has_flag')] or obs[self.id][('opponent_1', 'has_flag')] #true if any opponent has your flag
+        # compute r_flag
+        r_flag = obs[self.id]['has_flag']
+        # loop through action (range is 0-3)
         #for loop for self.qtable[ownpos][opp1][opp2][b_flag][r_flag][i]
-        return self.qtable.lookup_action(obs, info)
+        q_max = -1000000000000
+        a_max = -1
+        for i in range(4):
+            if q_max < self.qtable[ownpos][opp1_bearing][opp2_bearing][b_flag][r_flag][i]:
+                q_max = self.qtable[ownpos][opp1_bearing][opp2_bearing][b_flag][r_flag][i]
+                a_max = i
+        print("Maximum reward {q_max} expected for action {i}.")
+        #return a_max #translate first to pyquaticus action
+        #actions = [[1.0, 0], [1.0, 90], [1.0, 180], [1.0, -90]] #(forward, right, backward, left)
+        actions = [4, 2, 0, 6] #(same actions, but as discrete indexes for pyquaticus, according to ACTION_MAP)
+        return actions[a_max]
     #End of compute_action()
 
     # obs keys: ['opponent_home_bearing', 'opponent_home_distance', 'own_home_bearing', 'own_home_distance', 'wall_0_bearing', 
