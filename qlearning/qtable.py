@@ -41,7 +41,7 @@ class QTable:
         self.qtable = np.zeros((4, 4, 4, 2, 2, 4))
         # Set q-values to initial value (not necessarily zero)
         # initial q-value high encourages exploration, low (even negative) encourages exploitation
-        self.qtable = np.full_like(self.qtable, INITIAL_Q_VALUE) 
+        #self.qtable = np.full_like(self.qtable, INITIAL_Q_VALUE) 
         ''' This multi-dimensional table stores the qvalues according to the following mapping:
             self-position (relative heading towards objective): 0-3 [order of angles todo]
             opponent 1 (relative heading towards opp1): 0-3
@@ -87,13 +87,11 @@ class QTable:
     def prepareUpdate(self, obs, agentID, action):
         if obs[agentID]['has_flag']:#TODO run test on correctness of adress of value
             # heading towards objective (positional awareness variable) is towards enemy base normally...
-            ownpos = headingToState(obs[agentID]['opponent_home_bearing'])
+            ownpos = headingToState(obs[agentID]['own_home_bearing']) 
         else:
             # ...and towards own base (or map half) if agent has grabbed the enemy flag
             #print("own_home_bearing =", obs[agentID]['own_home_bearing'])#output of this is "own_home_bearing = 117.06809126991149"
-            ownpos = headingToState(obs[agentID]['own_home_bearing']) 
-            #TODO this is 2 positional arguments, so not an angle. perhaps position?
-            #print above returns 117.06809126991149 wth?!?
+            ownpos = headingToState(obs[agentID]['opponent_home_bearing'])
         # compute opp1 (angle (0-3) between own heading and bearing towards opponent 1)
         opp1_bearing = headingToState(obs[agentID][('opponent_0', 'relative_heading')]) #TODO check if address correct
         # compute opp2
@@ -163,13 +161,13 @@ class QlearnPolicy(BaseAgentPolicy):
         '''
         # To figure out the best reward we need ownpos, opp1, opp2, b_flag, r_flag, action
         # compute ownpos:
-        if obs[self.id]['has_flag']:#TODO run test on correctness of adress of value
+        if obs[self.id]['has_flag']:
             # heading towards objective (positional awareness variable) is towards enemy base normally...
-            ownpos = headingToState(obs[self.id]['opponent_home_bearing'])
+            ownpos = headingToState(obs[self.id]['own_home_bearing']) 
         else:
             # ...and towards own base (or map half) if agent has grabbed the enemy flag
             #print("own_home_bearing =",obs[self.id]['own_home_bearing'])#output of this is "own_home_bearing = 117.06809126991149"
-            ownpos = headingToState(obs[self.id]['own_home_bearing']) 
+            ownpos = headingToState(obs[self.id]['opponent_home_bearing'])
             #TODO this is 2 positional arguments, so not an angle. perhaps position?
             #print above returns 117.06809126991149 wth?!?
         # compute opp1 (angle (0-3) between own heading and bearing towards opponent 1)
