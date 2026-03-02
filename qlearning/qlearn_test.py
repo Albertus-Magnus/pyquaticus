@@ -193,7 +193,7 @@ def train_qlearn(
 if __name__ == "__main__":
     if False:
         import matplotlib.pyplot as plt
-        reward_curve = np.load("reward_curve_aggr_fr_neutral_rew.npy", allow_pickle=True)
+        reward_curve = np.load("reward_curve_aggr_hard_overnight_neutral_rew.npy", allow_pickle=True)
         agent_0_rewards = [step['agent_0'] for step in reward_curve]
         agent_1_rewards = [step['agent_1'] for step in reward_curve]
         #print(agent_0_rewards)
@@ -204,19 +204,19 @@ if __name__ == "__main__":
         plt.title("Reward Curve")
         plt.grid(True)
         plt.show()
+    #if False:
+        qtablo = QTable("q_table_aggr_hard_overnight_neutral_rew.npy")
+        print(qtablo.qtable)
+        #print("\n\n\n")
+        #qtablo = QTable("q_table_aggrshort_rew.npy")
+        #print(qtablo.qtable)
     if False:
-        qtablo = QTable("q_table_doubleagg_rew.npy")
-        print(qtablo.qtable)
-        print("\n\n\n")
-        qtablo = QTable("q_table_aggrshort_rew.npy")
-        print(qtablo.qtable)
-    if True:
         print("Setting up Q-Table")
         qtableee = QTable()
         rewardcurve = []
         index = 0       #right now set for 6h training
-        #for i in range(200):
-        while datetime.now().hour < 11 or datetime.now().hour > 20: #train until 1 am, then save the q-table and reward curve (TODO visualize the reward cuve later)
+        for i in range(130):
+        #while datetime.now().hour < 11 or datetime.now().hour > 20: #train until 1 am, then save the q-table and reward curve (TODO visualize the reward cuve later)
             print("Beginning training run at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
             seeed = np.random.randint(0, 100000) #random seed while training, set of seeds when testing (TODO)
             if index < 500 or False:
@@ -229,11 +229,11 @@ if __name__ == "__main__":
             print(f"Completed training run {index}")
         #filename = ""
         print("Storing q-table to file", "q_table.npy")
-        qtableee.toFile("q_table_aggr_hard_overnight_neutral_rew.npy") #TODO better naming system, some way to keep track of trained  policies (maybe even in thesis? certainly in slides...), better way to automatically name things, actual pipeline in general
+        qtableee.toFile("q_table_aggr_easy_130i_neutral.npy") #TODO better naming system, some way to keep track of trained  policies (maybe even in thesis? certainly in slides...), better way to automatically name things, actual pipeline in general
         #testqtable = QTable("q_table.npy")
         print("Storing reward curve to file", "reward_curve.npy")
-        np.save("reward_curve_aggr_hard_overnight_neutral_rew.npy", rewardcurve)
-    if False:
-        qtablo = QTable("q_table_aggr_fr_neutral_rew.npy")
+        np.save("reward_curve_aggr_easy_130i_neutral.npy", rewardcurve)
+    if True:
+        qtablo = QTable("q_table_aggr_easy_130i_neutral.npy")
         rewardcurve = []
-        train_qlearn(rewardcurve, seed=12345, difficulty="hard", reward_choice=2, render_mode='human', timelimit=600., q_table=qtablo)
+        train_qlearn(rewardcurve, seed=12345, difficulty="easy", reward_choice=2, render_mode='human', timelimit=600., q_table=qtablo)
