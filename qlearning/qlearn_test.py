@@ -27,11 +27,6 @@ def train_qlearn(
     # seed for "random" starts
     difficulty: str = "hard",
     # difficulty is the MODE of the example agents, can be "hard", "medium" or "easy"
-    # Adjust the mode here to change difficulty of the Heuristic_CTF_Agents
-    #MODE = "hard"
-    #MODE = "medium"
-    #MODE = "easy"
-    #agent_type: int = 1,
     # 1 is mrhea agent, 2 is rhea plus two ultra-defensive agents, 3 (or 0) is ultra-defensive agent TODO also add easy,medium,hard as types? maybe not...
     reward_choice: str = "adjustmepls", #maybe could be string, but cleaner so?
     render_mode: str = None,#'human'
