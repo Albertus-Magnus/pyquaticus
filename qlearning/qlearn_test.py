@@ -11,7 +11,7 @@ from pyquaticus.base_policies.multi_rhea_policy import MRHEA_Agent, MRHEA_Enviro
 from pyquaticus.base_policies.rhealg_policy2 import RHEA_Agent, RHEA_Environment
 from pyquaticus.base_policies.ultra_def_policy import UltraDefender
 from qtable import QlearnPolicy, QTable
-from pyquaticus.utils.rewards import caps_and_grabs, aggressive_rew, double_aggressive_rew
+from pyquaticus.utils.rewards import caps_and_grabs, aggressive_rew, double_aggressive_rew, single_aggressive_rew
 
 """
 This was copied from magnus_test.py and modified to 
