@@ -11,16 +11,19 @@ from pyquaticus.base_policies.base_policy import BaseAgentPolicy
 from pyquaticus.config import config_dict_std, ACTION_MAP
 
 # Parameters for Q-Learning:
-LEARNING_RATE = 0.1
-DISCOUNT_FACTOR = 0.9
-INITIAL_Q_VALUE = 100.0 #high initial q-value encourages exploration, low (even negative) encourages exploitation
+#LEARNING_RATE = 0.1
+#DISCOUNT_FACTOR = 0.9
+#INITIAL_Q_VALUE = 10.0 #high initial q-value encourages exploration, low (even negative) encourages exploitation
 
 # Agent IDs for 2v2:
 # self: agent_0 or agent_1
 # opponents: agent_2 and agent_2
 
 class QTable:
-    def __init__(self, filename=None):
+    def __init__(self, LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, filename=None):
+        self.LEARNING_RATE = LEARNING_RATE
+        self.DISCOUNT_FACTOR = DISCOUNT_FACTOR
+        self.INITIAL_Q_VALUE = INITIAL_Q_VALUE
         if not filename == None:
             self.qtable = np.load(filename)
             #print(self.qtable)
@@ -41,7 +44,7 @@ class QTable:
         self.qtable = np.zeros((4, 4, 4, 2, 2, 4))
         # Set q-values to initial value (not necessarily zero)
         # initial q-value high encourages exploration, low (even negative) encourages exploitation
-        #self.qtable = np.full_like(self.qtable, INITIAL_Q_VALUE) 
+        self.qtable = np.full_like(self.qtable, self.INITIAL_Q_VALUE) 
         ''' This multi-dimensional table stores the qvalues according to the following mapping:
             self-position (relative heading towards objective): 0-3 [order of angles todo]
             opponent 1 (relative heading towards opp1): 0-3
@@ -79,7 +82,7 @@ class QTable:
         for i in range(4): #for every possible action do...
             opt_future_value = max(opt_future_value, self.qtable[ownpos][opp1][opp2][b_flag][r_flag][ i ])
         # Loss function is used to compute new q-value:
-        new_q = (1 - LEARNING_RATE) * old_q + LEARNING_RATE * (reward + DISCOUNT_FACTOR * opt_future_value)
+        new_q = (1 - self.LEARNING_RATE) * old_q + self.LEARNING_RATE * (reward + self.DISCOUNT_FACTOR * opt_future_value)
         #print(f"Updating Q-value for state ({ownpos}, {opp1}, {opp2}, {b_flag}, {r_flag}) and action {action} from {old_q} to {new_q} based on reward {reward} and optimal future value {opt_future_value}.")
         self.qtable[ownpos][opp1][opp2][b_flag][r_flag][action] = new_q
     #End of set_q_value()

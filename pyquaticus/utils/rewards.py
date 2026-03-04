@@ -201,6 +201,10 @@ def caps_and_grabs(
     num_oob = state['agent_oob'][agents.index(agent_id)]
     if num_oob > prev_num_oob:
         reward += -1.0
+    # If close to out of bounds, start punishing
+    position = np.array(state['agent_position'][agents.index(agent_id)])
+    if position[0] > 155.0 or position[1] > 75.0 or position[0] < 5.0 or position[1] < 5.0:
+        reward += -0.5
     for t in [0,1]:
         prev_num_grabs = prev_state['grabs'][t]
         num_grabs = state['grabs'][t]
@@ -215,6 +219,48 @@ def caps_and_grabs(
     return reward
 
 ### Added Custom Reward Functions Here ###
+
+def caps_and_tags(
+    agent_id: str,
+    team: Team,
+    agents: list,
+    agent_inds_of_team: dict,
+    state: dict,
+    prev_state: dict,
+    env_size: np.ndarray,
+    agent_radius: np.ndarray,
+    catch_radius: float,
+    scrimmage_coords: np.ndarray,
+    max_speeds: list,
+    tagging_cooldown: float
+):
+    reward = 0.0
+    prev_num_oob = prev_state['agent_oob'][agents.index(agent_id)]
+    num_oob = state['agent_oob'][agents.index(agent_id)]
+    if num_oob > prev_num_oob:
+        reward += -10.0
+    # If close to out of bounds, start punishing
+    position = np.array(state['agent_position'][agents.index(agent_id)])
+    if position[0] > 155.0 or position[1] > 75.0 or position[0] < 5.0 or position[1] < 5.0:
+        reward += -5.0
+    for t in [0,1]:
+        prev_num_grabs = prev_state['grabs'][t]
+        num_grabs = state['grabs'][t]
+        if num_grabs > prev_num_grabs:
+            reward += 5.0 if t == team else 5.0
+
+        prev_num_caps = prev_state['captures'][t]
+        num_caps = state['captures'][t]
+        if num_caps > prev_num_caps:
+            reward += 10.0 if t == team else -10.0
+
+    # awards points for tagging opponents and being tagged
+    prev_num_tags = prev_state['tags'][team.value]
+    num_tags = state['tags'][team.value]
+    if num_tags > prev_num_tags:
+        reward += 10.0 if t == team else -10.0
+
+    return reward
 
 def test_reward_func(
     agent_id: str,
@@ -282,7 +328,7 @@ def aggressive_rew(
         return -5.0 #only little counterreward because tagged appears to be True more often than it should?
     # If out of bounds, return minus one
     # if state['agent_oob'][idx]: #not trusting pyquaticus info. Computing oob myself...
-    if position[0] > 160.0 or position[1] > 80.0 or position[0] < 0.0 or position[1] < 0.0: #my own implementation also doesn't work. Wtf?
+    if position[0] > 160.0 or position[1] > 80.0 or position[0] < 0.0 or position[1] < 0.0: #my own implementation also doesn't work. Wtf?<-was likely just wrong reward selected...
     #     # print("agent_oob, return -1")
     #     # print("reward is: ",-1.0)
         return -10.0
@@ -630,6 +676,10 @@ def double_aggressive_rew(
         reward += -10.0
     #if position3[0] > 160.0 or position3[1] > 80.0 or position3[0] < 0.0 or position3[1] < 0.0:
     #    reward += -10.0
+    # If close to out of bounds, start punishing
+    for position in [position1, position2]:#, position3]:
+        if position[0] > 155.0 or position[1] > 75.0 or position[0] < 5.0 or position[1] < 5.0:
+            reward += -5.0
 
     # Determine flag homes
     flag_homes = np.array(state['flag_home'])
@@ -697,9 +747,11 @@ def single_aggressive_rew(
     max_speeds: list,
     tagging_cooldown: float
 ):
+    #previousreward = state.get('previous_reward', 0.0)  # Get previous reward if it exists, otherwise default to 0.0 TODO
     reward = 0.0
-    #idx = agents.index(agent_id)
-    idx1 = agent_id#0#'agent0'
+    idx1 = agents.index(agent_id)
+    #idx1 = agent_id#0#'agent0'
+    #print("idx: ",idx1)
     #idx2 = 1#'agent1'
     #idx3 = 2#'agent2'
     position1 = np.array(state['agent_position'][idx1])
@@ -724,6 +776,9 @@ def single_aggressive_rew(
     #    reward += -10.0
     #if position3[0] > 160.0 or position3[1] > 80.0 or position3[0] < 0.0 or position3[1] < 0.0:
     #    reward += -10.0
+    # If close to out of bounds, start punishing
+    if position1[0] > 155.0 or position1[1] > 75.0 or position1[0] < 5.0 or position1[1] < 5.0:
+        reward += -5.0
 
     # Determine flag homes
     flag_homes = np.array(state['flag_home'])
