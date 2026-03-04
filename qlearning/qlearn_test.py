@@ -24,7 +24,7 @@ create a test of 2x qlearn policy agents versus
 
 def train_qlearn(
     rewardcurve,
-    logstructure,
+    #logstructure,
     scores,
     grabslist,
     seed: int = 12345,
@@ -157,11 +157,11 @@ def train_qlearn(
         #print("\n\nReward:",reward)#Reward: {'agent_0': 0.2734431070341813, 'agent_1': 0.2208806900959132, 'agent_2': -0.12809429110777018, 'agent_3': 0.0, 'agent_4': 0.0, 'agent_5': 0.0}
 
         # Logging the gamestate info into the logstructure list, which is then saved to file at the end of the training
-        logstructure.append({
-            "obs": obs,
-            "reward": reward,
-            "info": info
-        })
+        #logstructure.append({
+        #    "obs": obs,
+        #    "reward": reward,
+        #    "info": info
+        #}) #TODO save tag-counts
         
         # Update Q-Table for both agents (same table, two updates)
         #print("\nActions: zero",zero,"; one",one)
@@ -325,14 +325,14 @@ if __name__ == "__main__":
     while datetime.now().hour < 11 or datetime.now().hour > 20: #train until 1 am, then save the q-table and reward curve (TODO visualize the reward cuve later)
         print("Beginning training run at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
         seeed = np.random.randint(0, 100000) #random seed while training, set of seeds when testing (TODO)
-        logstructure = []
+        #logstructure = []
         if index < 500 or False: #pretraininng with easy opponents, for more exploration on opponent base
-            train_qlearn(rewardcurve, logstructure, scores, grabslist, seed=seeed, difficulty="easy", reward_choice=rewardchoice, render_mode=None, timelimit=600., q_table=qtableee)
+            train_qlearn(rewardcurve, scores, grabslist, seed=seeed, difficulty="easy", reward_choice=rewardchoice, render_mode=None, timelimit=600., q_table=qtableee)
         else:
-            train_qlearn(rewardcurve, logstructure, scores, grabslist, seed=seeed, difficulty="hard", reward_choice=rewardchoice, render_mode=None, timelimit=600., q_table=qtableee)
-        np.save(f"{filename_suffix}_logstructure{index}.npy", logstructure) 
+            train_qlearn(rewardcurve, scores, grabslist, seed=seeed, difficulty="hard", reward_choice=rewardchoice, render_mode=None, timelimit=600., q_table=qtableee)
+        #np.save(f"{filename_suffix}_logstructure{index}.npy", logstructure) 
         # discard logstructure now, so memory does not leak
-        logstructure = []
+        #logstructure = []
         index += 1
         print(f"Completed training run {index}")
 
@@ -352,7 +352,7 @@ if __name__ == "__main__":
         # code to run a test with rendering (filename_suffix needs to be moved?)
         qtablo = QTable(f"{filename_suffix}_q_table.npy")
         rewardcurve = []
-        logstructure = []
+        #logstructure = []
         scores = []
         grabslist = []
-        train_qlearn(rewardcurve, logstructure, scores, grabslist, seed=12345, difficulty="easy", reward_choice=2, render_mode='human', timelimit=600., q_table=qtablo)
+        train_qlearn(rewardcurve, scores, grabslist, seed=12345, difficulty="easy", reward_choice=2, render_mode='human', timelimit=600., q_table=qtablo)
