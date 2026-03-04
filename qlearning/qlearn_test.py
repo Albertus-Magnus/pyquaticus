@@ -282,7 +282,7 @@ if __name__ == "__main__":
         filename_suffix = "example_suffix"
         LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.9, 10.0
     #rewardchoice = "single_aggressive_rew"
-    rewardchoice = "double_aggressive_rew"
+    #rewardchoice = "double_aggressive_rew"
     #rewardchoice = "caps_and_grabs"
     #rewardchoice = "caps_and_tags"
 
@@ -290,7 +290,7 @@ if __name__ == "__main__":
     # Creating filenames for the saved q-table and reward curve, with some of the training parameters included in the name for better tracking
     #filename_suffix = f"{rewardchoice}_neutral" #TODO better naming system, some way to keep track of trained  policies (maybe even in thesis? certainly in slides...), better way to automatically name things, actual pipeline in general
     #filename_suffix = "lrate0.1_discount0.9_initialq10.0_single_aggressive_rew"
-    filename_suffix = "lrate0.1_discount0.9_initialq10.0_double_aggressive_rew"
+    #filename_suffix = "lrate0.1_discount0.9_initialq10.0_double_aggressive_rew"
     #filename_suffix = "lrate0.1_discount0.9_initialq10.0_caps_and_grabs"
     #filename_suffix = "lrate0.1_discount0.9_initialq10.0_caps_and_tags"
     #filename_suffix = "lrate0.8_discount0.9_initialq10.0_single_aggressive_rew"
@@ -302,6 +302,10 @@ if __name__ == "__main__":
     #filename_suffix = ""
     # example: q_table_aggr_easy_130i_neutral.npy
     "--------------------------------------------"
+    filename_suffix = "qtrainlog/"+filename_suffix
+    
+    # Create qtrainlog directory if it doesn't exist
+    #os.makedirs("qtrainlog", exist_ok=True) #should exist, except if started from wrong folder...
 
     # Plot reward curve from file 
     #visualize_reward_curve("reward_curve_aggr_easy_130i_neutral.npy")
@@ -314,7 +318,6 @@ if __name__ == "__main__":
     print("Setting up Q-Table")
     qtableee = QTable(LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE)
     rewardcurve = []
-    logstructure = []
     scores = []
     grabslist = []
     index = 0       #right now set for 6h training
@@ -322,10 +325,14 @@ if __name__ == "__main__":
     while datetime.now().hour < 11 or datetime.now().hour > 20: #train until 1 am, then save the q-table and reward curve (TODO visualize the reward cuve later)
         print("Beginning training run at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
         seeed = np.random.randint(0, 100000) #random seed while training, set of seeds when testing (TODO)
+        logstructure = []
         if index < 500 or False: #pretraininng with easy opponents, for more exploration on opponent base
             train_qlearn(rewardcurve, logstructure, scores, grabslist, seed=seeed, difficulty="easy", reward_choice=rewardchoice, render_mode=None, timelimit=600., q_table=qtableee)
         else:
             train_qlearn(rewardcurve, logstructure, scores, grabslist, seed=seeed, difficulty="hard", reward_choice=rewardchoice, render_mode=None, timelimit=600., q_table=qtableee)
+        np.save(f"{filename_suffix}_logstructure{index}.npy", logstructure) 
+        # discard logstructure now, so memory does not leak
+        logstructure = []
         index += 1
         print(f"Completed training run {index}")
 
@@ -335,8 +342,8 @@ if __name__ == "__main__":
     #testqtable = QTable("q_table.npy")
     print("Storing reward curve to file", "reward_curve.npy")
     np.save(f"{filename_suffix}_reward_curve.npy", rewardcurve)
-    print("Storing logstructure to file", "logstructure.npy")
-    np.save(f"{filename_suffix}_logstructure.npy", logstructure) 
+    #print("Storing logstructure to file", "logstructure.npy")
+    #np.save(f"{filename_suffix}_logstructure.npy", logstructure) 
     print("Storing scores to file", "scores.npy")
     np.save(f"{filename_suffix}_scores.npy", scores)
     print("Storing grabslist to file", "grabslist.npy")
