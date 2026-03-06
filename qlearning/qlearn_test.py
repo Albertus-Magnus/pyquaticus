@@ -12,7 +12,7 @@ from pyquaticus.base_policies.rhealg_policy2 import RHEA_Agent, RHEA_Environment
 from pyquaticus.base_policies.ultra_def_policy import UltraDefender
 from qtable import QlearnPolicy, QTable
 from pyquaticus.utils.rewards import caps_and_grabs, aggressive_rew, defensive_rew, double_aggressive_rew, single_aggressive_rew, caps_and_tags
-#from multiprocessing import Pool, Value, Lock #i don't need any parallel processing, i just need to run 10 scripts in different terminals...
+#from multiprocessing import Pool, Value, Lock #i don't need any parallel processing (is qlearn even compatible?), i just need to run 10 scripts in different terminals...
 
 """
 This was copied from magnus_test.py and modified to 
@@ -24,14 +24,12 @@ create a test of 2x qlearn policy agents versus
 
 def train_qlearn(
     rewardcurve,
-    #logstructure,
     scores,
     grabslist,
     seed: int = 12345,
     # seed for "random" starts
     difficulty: str = "hard",
     # difficulty is the MODE of the example agents, can be "hard", "medium" or "easy"
-    # 1 is mrhea agent, 2 is rhea plus two ultra-defensive agents, 3 (or 0) is ultra-defensive agent TODO also add easy,medium,hard as types? maybe not...
     reward_choice: str = "adjustmepls", #maybe could be string, but cleaner so?
     render_mode: str = None,#'human'
     timelimit: float = 600.,
@@ -40,7 +38,7 @@ def train_qlearn(
 ):
     
     # Set score function to the selected reward (match statement syntax might require python version 3.10 or newer)
-    match reward_choice:#TODO update reward functions and then this TODO TODO this on sunday!
+    match reward_choice:
         case "caps_and_grabs":
             reward_method = caps_and_grabs
         case "double_aggressive_rew":
@@ -88,38 +86,12 @@ def train_qlearn(
     temp_captures = env.state["captures"]
     temp_grabs = env.state["grabs"]
     temp_tags = env.state["tags"]
-
-    # initialize rhea environment #not rhea here, at least as long as I don't train against rhea...
-    #if agent_type == 1:
-    #    rhea_env = MRHEA_Environment(reward_choice)     #(self.id, self.team, obs, info, self.teammate_ids, self.opponent_ids)
-    #else:
-    #    # rhea and mrhea require different environments (do they rn though?)
-    #    rhea_env = RHEA_Environment(reward_choice)
-    # give this to the agent below
+    
 
     # Base_combine agents
     H_one = Heuristic_CTF_Agent('agent_2', env, mode=difficulty, continuous=False)#TODO try if False works (seems more fair)
     H_two = Heuristic_CTF_Agent('agent_3', env, mode=difficulty, continuous=False)
-    # Ultra-defensive agents and RHEA agent
-    #R_one = UltraDefender('agent_0', rhea_env, env, continuous=True) # MRHEA agent here
-    #if agent_type == 1:
-    #    print("Setting up MRHEA agent")
-    #    R_two = MRHEA_Agent('agent_1', rhea_env, env, continuous=True) # MRHEA agent here
-    #elif agent_type == 2:
-    #    print("Setting up RHEA agent")
-    #    R_one = UltraDefender('agent_0', env, continuous=True) # MRHEA agent here
-    #    R_two = RHEA_Agent('agent_1', rhea_env, env, continuous=True)
-    #    R_three = UltraDefender('agent_2', env, continuous=True) # MRHEA agent here
-    #    #R_one = UltraDefender('agent_0', env, continuous=True) #snippet from rhea_test_cap.py
-    #    #R_two = RHEA_Agent('agent_1', rhea_env, env, continuous=True) # RHEA agent here
-    #    #R_three = UltraDefender('agent_2', env, continuous=True)
-    #    #R_three = UltraDefender('agent_2', rhea_env, env, continuous=True) # MRHEA agent here
-    #else:
-    #    print("Setting up Ultra-defensive agents")
-    #    R_one = UltraDefender('agent_0', env, continuous=True)
-    #    R_two = UltraDefender('agent_1', env, continuous=True)
-    #    R_three = UltraDefender('agent_2', env, continuous=True)
-    #print("Setting up q-table") #is done before training loop
+    
     print("Setting up q-learn agents")
     if q_table == None: print("Error: q-table not set up before agents are created.")
     R_one = QlearnPolicy('agent_0', env, q_table)
@@ -131,19 +103,7 @@ def train_qlearn(
         # Base_combine agents
         two = H_one.compute_action(obs, info)
         three = H_two.compute_action(obs, info)
-        # Because of different agent types we have to distinctively handle the compute_action. This could be avoided with a change to the UltraDefender() method
-        #if agent_type == 1:
-        #    # MRHEA agents
-        #    zot = R_two.compute_action(obs, info)
-        #    #print("zot: ",zot) #zot is rn only one action
-        #    zero = zot[0]
-        #    one = zot[1]
-        #    two = zot[2]
-        #else:
-        #    zero = R_one.compute_action(obs, info)
-        #    one = R_two.compute_action(obs, info)
-        #    two = R_three.compute_action(obs, info)
-        # Only handle qlearn training (for now)
+        
         zero = R_one.compute_action(obs, info)
         one = R_two.compute_action(obs, info)
 
@@ -156,11 +116,6 @@ def train_qlearn(
         obs, reward, term, trunc, info = env.step({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three})
         #print("\n\nReward:",reward)#Reward: {'agent_0': 0.2734431070341813, 'agent_1': 0.2208806900959132, 'agent_2': -0.12809429110777018, 'agent_3': 0.0, 'agent_4': 0.0, 'agent_5': 0.0}
 
-        # Logging the gamestate info into the logstructure list, which is then saved to file at the end of the training
-        #logstructure.append({
-        #    "obs": obs,
-        #    "reward": reward,
-        #    "info": info
         #}) #TODO save tag-counts
         
         # Update Q-Table for both agents (same table, two updates)
@@ -169,23 +124,20 @@ def train_qlearn(
         R_two.q_Table.set_q_value(a1_qstep[0], a1_qstep[1], a1_qstep[2], a1_qstep[3], a1_qstep[4], a1_qstep[5], reward['agent_1'])
         # Keep track of reward (TODO need to get an underlying curve and visualize it for full training)
         rewardcurve.append(reward)
-        # -Logging utility-
-        # Writes the gamestate info into pyquaticus/match.log #this seems like it is doubled? TODO is there another log file output?
-        #logging.info("obs: %s", obs) #Disabled this now, i like it more when the log is saved as logstructure...
+        # -Logging utility- (disabled for training, too much memory)
+        # Writes the gamestate info into pyquaticus/match.log #this seems like it is doubled? 
+        #logging.info("obs: %s", obs) 
         #logging.info("reward: %s", reward)
         #logging.info("info: %s", info)
 
-        k =  list(term.keys()) #what is k? idk...
-        # In order to keep the simulated environment start state up to date with the "real" one we do the step here (alternative is copying the real one at every step.)
-        #if agent_type == 1 or agent_type == 2:
-        #    R_two.rhea_env.perform_action({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three, 'agent_4':four, 'agent_5':five}, env.state)
+        k =  list(term.keys()) #what is k? Likely a gameover check.
 
         step += 1
         if term[k[0]] == True or trunc[k[0]]==True:
-            scores.append(env.state['captures']) #scores for both teams at the end of each episode, for all episodes
+            scores.append(env.state['captures']) #scores for both teams at the end of each episode, for all episodes TODO not for all episodes, perhaps a avg for a number of episodes because memory
             grabslist.append(env.state['grabs']) #grabs too
             break
-    # These are some statistics we are exporting(?):
+    # These are some statistics we are exporting:
     for i in range(len(env.state["captures"])):
         temp_captures[i] += env.state["captures"][i]
     for i in range(len(env.state["grabs"])):
@@ -200,7 +152,7 @@ def train_qlearn(
     for i in range(len(env.state["tags"])):
         temp_tags[i] += env.state["tags"][i]
 
-    print("\n~~~Run Concluded~~~")#\nreward curve: ",rewardcurve)
+    print("\n~~~Run Concluded~~~")
     formatted_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
     print(f" Time: {formatted_time}")
     print("agent collisions:",env.state['agent_collisions'])
@@ -289,18 +241,7 @@ if __name__ == "__main__":
     "--------------------------------------------"
     # Creating filenames for the saved q-table and reward curve, with some of the training parameters included in the name for better tracking
     #filename_suffix = f"{rewardchoice}_neutral" #TODO better naming system, some way to keep track of trained  policies (maybe even in thesis? certainly in slides...), better way to automatically name things, actual pipeline in general
-    #filename_suffix = "lrate0.1_discount0.9_initialq10.0_single_aggressive_rew"
-    #filename_suffix = "lrate0.1_discount0.9_initialq10.0_double_aggressive_rew"
-    #filename_suffix = "lrate0.1_discount0.9_initialq10.0_caps_and_grabs"
-    #filename_suffix = "lrate0.1_discount0.9_initialq10.0_caps_and_tags"
-    #filename_suffix = "lrate0.8_discount0.9_initialq10.0_single_aggressive_rew"
-    #filename_suffix = "lrate0.1_discount0.95_initialq10.0_single_aggressive_rew"
     #filename_suffix = ""
-    #filename_suffix = ""
-    #filename_suffix = ""
-    #filename_suffix = ""
-    #filename_suffix = ""
-    # example: q_table_aggr_easy_130i_neutral.npy
     "--------------------------------------------"
     filename_suffix = "qtrainlog/"+filename_suffix
     
@@ -326,7 +267,7 @@ if __name__ == "__main__":
         print("Beginning training run at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
         seeed = np.random.randint(0, 100000) #random seed while training, set of seeds when testing (TODO)
         #logstructure = []
-        if index < 500 or False: #pretraininng with easy opponents, for more exploration on opponent base
+        if index < 500 or True: #pretraininng with easy opponents, for more exploration on opponent base  [pretraining disabled for now, all training against easy]
             train_qlearn(rewardcurve, scores, grabslist, seed=seeed, difficulty="easy", reward_choice=rewardchoice, render_mode=None, timelimit=600., q_table=qtableee)
         else:
             train_qlearn(rewardcurve, scores, grabslist, seed=seeed, difficulty="hard", reward_choice=rewardchoice, render_mode=None, timelimit=600., q_table=qtableee)
@@ -349,10 +290,9 @@ if __name__ == "__main__":
     print("Storing grabslist to file", "grabslist.npy")
     np.save(f"{filename_suffix}_grabslist.npy", grabslist)
     if False:
-        # code to run a test with rendering (filename_suffix needs to be moved?)
+        # code to run a test with rendering 
         qtablo = QTable(f"{filename_suffix}_q_table.npy")
         rewardcurve = []
-        #logstructure = []
         scores = []
         grabslist = []
         train_qlearn(rewardcurve, scores, grabslist, seed=12345, difficulty="easy", reward_choice=2, render_mode='human', timelimit=600., q_table=qtablo)
