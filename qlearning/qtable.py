@@ -156,7 +156,7 @@ class QlearnPolicy(BaseAgentPolicy):
         new_q = (1 - self.q_Table.LEARNING_RATE) * old_q + self.q_Table.LEARNING_RATE * (reward + self.q_Table.DISCOUNT_FACTOR * opt_future_value)
         # LEARNING_RATE and other parameters should remain the same between both tables
         #print(f"Updating Q-value for state ({ownpos}, {opp1}, {opp2}, {b_flag}, {r_flag}) and action {action} from {old_q} to {new_q} based on reward {reward} and optimal future value {opt_future_value}.")
-        self.q_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][action] = new_q
+        self.u_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][action] = new_q
     #End of set_q_value()
 
     def compute_action(self, obs, info: dict[str, dict]):
