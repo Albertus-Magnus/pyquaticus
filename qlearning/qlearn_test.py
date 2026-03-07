@@ -1,9 +1,9 @@
 from datetime import datetime
-import logging
+#import logging
 import sys
-import os
-import os.path
-import pyquaticus
+#import os
+#import os.path
+#import pyquaticus
 import numpy as np
 from pyquaticus import pyquaticus_v0
 from pyquaticus.base_policies.base_combined import Heuristic_CTF_Agent
@@ -34,7 +34,7 @@ def train_qlearn(
     render_mode: str = None,#'human'
     timelimit: float = 600.,
     logname: str = "match.log",
-    q_table: str = None
+    q_table: QTable = None #str = None #Not a string?! Is already a QTable!
 ):
     
     # Set score function to the selected reward (match statement syntax might require python version 3.10 or newer)
@@ -65,13 +65,13 @@ def train_qlearn(
     config_dict["default_init"] = False #random starting positions (uses seed)
 
     #-Logging utility-
-    logging.basicConfig(
-        filename=logname,
-        filemode="w",   #"w" to overwrite, "a" to append. Does it overwrite within the loop? if so, a.
-        level=logging.INFO,
-        format="%(asctime)s %(message)s",
-        force=True
-    )
+    # logging.basicConfig(
+    #    filename=logname,
+    #    filemode="w",   #"w" to overwrite, "a" to append. Does it overwrite within the loop? if so, a.
+    #    level=logging.INFO,
+    #    format="%(asctime)s %(message)s",
+    #    force=True
+    # )
 
     env = pyquaticus_v0.PyQuaticusEnv(team_size=2, action_space="discrete", config_dict=config_dict, reward_config={'agent_0': reward_method, 'agent_1': reward_method, 'agent_2': reward_method, 'agent_3': reward_method},
     render_mode=render_mode) #'human')  #None)#'human')
@@ -98,7 +98,7 @@ def train_qlearn(
     R_two = QlearnPolicy('agent_1', env, q_table)
 
     step = 0
-    #rewardcurve = []
+    rewardsteps = [[], []] #two-dimensional list to track both agents of this team #TODO check if rewardcurve is meaningless now
     while True:
         # Base_combine agents
         two = H_one.compute_action(obs, info)
@@ -116,24 +116,25 @@ def train_qlearn(
         obs, reward, term, trunc, info = env.step({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three})
         #print("\n\nReward:",reward)#Reward: {'agent_0': 0.2734431070341813, 'agent_1': 0.2208806900959132, 'agent_2': -0.12809429110777018, 'agent_3': 0.0, 'agent_4': 0.0, 'agent_5': 0.0}
 
-        #}) #TODO save tag-counts
+        #}) #TODO save tag-counts [should I save everything else here as well? <-need to save once before loop, so best save always before loop. But then need to save once after loop (at break?)]
         
         # Update Q-Table for both agents (same table, two updates)
         #print("\nActions: zero",zero,"; one",one)
         R_one.q_Table.set_q_value(a0_qstep[0], a0_qstep[1], a0_qstep[2], a0_qstep[3], a0_qstep[4], a0_qstep[5], reward['agent_0'])
         R_two.q_Table.set_q_value(a1_qstep[0], a1_qstep[1], a1_qstep[2], a1_qstep[3], a1_qstep[4], a1_qstep[5], reward['agent_1'])
         # Keep track of reward (TODO need to get an underlying curve and visualize it for full training)
-        rewardcurve.append(reward)
+        rewardsteps.append(reward)
         # -Logging utility- (disabled for training, too much memory)
         # Writes the gamestate info into pyquaticus/match.log #this seems like it is doubled? 
         #logging.info("obs: %s", obs) 
         #logging.info("reward: %s", reward)
         #logging.info("info: %s", info)
 
-        k =  list(term.keys()) #what is k? Likely a gameover check.
+        k =  list(term.keys()) #Gameover check.
 
         step += 1
         if term[k[0]] == True or trunc[k[0]]==True:
+            # Game over
             scores.append(env.state['captures']) #scores for both teams at the end of each episode, for all episodes TODO not for all episodes, perhaps a avg for a number of episodes because memory
             grabslist.append(env.state['grabs']) #grabs too
             break
@@ -160,6 +161,12 @@ def train_qlearn(
     print("grabs: ",env.state['grabs'])
     env.close()
     return rewardcurve
+#End of train_qlearn()
+
+# def logData(env oder so):
+#     importantData = [] #TODO
+#     return importantData
+#End of logData()
 
 def visualize_reward_curve(reward_curve_file):
     import matplotlib.pyplot as plt
@@ -175,10 +182,12 @@ def visualize_reward_curve(reward_curve_file):
     plt.grid(True)
     plt.legend()
     plt.show()
+#End of visualize_reward_curve()
 
 if __name__ == "__main__":
-    #if argument 1 set rewardchoice to x
+    # Prepared experiments are made easier to launch (editor performance is affected once some of these are launched, and they are made to be processed simultaneously)
     if len(sys.argv) > 1:
+        #if argument 1 set rewardchoice, etc to x
         if sys.argv[1] == "1":
             rewardchoice = "single_aggressive_rew"
             filename_suffix = "lrate0.1_discount0.9_initialq10.0_single_aggressive_rew"

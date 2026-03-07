@@ -56,36 +56,9 @@ class QTable:
         print("Q-Table created, size",self.qtable.size)
     #End of init()
 
-    def set_q_value(self, ownpos, opp1, opp2, b_flag, r_flag, action, reward: float):
-        """Adjusts the value of a q-value in this QTable object.
-        
-        :ownpos: is self-position (relative heading towards objective): 0-3 [order of angles todo]
-            
-        :opp1: is opponent 1 (relative heading towards opp1): 0-3
-            
-        :opp2: is opponent 2 (relative heading towards opp2): 0-3
-            
-        :b_flag: is own flag grabbed: Bool
-            
-        :r_flag: is opponent flag grabbed: Bool
-            
-        :action: is action space: 0-3
-
-        :reward: is the reward that was found with the selected action
-
-        reward is from frame n+1, the rest of the values are from frame n (action being the action between these frames, so selected in frame n).
-        """
-        old_q = self.qtable[ownpos][opp1][opp2][b_flag][r_flag][action]
-
-        # Calculation of loss etc as per the qlearn algorithm
-        opt_future_value = -100000000000. #"." cause reward is continuous
-        for i in range(4): #for every possible action do...
-            opt_future_value = max(opt_future_value, self.qtable[ownpos][opp1][opp2][b_flag][r_flag][ i ])
-        # Loss function is used to compute new q-value:
-        new_q = (1 - self.LEARNING_RATE) * old_q + self.LEARNING_RATE * (reward + self.DISCOUNT_FACTOR * opt_future_value)
-        #print(f"Updating Q-value for state ({ownpos}, {opp1}, {opp2}, {b_flag}, {r_flag}) and action {action} from {old_q} to {new_q} based on reward {reward} and optimal future value {opt_future_value}.")
-        self.qtable[ownpos][opp1][opp2][b_flag][r_flag][action] = new_q
-    #End of set_q_value()
+    """
+    Moved set_q_value to QlearnPolicy(), because updates now require both qtables stored in the agent policy.
+    """
 
     def prepareUpdate(self, obs, agentID, action):
         if obs[agentID]['has_flag']:#TODO run test on correctness of adress of value
@@ -122,6 +95,7 @@ class QTable:
 #End of QTable()
 
 class QlearnPolicy(BaseAgentPolicy):
+    """Implements a BaseAgentPolicy from pyquaticus, especially the compute_action() method."""
     def __init__(
         self,
         agent_id: str,
@@ -135,6 +109,8 @@ class QlearnPolicy(BaseAgentPolicy):
         #self.agent_id = agent_id
         #self.env = env
         self.q_Table = q_table
+        # copy of q_table (update-table) is used for updates of q-values, while old unmodified q_table is used only for action selection (and max(future action) in the update calculation)
+        self.u_Table: QTable = np.copy(q_table)
 
     @staticmethod #either this line or self as first argument. Python stinks sometimes...
     def headingDiff(heading, pos1, pos2): #TODO check if math correct
@@ -147,6 +123,41 @@ class QlearnPolicy(BaseAgentPolicy):
         diff = (heading - angle) % 360
         diff = diff - 180.0 #outside this function the headings/angles are in -180 to 180 range(?)
         return diff
+    
+    ###############UPDATE##OF##QVALUE################################################
+    def set_q_value(self, ownpos, opp1, opp2, b_flag, r_flag, action, reward: float):
+        """Adjusts the value of a q-value in the update-table object stored by this agent policy.
+        
+        :ownpos: is self-position (relative heading towards objective): 0-3 [order of angles todo]
+            
+        :opp1: is opponent 1 (relative heading towards opp1): 0-3
+            
+        :opp2: is opponent 2 (relative heading towards opp2): 0-3
+            
+        :b_flag: is own flag grabbed: Bool
+            
+        :r_flag: is opponent flag grabbed: Bool
+            
+        :action: is action space: 0-3
+
+        :reward: is the reward that was found with the selected action
+
+        reward is from frame n+1, the rest of the values are from frame n (action being the action between these frames, so selected in frame n).
+        """
+        # old_q is taken from the (during this episode) updated q-value
+        old_q = self.u_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][action]
+
+        # Calculation of loss etc as per the qlearn algorithm
+        opt_future_value = -100000000000. #"." cause reward is continuous
+        for i in range(4): #for every possible action do...
+            # opt_future_value is taken from the un-updated qtable that is also used for action selection.
+            opt_future_value = max(opt_future_value, self.q_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][ i ])
+        # Loss function is used to compute new q-value:
+        new_q = (1 - self.q_Table.LEARNING_RATE) * old_q + self.q_Table.LEARNING_RATE * (reward + self.q_Table.DISCOUNT_FACTOR * opt_future_value)
+        # LEARNING_RATE and other parameters should remain the same between both tables
+        #print(f"Updating Q-value for state ({ownpos}, {opp1}, {opp2}, {b_flag}, {r_flag}) and action {action} from {old_q} to {new_q} based on reward {reward} and optimal future value {opt_future_value}.")
+        self.q_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][action] = new_q
+    #End of set_q_value()
 
     def compute_action(self, obs, info: dict[str, dict]):
         # Returns an action index (since we are aiming at discrete agent implementation), according to the ACTION_MAP from config:
