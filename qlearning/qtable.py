@@ -101,6 +101,7 @@ class QlearnPolicy(BaseAgentPolicy):
         agent_id: str,
         env: Union[PyQuaticusEnv, PyQuaticusMoosBridge],
         q_table: QTable,
+        u_table: QTable,
         flag_keepout: float = config_dict_std["flag_keepout"],
         catch_radius: float = config_dict_std["catch_radius"],
         continuous: bool = False
@@ -110,8 +111,7 @@ class QlearnPolicy(BaseAgentPolicy):
         #self.env = env
         self.q_Table = q_table
         # copy of q_table (update-table) is used for updates of q-values, while old unmodified q_table is used only for action selection (and max(future action) in the update calculation)
-        self.u_Table = QTable(q_table.LEARNING_RATE, q_table.DISCOUNT_FACTOR, q_table.INITIAL_Q_VALUE)
-        self.u_Table.qtable = np.copy(self.q_Table.qtable)
+        self.u_Table = u_table
 
     @staticmethod #either this line or self as first argument. Python stinks sometimes...
     def headingDiff(heading, pos1, pos2): #TODO check if math correct
