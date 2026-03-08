@@ -46,7 +46,7 @@ class QTable:
         # initial q-value high encourages exploration, low (even negative) encourages exploitation
         self.qtable = np.full_like(self.qtable, self.INITIAL_Q_VALUE) 
         ''' This multi-dimensional table stores the qvalues according to the following mapping:
-            self-position (relative heading towards objective): 0-3 [order of angles todo]
+            self-position (relative heading towards objective): 0-3
             opponent 1 (relative heading towards opp1): 0-3
             opponent 2 (relative heading towards opp2): 0-3
             own flag grabbed: Bool
@@ -61,7 +61,7 @@ class QTable:
     """
 
     def prepareUpdate(self, obs, agentID, action):
-        if obs[agentID]['has_flag']:#TODO run test on correctness of adress of value
+        if obs[agentID]['has_flag']:
             # heading towards objective (positional awareness variable) is towards enemy base normally...
             ownpos = headingToState(obs[agentID]['own_home_bearing']) 
         else:
@@ -69,9 +69,9 @@ class QTable:
             #print("own_home_bearing =", obs[agentID]['own_home_bearing'])#output of this is "own_home_bearing = 117.06809126991149"
             ownpos = headingToState(obs[agentID]['opponent_home_bearing'])
         # compute opp1 (angle (0-3) between own heading and bearing towards opponent 1)
-        opp1_bearing = headingToState(obs[agentID][('opponent_0', 'relative_heading')]) #TODO check if address correct
+        opp1_bearing = headingToState(obs[agentID][('opponent_0', 'relative_heading')]) 
         # compute opp2
-        opp2_bearing = headingToState(obs[agentID][('opponent_1', 'relative_heading')]) #TODO same
+        opp2_bearing = headingToState(obs[agentID][('opponent_1', 'relative_heading')])
         # compute b_flag (bool whether opponent has grabbed the blue flag)
         b_flag = int(obs[agentID][('opponent_0', 'has_flag')] or obs[agentID][('opponent_1', 'has_flag')]) #true if any opponent has your flag
         # compute r_flag
@@ -129,7 +129,7 @@ class QlearnPolicy(BaseAgentPolicy):
     def set_q_value(self, ownpos, opp1, opp2, b_flag, r_flag, action, reward: float):
         """Adjusts the value of a q-value in the update-table object stored by this agent policy.
         
-        :ownpos: is self-position (relative heading towards objective): 0-3 [order of angles todo]
+        :ownpos: is self-position (relative heading towards objective): 0-3 
             
         :opp1: is opponent 1 (relative heading towards opp1): 0-3
             
@@ -168,7 +168,7 @@ class QlearnPolicy(BaseAgentPolicy):
         #  [1.0,  -90], [1.0, -135], [0.5, 180], 
         #  [0.5,  135], [0.5,   90], [0.5,  45], 
         #  [0.5,    0], [0.5,  -45], [0.5, -90], 
-        #  [0.5, -135], [0.0,    0]] #TODO apply this action-id thing to remove the discrete error from my standard pyquaticus runs
+        #  [0.5, -135], [0.0,    0]] 
         ''' ownpos is the relative heading towards the objective, divided into 4 areas
             pos3  |  pos0
             -----/_\-----   (agent is /_\)
@@ -183,12 +183,11 @@ class QlearnPolicy(BaseAgentPolicy):
             # ...and towards own base (or map half) if agent has grabbed the enemy flag
             #print("own_home_bearing =",obs[self.id]['own_home_bearing'])#output of this is "own_home_bearing = 117.06809126991149"
             ownpos = headingToState(obs[self.id]['opponent_home_bearing'])
-            #TODO this is 2 positional arguments, so not an angle. perhaps position?
             #print above returns 117.06809126991149 wth?!?
         # compute opp1 (angle (0-3) between own heading and bearing towards opponent 1)
-        opp1_bearing = headingToState(obs[self.id][('opponent_0', 'relative_heading')]) #TODO check if address correct
+        opp1_bearing = headingToState(obs[self.id][('opponent_0', 'relative_heading')]) 
         # compute opp2
-        opp2_bearing = headingToState(obs[self.id][('opponent_1', 'relative_heading')]) #TODO same
+        opp2_bearing = headingToState(obs[self.id][('opponent_1', 'relative_heading')])
         # compute b_flag (bool whether opponent has grabbed the blue flag)
         b_flag = int(obs[self.id][('opponent_0', 'has_flag')] or obs[self.id][('opponent_1', 'has_flag')]) #true if any opponent has your flag
         # compute r_flag
@@ -210,7 +209,7 @@ class QlearnPolicy(BaseAgentPolicy):
     #End of compute_action()
 #End of QlearnPolicy()
 
-def headingToState(heading: float): #TODO test (check if heading is already 360 or something pi)
+def headingToState(heading: float): 
     """
     [Note: first part of functionality went to headingDiff(), now just -180to180 angle to (0-3) state]
     Computes the difference in angle between :heading: and the line between :pos1: and :pos2:.

@@ -229,7 +229,7 @@ if __name__ == "__main__":
             """
             Input must be: >python qlearn_test.py test lrate0.1_discount0.9_initialq0.0_ single_aggressive_rew
             (where filename suffix was lrate0.1_discount0.9_initialq0.0_single_aggressive_rew )
-            Execute in correct folder so file (with qtable) can be found.
+            Execute in correct folder so file (with qtable) can be found. TODO log statecount (seccond qtable structure but 1/4th the size)
             """
             rewardchoice = sys.argv[3]
             filename_suffix = sys.argv[2] + rewardchoice
