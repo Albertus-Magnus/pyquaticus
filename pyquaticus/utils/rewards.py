@@ -300,6 +300,7 @@ def aggressive_rew(
     max_speeds: list,
     tagging_cooldown: float
 ):
+    """NOTE: This reward is outdated, better to use single_aggressive_rew or a variation."""
     reward = 0.0
     idx = agents.index(agent_id)
     #print("idx: ",idx)
@@ -562,11 +563,15 @@ def defensive_rew(
     # Punish being tagged or out of bounds
     if state["agent_is_tagged"][idx]:
         return -5.0  
+    # oob check:
     if (
         position[0] < 0 or position[0] > env_size[0] or
         position[1] < 0 or position[1] > env_size[1]
     ):
         return -10.0
+    # If close to out of bounds, start punishing
+    if position[0] > (env_size[0] - 5.) or position[1] > (env_size[1] - 5.) or position[0] < 5.0 or position[1] < 5.0:
+        reward += -5.0 #TODO test if correct
 
     # Note team index
     t = team.value  #0 (blue team) or 1 (red team)

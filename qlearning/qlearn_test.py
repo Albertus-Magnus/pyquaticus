@@ -5,13 +5,14 @@ import sys
 #import os.path
 #import pyquaticus
 import numpy as np
+from numpy.typing import NDArray
 from pyquaticus import pyquaticus_v0
 from pyquaticus.base_policies.base_combined import Heuristic_CTF_Agent
 from pyquaticus.base_policies.multi_rhea_policy import MRHEA_Agent, MRHEA_Environment
 from pyquaticus.base_policies.rhealg_policy2 import RHEA_Agent, RHEA_Environment
 from pyquaticus.base_policies.ultra_def_policy import UltraDefender
 from qtable import QlearnPolicy, QTable
-from pyquaticus.utils.rewards import caps_and_grabs, aggressive_rew, defensive_rew, double_aggressive_rew, single_aggressive_rew, caps_and_tags
+from pyquaticus.utils.rewards import caps_and_grabs, defensive_rew, double_aggressive_rew, single_aggressive_rew, caps_and_tags
 #from multiprocessing import Pool, Value, Lock #i don't need any parallel processing (is qlearn even compatible?), i just need to run 10 scripts in different terminals...
 
 """
@@ -26,6 +27,7 @@ def train_qlearn(
     #rewardcurve,
     #scores,
     #grabslist,
+    s_table: NDArray,
     seed: int = 12345,
     # seed for "random" starts
     difficulty: str = "hard",
@@ -121,7 +123,9 @@ def train_qlearn(
         # Update Q-Table for both agents (same table, two updates)
         #print("\nActions: zero",zero,"; one",one)
         R_one.set_q_value(a0_qstep[0], a0_qstep[1], a0_qstep[2], a0_qstep[3], a0_qstep[4], a0_qstep[5], reward['agent_0'])
+        s_table[a0_qstep[0]][a0_qstep[1]][a0_qstep[2]][a0_qstep[3]][a0_qstep[4]] += 1        #TODO check if correct address? probably with running and prints
         R_two.set_q_value(a1_qstep[0], a1_qstep[1], a1_qstep[2], a1_qstep[3], a1_qstep[4], a1_qstep[5], reward['agent_1'])
+        s_table[a1_qstep[0]][a1_qstep[1]][a1_qstep[2]][a1_qstep[3]][a1_qstep[4]] += 1        #TODO check if correct address? probably with running and prints
         # Keep track of reward (TODO need to get an underlying curve and visualize it for full training)
         rewardsteps.append({'agent_0': reward['agent_0'], 'agent_1': reward['agent_1']})
         # -Logging utility- (disabled for training, too much memory)
@@ -153,13 +157,8 @@ def train_qlearn(
     print("SCORE: ",env.state['captures'])
     print("grabs: ",env.state['grabs'])
     env.close()
-    return rewardsteps, env.state['captures'], env.state['grabs'], env.state['tags'], u_table #TODO rewardsteps updating implement (TODAY)
+    return rewardsteps, env.state['captures'], env.state['grabs'], env.state['tags'], u_table 
 #End of train_qlearn()
-
-# def logData(env oder so):
-#     importantData = [] #TODO
-#     return importantData
-#End of logData()
 
 def visualize_reward_curve(reward_curve_file):
     import matplotlib.pyplot as plt
@@ -186,44 +185,44 @@ if __name__ == "__main__":
             filename_suffix = "lrate0.1_discount0.9_initialq10.0_single_aggressive_rew"
             LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.9, 10.0
         elif sys.argv[1] == "2":
-            rewardchoice = "double_aggressive_rew"
-            filename_suffix = "lrate0.1_discount0.9_initialq10.0_double_aggressive_rew"
-            LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.9, 10.0
-        elif sys.argv[1] == "3":
             rewardchoice = "caps_and_grabs"
             filename_suffix = "lrate0.1_discount0.9_initialq10.0_caps_and_grabs"
             LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.9, 10.0
-        elif sys.argv[1] == "4":
+        elif sys.argv[1] == "3":
             rewardchoice = "caps_and_tags"
             filename_suffix = "lrate0.1_discount0.9_initialq10.0_caps_and_tags"
             LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.9, 10.0
-        elif sys.argv[1] == "5":
+        elif sys.argv[1] == "4":
             rewardchoice = "single_aggressive_rew"
-            filename_suffix = "lrate0.8_discount0.9_initialq10.0_single_aggressive_rew"
-            LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.8, 0.9, 10.0
+            filename_suffix = "lrate0.2_discount0.9_initialq10.0_single_aggressive_rew"
+            LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.2, 0.9, 10.0
+        elif sys.argv[1] == "5":
+            rewardchoice = "caps_and_grabs"
+            filename_suffix = "lrate0.2_discount0.9_initialq10.0_caps_and_grabs"
+            LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.2, 0.9, 10.0
         elif sys.argv[1] == "6":
+            rewardchoice = "caps_and_tags"
+            filename_suffix = "lrate0.2_discount0.9_initialq10.0_caps_and_tags"
+            LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.2, 0.9, 10.0
+        elif sys.argv[1] == "7":
             rewardchoice = "single_aggressive_rew"
             filename_suffix = "lrate0.1_discount0.95_initialq10.0_single_aggressive_rew"
             LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.95, 10.0
-        elif sys.argv[1] == "7":
-            rewardchoice = "single_aggressive_rew"
-            filename_suffix = "lrate0.1_discount0.85_initialq10.0_single_aggressive_rew"
-            LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.85, 10.0
         elif sys.argv[1] == "8":
-            rewardchoice = "single_aggressive_rew"
-            filename_suffix = "lrate0.1_discount0.5_initialq10.0_single_aggressive_rew"
-            LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.5, 10.0
+            rewardchoice = "caps_and_grabs"
+            filename_suffix = "lrate0.1_discount0.95_initialq10.0_caps_and_grabs"
+            LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.95, 10.0
         elif sys.argv[1] == "9":
-            rewardchoice = "single_aggressive_rew"
-            filename_suffix = "lrate0.2_discount0.95_initialq10.0_single_aggressive_rew"
-            LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.2, 0.95, 10.0
+            rewardchoice = "caps_and_tags"
+            filename_suffix = "lrate0.1_discount0.95_initialq10.0_caps_and_tags"
+            LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.95, 10.0
         elif sys.argv[1] == "10":
             rewardchoice = "single_aggressive_rew"
-            filename_suffix = "lrate0.1_discount0.9_initialq100.0_single_aggressive_rew"
-            LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.9, 100.0
-        elif sys.argv[1] == "11":
-            rewardchoice = "single_aggressive_rew"
             filename_suffix = "lrate0.1_discount0.9_initialq0.0_single_aggressive_rew"
+            LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.9, 0.0
+        elif sys.argv[1] == "11":
+            rewardchoice = "caps_and_tags"
+            filename_suffix = "lrate0.1_discount0.9_initialq0.0_caps_and_tags"
             LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.9, 0.0
         elif sys.argv[1] == "test":
             """
@@ -236,7 +235,8 @@ if __name__ == "__main__":
             LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.9, 0.0
             print("Manually testing qtable policy with rendering enabled.")
             qt = QTable(LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, ("qtrainlog/" + filename_suffix + "_q_table.npy"))
-            train_qlearn(seed=0, difficulty="easy", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt)
+            st = np.zeros((4, 4, 4, 2, 2), dtype=np.int8)
+            train_qlearn(st, seed=0, difficulty="easy", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt)
             sys.exit(0)
         else:
             print("!Wrong rewardchoice argument!")
@@ -255,7 +255,7 @@ if __name__ == "__main__":
 
     "--------------------------------------------"
     # Creating filenames for the saved q-table and reward curve, with some of the training parameters included in the name for better tracking
-    #filename_suffix = f"{rewardchoice}_neutral" #TODO better naming system, some way to keep track of trained  policies (maybe even in thesis? certainly in slides...), better way to automatically name things, actual pipeline in general
+    #filename_suffix = f"{rewardchoice}_neutral" 
     #filename_suffix = ""
     "--------------------------------------------"
     filename_suffix = "qtrainlog/"+filename_suffix
@@ -273,23 +273,26 @@ if __name__ == "__main__":
     # Run training loop for multiple iterations (one setting, repeated with the same qtable)
     print("Setting up Q-Table")
     qtableee = QTable(LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE)
+    s_table = np.zeros((4, 4, 4, 2, 2), dtype=np.int8) #statecount-table
+    # same dimensionality as qtable, but no action-options (because we just want to know about the state... for now)
+    # statecount-table (to measure how many times a state was updated)
     rewardcurve = [] #is created by the 
     scorelist = []
     grabslist = []
     tagslist = []
     index = 0       #right now set for 6h training
-    for i in range(200):
+    for i in range(3000):
     #while datetime.now().hour < 11 or datetime.now().hour > 20: #train until 1 am, then save the q-table and reward curve (TODO visualize the reward cuve later)
         print("Beginning training run at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
         seeed = np.random.randint(0, 100000) #random seed while training, set of seeds when testing (TODO)
         #logstructure = []
         if index < 500 or True: #pretraininng with easy opponents, for more exploration on opponent base  [pretraining disabled for now, all training against easy]
-            rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(grabslist, seed=seeed, difficulty="easy", reward_choice=rewardchoice, render_mode=None, timelimit=600., q_table=qtableee)
+            rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty="easy", reward_choice=rewardchoice, render_mode=None, timelimit=600., q_table=qtableee)
             # tags, rewardlist, captures, grabs are all for [0] and [1] (the two teams)
             # After each episode update the values of q-table. For this purpose updates are calculated during the episode into the u-table. Now it gets switched with q-table:
             qtableee.qtable = u_table.qtable
         else:
-            rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(grabslist, seed=seeed, difficulty="hard", reward_choice=rewardchoice, render_mode=None, timelimit=600., q_table=qtableee)
+            rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty="hard", reward_choice=rewardchoice, render_mode=None, timelimit=600., q_table=qtableee)
             qtableee.qtable = u_table.qtable
 
         # Some of the data we are tracking needs to be added to another list structure:
@@ -307,19 +310,25 @@ if __name__ == "__main__":
         tagslist.append(tag_entry) #zB [ 2 16]
 
         # Print all important data (especially the q-table!) regularly to file:
-        if (index % 50) == 0: #TODO make sure everything here is finished and makes sense.
+        if (index % 50) == 0: 
             print(f"(Pre-storing q-table to file \"{filename_suffix}_q_table.npy\" at index {index}.)")
             qtableee.toFile(f"{filename_suffix}_q_table.npy")
             print(f"(Pre-storing rewardcurve to file \"{filename_suffix}_reward_curve.npy\" at index {index}.)")
-            np.save(f"{filename_suffix}_reward_curve.npy", rewardcurve) #TODO sum up rewardsteps to gain rewardcurve value(s) (how many values per step? 2 for 2 agents?) [also, add that sum to list]
+            np.save(f"{filename_suffix}_reward_curve.npy", rewardcurve)
             #print("Storing logstructure to file", "logstructure.npy")
             #np.save(f"{filename_suffix}_logstructure.npy", logstructure) 
             print(f"(Pre-storing scores to file \"{filename_suffix}_scores.npy\" at index {index}.)")
-            np.save(f"{filename_suffix}_scores.npy", scorelist) #TODO we need to store scores in a further list dimension, to have all final scores of all episodes (makes for a nice graph later...)
+            np.save(f"{filename_suffix}_scores.npy", scorelist) 
             print(f"(Pre-storing grabslist to file \"{filename_suffix}_grabslist.npy\" at index {index}.)")
-            np.save(f"{filename_suffix}_grabslist.npy", grabslist) #TODO same as scores, add to list of other episodes
+            np.save(f"{filename_suffix}_grabslist.npy", grabslist)
             print(f"(Pre-storing tagslist to file \"{filename_suffix}_tagslist.npy\" at index {index}.)")
-            np.save(f"{filename_suffix}_tagslist.npy", tagslist) #TODO same as scores, add to list of other episodes
+            np.save(f"{filename_suffix}_tagslist.npy", tagslist) 
+            print(f"(Pre-storing statecount-table to file \"{filename_suffix}_statecount.npy\" at index {index}.)")
+            np.save(f"{filename_suffix}_statecount.npy", s_table) 
+        # Print qtable regularly as checkpoint to additional file (but not too oft because memory leak)
+        if (index % 500) == 0: 
+            print(f"(In-between-storing q-table to file \"{filename_suffix}_q_table_i{index}.npy\".)")
+            qtableee.toFile(f"{filename_suffix}_q_table_i{index}.npy")
 
         #np.save(f"{filename_suffix}_logstructure{index}.npy", logstructure) 
         # discard logstructure now, so memory does not leak
@@ -328,22 +337,16 @@ if __name__ == "__main__":
         print(f"Completed training run {index}")
 
     # Epilog (saving q-table and reward curve to file)
-    print(f"(Storing q-table to file \"{filename_suffix}_q_table.npy\".)")
+    print(f"Storing q-table to file \"{filename_suffix}_q_table.npy\".")
     qtableee.toFile(f"{filename_suffix}_q_table.npy") #Hmm. Do we need a better naming system, some way to keep track of trained  policies (maybe even in thesis? certainly in slides...), better way to automatically name things, actual pipeline in general
     #testqtable = QTable("q_table.npy")
-    print(f"(Storing rewardcurve to file \"{filename_suffix}_reward_curve.npy\".)")
+    print(f"Storing rewardcurve to file \"{filename_suffix}_reward_curve.npy\".")
     np.save(f"{filename_suffix}_reward_curve.npy", rewardcurve)
     #print("Storing logstructure to file", "logstructure.npy")
     #np.save(f"{filename_suffix}_logstructure.npy", logstructure) 
-    print(f"(Storing scorelist to file \"{filename_suffix}_scores.npy\".)")
+    print(f"Storing scorelist to file \"{filename_suffix}_scores.npy\".")
     np.save(f"{filename_suffix}_scores.npy", scorelist)
-    print(f"(Storing grabslist to file \"{filename_suffix}_grabslist.npy\".)")
+    print(f"Storing grabslist to file \"{filename_suffix}_grabslist.npy\".")
     np.save(f"{filename_suffix}_grabslist.npy", grabslist)
-    print(f"(Storing tagslist to file \"{filename_suffix}_tagslist.npy\".)")
+    print(f"Storing tagslist to file \"{filename_suffix}_tagslist.npy\".")
     np.save(f"{filename_suffix}_tagslist.npy", tagslist)
-    if False:
-        # code to run a test with rendering 
-        qtablo = QTable(f"{filename_suffix}_q_table.npy")        
-        scorelist = []
-        grabslist = []
-        train_qlearn(scorelist, grabslist, seed=12345, difficulty="easy", reward_choice="single_aggressive_rew", render_mode='human', timelimit=600., q_table=qtablo)
