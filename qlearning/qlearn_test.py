@@ -47,8 +47,6 @@ def train_qlearn(
             reward_method = double_aggressive_rew
         case "single_aggressive_rew":
             reward_method = single_aggressive_rew
-        case "aggressive_rew":
-            reward_method = aggressive_rew
         case "defensive_rew":
             reward_method = defensive_rew
         case "caps_and_tags":
