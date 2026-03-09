@@ -175,6 +175,12 @@ def visualize_reward_curve(reward_curve_file):
 #End of visualize_reward_curve()
 
 if __name__ == "__main__":
+    # scores = np.load("qtrainlog/lrate0.1_discount0.9_initialq0.0_caps_and_tags_scores.npy", allow_pickle=True)
+    # print(scores)
+    # print(f"Scores shape: {scores.shape}")
+    # print(f"Scores ndim: {scores.ndim}")
+    # sys.exit(0)
+    
     # Prepared experiments are made easier to launch (editor performance is affected once some of these are launched, and they are made to be processed simultaneously)
     if len(sys.argv) > 1:
         #if argument 1 set rewardchoice, etc to x
@@ -256,7 +262,7 @@ if __name__ == "__main__":
     #filename_suffix = f"{rewardchoice}_neutral" 
     #filename_suffix = ""
     "--------------------------------------------"
-    filename_suffix = "qtrainlog/"+filename_suffix
+    filename_suffix = "qtrainlog/vshard_"+filename_suffix #TODO change vs hard away after test
     
     # Create qtrainlog directory if it doesn't exist
     #os.makedirs("qtrainlog", exist_ok=True) #should exist, except if started from wrong folder...
@@ -284,8 +290,8 @@ if __name__ == "__main__":
         print("Beginning training run at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
         seeed = np.random.randint(0, 100000) #random seed while training, set of seeds when testing (TODO)
         #logstructure = []
-        if index < 500 or True: #pretraininng with easy opponents, for more exploration on opponent base  [pretraining disabled for now, all training against easy]
-            rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty="easy", reward_choice=rewardchoice, render_mode=None, timelimit=600., q_table=qtableee)
+        if index < 500 or True: #pretraininng with easy opponents, for more exploration on opponent base  [pretraining"easy" disabled for now, all training against easy(now hard)]
+            rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty="hard", reward_choice=rewardchoice, render_mode=None, timelimit=600., q_table=qtableee)
             # tags, rewardlist, captures, grabs are all for [0] and [1] (the two teams)
             # After each episode update the values of q-table. For this purpose updates are calculated during the episode into the u-table. Now it gets switched with q-table:
             qtableee.qtable = u_table.qtable
