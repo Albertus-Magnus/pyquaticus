@@ -42,6 +42,24 @@ def visualize_curve(data0, data1, ylabel="Score", name="Training Progress", bags
     #plt.show()
 #End of visualize_curve()
 
+def matrix_to_heatmap(matrix, title, filename):
+    import matplotlib.pyplot as plt
+    plt.figure(figsize=(10, 8))
+
+    # Reshape multi-dimensional array to 2D for visualization
+    matrix_2d = matrix.reshape(64, -1)
+    print(f"matrix_2d shape: {matrix_2d}") #TODO need to redo the reshaping and separate the qtable into (at least) four heatmaps (but shown in one figure?)
+
+    plt.imshow(matrix_2d, cmap='viridis', aspect='auto')
+    plt.colorbar(label='Q-value (expected reward)')
+    plt.title(title)
+    plt.xlabel('This achsis is separated into the booleans for own flag and enemy flag, as well as the four actions')
+    plt.ylabel('This achsis is separated into the 4*4*4=64 positional informations') #TODO figure out how the order of the cells is related to the booleans and pos. inf.'s
+    # Save figure to file:
+    #plt.savefig(filename, dpi=300, bbox_inches='tight')
+    plt.show()
+#End of matrix_to_heatmap()
+
 def vis_helper(filename_suffix0):
     ############################################################
     filename_suffix0 = "vshard_" + filename_suffix0
@@ -127,17 +145,19 @@ if __name__ == "__main__":
     
     #vis_helper(filename_suffix0)
     print("Starting visualization.")
-    vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew")
-    vis_helper("lrate0.1_discount0.9_initialq10.0_caps_and_grabs")
-    vis_helper("lrate0.1_discount0.9_initialq10.0_caps_and_tags")
-    vis_helper("lrate0.2_discount0.9_initialq10.0_single_aggressive_rew")
-    vis_helper("lrate0.2_discount0.9_initialq10.0_caps_and_grabs")
-    vis_helper("lrate0.2_discount0.9_initialq10.0_caps_and_tags")
-    vis_helper("lrate0.1_discount0.95_initialq10.0_single_aggressive_rew")
-    vis_helper("lrate0.1_discount0.95_initialq10.0_caps_and_grabs")
-    vis_helper("lrate0.1_discount0.95_initialq10.0_caps_and_tags")
-    vis_helper("lrate0.1_discount0.9_initialq0.0_single_aggressive_rew")
-    vis_helper("lrate0.1_discount0.9_initialq0.0_caps_and_tags")
+    q_table = np.load("qtrainlog/vshard_example_suffix01_q_table.npy") #TODO visualize Q-Table
+    matrix_to_heatmap(q_table, "test_title", "qtrainlog/vshard_example_suffix01_q_table.png")
+    # vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew")
+    # vis_helper("lrate0.1_discount0.9_initialq10.0_caps_and_grabs")
+    # vis_helper("lrate0.1_discount0.9_initialq10.0_caps_and_tags")
+    # vis_helper("lrate0.2_discount0.9_initialq10.0_single_aggressive_rew")
+    # vis_helper("lrate0.2_discount0.9_initialq10.0_caps_and_grabs")
+    # vis_helper("lrate0.2_discount0.9_initialq10.0_caps_and_tags")
+    # vis_helper("lrate0.1_discount0.95_initialq10.0_single_aggressive_rew")
+    # vis_helper("lrate0.1_discount0.95_initialq10.0_caps_and_grabs")
+    # vis_helper("lrate0.1_discount0.95_initialq10.0_caps_and_tags")
+    # vis_helper("lrate0.1_discount0.9_initialq0.0_single_aggressive_rew")
+    # vis_helper("lrate0.1_discount0.9_initialq0.0_caps_and_tags")
 
     print("Ended visualization.")
     # Print some scores/averages or something for a table for the parameters
