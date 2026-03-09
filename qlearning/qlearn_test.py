@@ -285,7 +285,7 @@ if __name__ == "__main__":
     grabslist = []
     tagslist = []
     index = 0       #right now set for 6h training
-    for i in range(3000):
+    for i in range(4):
     #while datetime.now().hour < 11 or datetime.now().hour > 20: #train until 1 am, then save the q-table and reward curve (TODO visualize the reward cuve later)
         print("Beginning training run at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
         seeed = np.random.randint(0, 100000) #random seed while training, set of seeds when testing (TODO)
