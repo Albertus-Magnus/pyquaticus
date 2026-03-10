@@ -1,6 +1,8 @@
 from matplotlib import pyplot
 import numpy as np
 
+FOLDER = "batch 3 mixed"
+
 
 def visualize_reward_curve(data0, data1, name, bagsize=50):
     import matplotlib.pyplot as plt
@@ -18,7 +20,7 @@ def visualize_reward_curve(data0, data1, name, bagsize=50):
     plt.gca().set_xticklabels([f'{int(x*bagsize)}' for x in plt.gca().get_xticks()])
     plt.legend()
     # Save figure to file:
-    plt.savefig(f"qtrainlog/batch 2 hard/figures/{name}_reward.png", dpi=300, bbox_inches='tight')
+    plt.savefig(f"qtrainlog/{FOLDER}/figures/{name}_reward.png", dpi=300, bbox_inches='tight')
     #plt.show()
 #End of visualize_reward_curve()
 
@@ -38,7 +40,7 @@ def visualize_curve(data0, data1, ylabel="Score", name="Training Progress", bags
     plt.gca().set_xticklabels([f'{int(x*bagsize)}' for x in plt.gca().get_xticks()])
     plt.legend()
     # Save figure to file:
-    plt.savefig(f"qtrainlog/batch 2 hard/figures/{name}_{ylabel}.png", dpi=300, bbox_inches='tight')
+    plt.savefig(f"qtrainlog/{FOLDER}/figures/{name}_{ylabel}.png", dpi=300, bbox_inches='tight')
     #plt.show()
 #End of visualize_curve()
 
@@ -48,7 +50,7 @@ def matrix_to_heatmap(matrix, title, filename):
 
     # Reshape multi-dimensional array to 2D for visualization
     matrix_2d = matrix.reshape(64, -1)
-    print(f"matrix_2d shape: {matrix_2d}") #TODO need to redo the reshaping and separate the qtable into (at least) four heatmaps (but shown in one figure?)
+    #print(f"matrix_2d shape: {matrix_2d}") #TODO need to redo the reshaping and separate the qtable into (at least) four heatmaps (but shown in one figure?)
 
     plt.imshow(matrix_2d, cmap='viridis', aspect='auto')
     plt.colorbar(label='Q-value (expected reward)')
@@ -56,19 +58,21 @@ def matrix_to_heatmap(matrix, title, filename):
     plt.xlabel('This achsis is separated into the booleans for own flag and enemy flag, as well as the four actions')
     plt.ylabel('This achsis is separated into the 4*4*4=64 positional informations') #TODO figure out how the order of the cells is related to the booleans and pos. inf.'s
     # Save figure to file:
-    #plt.savefig(filename, dpi=300, bbox_inches='tight')
-    plt.show()
+    plt.savefig(filename, dpi=300, bbox_inches='tight')
+    #plt.show()
 #End of matrix_to_heatmap()
 
 def vis_helper(filename_suffix0):
     ############################################################
-    filename_suffix0 = "vshard_" + filename_suffix0
-    filename_suffix = "qtrainlog/batch 2 hard/" + filename_suffix0
+    #filename_suffix0 = "vshard_" + filename_suffix0
+    filename_suffix = "qtrainlog/"+FOLDER+"/" + filename_suffix0
     ############################################################
 
     # Load data for visualization
     #print(f"Loading q-table from file \"{filename_suffix}_q_table.npy\".")
-    q_table = np.load(f"{filename_suffix}_q_table.npy") #TODO visualize Q-Table
+    q_table = np.load(f"{filename_suffix}_q_table.npy")
+    s_table = np.load(f"{filename_suffix}_statecount.npy")
+    print("\ns_table:",s_table) #TODO WHY are there negative counts on s_table??! Bugfix AND try to fix the current table
     #print(f"Loading rewardcurve from file \"{filename_suffix}_reward_curve.npy\".")
     rewardcurve = np.load(f"{filename_suffix}_reward_curve.npy")
     #print(f"Loading scorelist from file \"{filename_suffix}_scores.npy\".")
@@ -137,6 +141,8 @@ def vis_helper(filename_suffix0):
     visualize_reward_curve(rewards0_avg, rewards1_avg, filename_suffix0)
     visualize_curve(scores0_avg, scores1_avg, ylabel=f"Score (avg per {bagsize} episodes)", name=filename_suffix0)
     visualize_curve(tags1_avg, tags0_avg, ylabel=f"Tags (avg per {bagsize} episodes)", name=filename_suffix0)
+    matrix_to_heatmap(q_table, filename_suffix0, "qtrainlog/"+FOLDER+"/figures/"+filename_suffix0+"qheatmap.png")
+    matrix_to_heatmap(s_table, filename_suffix0, "qtrainlog/"+FOLDER+"/figures/"+filename_suffix0+"visitcount.png")
 
 if __name__ == "__main__":
 
@@ -145,8 +151,10 @@ if __name__ == "__main__":
     
     #vis_helper(filename_suffix0)
     print("Starting visualization.")
-    q_table = np.load("qtrainlog/vshard_example_suffix01_q_table.npy") #TODO visualize Q-Table
-    matrix_to_heatmap(q_table, "test_title", "qtrainlog/vshard_example_suffix01_q_table.png")
+    #q_table = np.load("qtrainlog/vshard_example_suffix01_q_table.npy") #TODO visualize Q-Table
+    #matrix_to_heatmap(q_table, "test_title", "qtrainlog/vshard_example_suffix01_q_table.png")
+    
+    # Batch 2
     # vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew")
     # vis_helper("lrate0.1_discount0.9_initialq10.0_caps_and_grabs")
     # vis_helper("lrate0.1_discount0.9_initialq10.0_caps_and_tags")
@@ -158,6 +166,19 @@ if __name__ == "__main__":
     # vis_helper("lrate0.1_discount0.95_initialq10.0_caps_and_tags")
     # vis_helper("lrate0.1_discount0.9_initialq0.0_single_aggressive_rew")
     # vis_helper("lrate0.1_discount0.9_initialq0.0_caps_and_tags")
+
+    # Batch 3
+    vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew")
+    vis_helper("lrate0.1_discount0.95_initialq10.0_single_aggressive_rew")
+    vis_helper("lrate0.1_discount0.85_initialq10.0_single_aggressive_rew")
+    vis_helper("lrate0.05_discount0.9_initialq10.0_single_aggressive_rew")
+    vis_helper("lrate0.1_discount0.9_initialq10.0_caps_and_tags")
+    vis_helper("lrate0.2_discount0.9_initialq10.0_caps_and_tags")
+    vis_helper("lrate0.2_discount0.95_initialq10.0_caps_and_tags")
+    vis_helper("lrate0.2_discount0.85_initialq10.0_caps_and_tags")
+    vis_helper("lrate0.15_discount0.9_initialq10.0_caps_and_tags")
+    vis_helper("pretrained_pretrained_lrate0.1_discount0.9_initialq10.0_single_aggressive_rew") #TODO pretrained pretrained? sounds dumb
+    vis_helper("pretrained_pretrained_lrate0.1_discount0.9_initialq10.0_caps_and_tags")
 
     print("Ended visualization.")
     # Print some scores/averages or something for a table for the parameters
