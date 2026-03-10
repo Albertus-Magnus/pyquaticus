@@ -2,6 +2,9 @@ from matplotlib import pyplot
 import numpy as np
 
 FOLDER = "batch 2 hard"
+"""
+To change batch, change FOLDER here, sometimes "vshard_"+ in vis_helper() beginning, and vis_helper("ddd")-calls in main (very bottom).
+"""
 
 
 def visualize_reward_curve(data0, data1, name, bagsize=50):
@@ -42,9 +45,10 @@ def visualize_curve(data0, data1, ylabel="Score", name="Training Progress", bags
     # Save figure to file:
     plt.savefig(f"qtrainlog/{FOLDER}/figures/{name}_{ylabel}.png", dpi=300, bbox_inches='tight')
     #plt.show()
+    plt.close #
 #End of visualize_curve()
 
-def matrix_to_heatmap(matrix, title, filename):
+def matrix_to_heatmap(matrix, title, filename, name):
     import matplotlib.pyplot as plt
     plt.figure(figsize=(10, 8))
 
@@ -53,13 +57,14 @@ def matrix_to_heatmap(matrix, title, filename):
     #print(f"matrix_2d shape: {matrix_2d}") #TODO need to redo the reshaping and separate the qtable into (at least) four heatmaps (but shown in one figure?)
 
     plt.imshow(matrix_2d, cmap='viridis', aspect='auto')
-    plt.colorbar(label='Q-value (expected reward)')
-    plt.title(title)
+    plt.colorbar(label=name)
+    plt.title(name + "\n" + title)
     plt.xlabel('This achsis is separated into the booleans for own flag and enemy flag, as well as the four actions')
     plt.ylabel('This achsis is separated into the 4*4*4=64 positional informations') #TODO figure out how the order of the cells is related to the booleans and pos. inf.'s
     # Save figure to file:
     plt.savefig(filename, dpi=300, bbox_inches='tight')
     #plt.show()
+    plt.close() #
 #End of matrix_to_heatmap()
 
 def vis_helper(filename_suffix0):
@@ -138,19 +143,16 @@ def vis_helper(filename_suffix0):
     tags1 = [step[1] for step in tagslist]
     tags0_avg = avgbags(tags0, bagsize)
     tags1_avg = avgbags(tags1, bagsize)
-
-    # Visualization
-    # visualize_reward_curve(rewards0_avg, rewards1_avg, filename_suffix0)
-    # visualize_curve(scores0_avg, scores1_avg, ylabel=f"Score (avg per {bagsize} episodes)", name=filename_suffix0)
-    # visualize_curve(tags1_avg, tags0_avg, ylabel=f"Tags (avg per {bagsize} episodes)", name=filename_suffix0)
-    # matrix_to_heatmap(q_table, filename_suffix0, "qtrainlog/"+FOLDER+"/figures/"+filename_suffix0+"qheatmap.png")
-    # matrix_to_heatmap(s_table, filename_suffix0, "qtrainlog/"+FOLDER+"/figures/"+filename_suffix0+"visitcount.png")
-
-    # Calculate winrate
+    # Calculate winrates
     winrate0 = [np.sum(np.array(scores0[i:i+bagsize]) > np.array(scores1[i:i+bagsize])) / bagsize for i in range(0, len(scores0), bagsize)]
     winrate1 = [np.sum(np.array(scores1[i:i+bagsize]) > np.array(scores0[i:i+bagsize])) / bagsize for i in range(0, len(scores1), bagsize)]
-    # for i in range(len(winrate0)):
-    #     print("compare: ",winrate0[i],winrate1[i]) # any discrepancy should be due to neutral games (no winner)
+
+    # Visualization
+    visualize_reward_curve(rewards0_avg, rewards1_avg, filename_suffix0)
+    visualize_curve(scores0_avg, scores1_avg, ylabel=f"Score (avg per {bagsize} episodes)", name=filename_suffix0)
+    visualize_curve(tags1_avg, tags0_avg, ylabel=f"Tags (avg per {bagsize} episodes)", name=filename_suffix0)
+    matrix_to_heatmap(q_table, filename_suffix0, "qtrainlog/"+FOLDER+"/figures/"+filename_suffix0+"qheatmap.png", "Q-value (expected reward)")
+    matrix_to_heatmap(s_table, filename_suffix0, "qtrainlog/"+FOLDER+"/figures/"+filename_suffix0+"visitcount.png", "States visited (count per state)")
     visualize_curve(winrate0, winrate1, ylabel=f"Winrate (avg per {bagsize} episodes)", name=filename_suffix0)
 
 if __name__ == "__main__":
@@ -159,11 +161,11 @@ if __name__ == "__main__":
     #filename_suffix = "qtrainlog/vshard_"+filename_suffix
     
     #vis_helper(filename_suffix0)
-    print("Starting visualization.")
+    print(f"Starting visualization of {FOLDER}.")
     #q_table = np.load("qtrainlog/vshard_example_suffix01_q_table.npy") #TODO visualize Q-Table
     #matrix_to_heatmap(q_table, "test_title", "qtrainlog/vshard_example_suffix01_q_table.png")
     
-    # Batch 2
+    # Batch 1 and 2
     vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew")
     vis_helper("lrate0.1_discount0.9_initialq10.0_caps_and_grabs")
     vis_helper("lrate0.1_discount0.9_initialq10.0_caps_and_tags")

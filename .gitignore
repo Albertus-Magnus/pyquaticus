@@ -20,3 +20,4 @@ ultra_def_test*.log
 policy_state.pkl
 algorithm_state.pkl
 *.npy
+qtrainlog/batch 3 mixed/figures/most_of_these_against_hard
