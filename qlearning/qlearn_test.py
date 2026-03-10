@@ -232,7 +232,7 @@ if __name__ == "__main__":
             """
             Input must be: >python qlearn_test.py test lrate0.1_discount0.9_initialq0.0_ single_aggressive_rew
             (where filename suffix was lrate0.1_discount0.9_initialq0.0_single_aggressive_rew )
-            Execute in correct folder so file (with qtable) can be found. TODO log statecount (seccond qtable structure but 1/4th the size)
+            Execute in correct folder so file (with qtable) can be found. 
             """
             rewardchoice = sys.argv[3]
             filename_suffix = sys.argv[2] + rewardchoice
@@ -244,8 +244,8 @@ if __name__ == "__main__":
             sys.exit(0)
         else:
             print("!Wrong rewardchoice argument!")
-            rewardchoice = "single_aggressive_rew"
-            filename_suffix = "example_suffix"
+            rewardchoice = "caps_and_tags"
+            filename_suffix = "lrate0.1_discount0.9_initialq10.0_caps_and_tags"
             LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.9, 10.0
     else:
         print("No rewardchoice given")
@@ -262,7 +262,7 @@ if __name__ == "__main__":
     #filename_suffix = f"{rewardchoice}_neutral" 
     #filename_suffix = ""
     "--------------------------------------------"
-    filename_suffix = "qtrainlog/batch 3 mixed/pretrained_"+filename_suffix #TODO change vs hard away after test
+    filename_suffix = "qtrainlog/batch 3 mixed/"+filename_suffix 
     
     # Create qtrainlog directory if it doesn't exist
     #os.makedirs("qtrainlog", exist_ok=True) #should exist, except if started from wrong folder...
@@ -277,7 +277,7 @@ if __name__ == "__main__":
     # Run training loop for multiple iterations (one setting, repeated with the same qtable)
     print("Setting up Q-Table")
     qtableee = QTable(LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE)
-    s_table = np.zeros((4, 4, 4, 2, 2), dtype=np.int8) #statecount-table
+    s_table = np.zeros((4, 4, 4, 2, 2), dtype=np.uint32) #statecount-table
     # same dimensionality as qtable, but no action-options (because we just want to know about the state... for now)
     # statecount-table (to measure how many times a state was updated)
     rewardcurve = [] #is created by the 
@@ -290,7 +290,7 @@ if __name__ == "__main__":
         print("Beginning training run at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
         seeed = np.random.randint(0, 100000) #random seed while training, set of seeds when testing (TODO)
         #logstructure = []
-        if index < 500 and True: #pretraininng with easy opponents, for more exploration on opponent base  [pretraining"easy" disabled for now, all training against easy(now hard)]
+        if index < 500 or True: #pretraininng with easy opponents, for more exploration on opponent base  [pretraining"easy" disabled for now, all training against easy(now hard)]
             rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty="easy", reward_choice=rewardchoice, render_mode=None, timelimit=600., q_table=qtableee)
             # tags, rewardlist, captures, grabs are all for [0] and [1] (the two teams)
             # After each episode update the values of q-table. For this purpose updates are calculated during the episode into the u-table. Now it gets switched with q-table:
@@ -329,6 +329,7 @@ if __name__ == "__main__":
             np.save(f"{filename_suffix}_tagslist.npy", tagslist) 
             print(f"(Pre-storing statecount-table to file \"{filename_suffix}_statecount.npy\" at index {index}.)")
             np.save(f"{filename_suffix}_statecount.npy", s_table) 
+            print("Statecount table: ",s_table)
         # Print qtable regularly as checkpoint to additional file (but not too oft because memory leak)
         if (index % 500) == 0: 
             print(f"(In-between-storing q-table to file \"{filename_suffix}_q_table_i{index}.npy\".)")
