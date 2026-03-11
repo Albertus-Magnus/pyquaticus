@@ -212,10 +212,10 @@ if __name__ == "__main__":
     # vis_helper("pretrained_lrate0.05_discount0.95_initialq10.0_single_aggressive_rew")
 
     # Batch 5
-    "lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck1"
-    "lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck2"
-    "lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck3"
-    "lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck4"
-    "lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck5"
+    vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck1")
+    vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck2")
+    vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck3")
+    vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck4")
+    vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck5")
 
     print("Ended visualization.")
