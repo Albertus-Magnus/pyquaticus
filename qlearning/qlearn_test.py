@@ -329,7 +329,7 @@ if __name__ == "__main__":
             np.save(f"{filename_suffix}_tagslist.npy", tagslist) 
             print(f"(Pre-storing statecount-table to file \"{filename_suffix}_statecount.npy\" at index {index}.)")
             np.save(f"{filename_suffix}_statecount.npy", s_table) 
-            print("Statecount table: ",s_table)
+            #print("Statecount table: ",s_table)
         # Print qtable regularly as checkpoint to additional file (but not too oft because memory leak)
         if (index % 500) == 0: 
             print(f"(In-between-storing q-table to file \"{filename_suffix}_q_table_i{index}.npy\".)")
