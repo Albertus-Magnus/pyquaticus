@@ -164,10 +164,10 @@ def vis_helper(filename_suffix0):
     matrix_to_heatmap(s_table, filename_suffix0, "qtrainlog/"+FOLDER+"/figures/"+filename_suffix0+"visitcount.png", "States visited (count per state)")
     visualize_curve(winrate0, winrate1, ylabel=f"Winrate (avg per {bagsize} episodes)", name=filename_suffix0)
     ####################################################################################################################################################
-    print(f"{filename_suffix0} 20th value - Rewards: {rewards0_avg[19]}, {rewards1_avg[19]}")
-    print(f"{filename_suffix0} 20th value - Scores: {scores0_avg[19]}, {scores1_avg[19]}")
-    print(f"{filename_suffix0} 20th value - Winrate: {winrate0[19]}, {winrate1[19]}")
-    print(f"{filename_suffix0} 20th value - Tags: {tags0_avg[19]}, {tags1_avg[19]}")
+    print(f"{filename_suffix0} 20th value - Rewards: {rewards0_avg[9]}, {rewards1_avg[9]}") #TODO is 10th step rn
+    print(f"{filename_suffix0} 20th value - Scores: {scores0_avg[9]}, {scores1_avg[9]}")
+    print(f"{filename_suffix0} 20th value - Winrate: {winrate0[9]}, {winrate1[9]}")
+    print(f"{filename_suffix0} 20th value - Tags: {tags0_avg[9]}, {tags1_avg[9]}")
 
 if __name__ == "__main__":
 
