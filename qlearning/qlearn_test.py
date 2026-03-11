@@ -184,25 +184,25 @@ if __name__ == "__main__":
     # Prepared experiments are made easier to launch (editor performance is affected once some of these are launched, and they are made to be processed simultaneously)
     if len(sys.argv) > 1:
         #if argument 1 set rewardchoice, etc to x
-        if sys.argv[1] == "1": #Set to batch 4
+        if sys.argv[1] == "1": #Set to batch 5
             rewardchoice = "single_aggressive_rew"
-            filename_suffix = "lrate0.1_discount0.95_initialq10.0_single_aggressive_rew"
-            LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.95, 10.0
-        elif sys.argv[1] == "2":#Set to batch 4
+            filename_suffix = "lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck1"
+            LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.9, 10.0
+        elif sys.argv[1] == "2":#Set to batch 5
             rewardchoice = "single_aggressive_rew"
-            filename_suffix = "pretrained_lrate0.1_discount0.95_initialq10.0_single_aggressive_rew"
-            LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.95, 10.0
-        elif sys.argv[1] == "3":#Set to batch 4
+            filename_suffix = "lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck2"
+            LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.9, 10.0
+        elif sys.argv[1] == "3":#Set to batch 5
             rewardchoice = "single_aggressive_rew"
-            filename_suffix = "lrate0.05_discount0.95_initialq10.0_single_aggressive_rew"
-            LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.05, 0.95, 10.0
-        elif sys.argv[1] == "4":#Set to batch 4
+            filename_suffix = "lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck3"
+            LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.9, 10.0
+        elif sys.argv[1] == "4":#Set to batch 5
             rewardchoice = "single_aggressive_rew"
-            filename_suffix = "pretrained_lrate0.05_discount0.95_initialq10.0_single_aggressive_rew"
-            LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.05, 0.95, 10.0
-        elif sys.argv[1] == "5":
-            rewardchoice = "caps_and_tags"
-            filename_suffix = "lrate0.1_discount0.9_initialq10.0_caps_and_tags"
+            filename_suffix = "lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck4"
+            LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.9, 10.0
+        elif sys.argv[1] == "5":#set to batch 5
+            rewardchoice = "single_aggressive_rew"
+            filename_suffix = "lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck5"
             LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.9, 10.0
         elif sys.argv[1] == "6":
             rewardchoice = "caps_and_tags"
@@ -247,11 +247,21 @@ if __name__ == "__main__":
             rewardchoice = "caps_and_tags"
             filename_suffix = "lrate0.1_discount0.9_initialq10.0_caps_and_tags"
             LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.9, 10.0
+            print("Manually testing qtable policy with rendering enabled.")
+            qt = QTable(LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, ("qtrainlog/" + filename_suffix + "_q_table.npy"))
+            st = np.zeros((4, 4, 4, 2, 2), dtype=np.int8)
+            train_qlearn(st, seed=0, difficulty="easy", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt)
+            sys.exit(0)
     else:
         print("No rewardchoice given")
-        rewardchoice = "single_aggressive_rew"
-        filename_suffix = "example_suffix01"
-        LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.9, 10.0
+        rewardchoice = "caps_and_tags"
+        filename_suffix = "batch 2 hard/vshard_lrate0.2_discount0.9_initialq10.0_caps_and_tags"
+        LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.2, 0.9, 10.0
+        print("Manually testing qtable policy with rendering enabled.")
+        qt = QTable(LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, ("qtrainlog/" + filename_suffix + "_q_table.npy"))
+        st = np.zeros((4, 4, 4, 2, 2), dtype=np.int8)
+        train_qlearn(st, seed=0, difficulty="easy", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt)
+        sys.exit(0)
     #rewardchoice = "single_aggressive_rew"
     #rewardchoice = "double_aggressive_rew"
     #rewardchoice = "caps_and_grabs"
@@ -262,7 +272,7 @@ if __name__ == "__main__":
     #filename_suffix = f"{rewardchoice}_neutral" 
     #filename_suffix = ""
     "--------------------------------------------"
-    filename_suffix = "qtrainlog/batch 4 small/"+filename_suffix 
+    filename_suffix = "qtrainlog/batch 5/"+filename_suffix 
     
     # Create qtrainlog directory if it doesn't exist
     #os.makedirs("qtrainlog", exist_ok=True) #should exist, except if started from wrong folder...
@@ -285,13 +295,13 @@ if __name__ == "__main__":
     grabslist = []
     tagslist = []
     index = 0 
-    for i in range(1000):
+    for i in range(500): #set batch 5
     #while datetime.now().hour < 11 or datetime.now().hour > 20: #train until 1 am, then save the q-table and reward curve (TODO visualize the reward cuve later)
         print("Beginning training run at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
         seeed = np.random.randint(0, 100000) #random seed while training, set of seeds when testing (TODO)
         #logstructure = []
-        if index < 500 and True: #pretraininng with easy opponents, for more exploration on opponent base  [pretraining"easy" disabled for now, all training against easy(now hard)]
-            rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty="easy", reward_choice=rewardchoice, render_mode=None, timelimit=600., q_table=qtableee)
+        if index < 500 or True: #pretraininng with easy opponents, for more exploration on opponent base  [pretraining"easy" disabled for now, all training against easy(now hard)]
+            rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty="hard", reward_choice=rewardchoice, render_mode=None, timelimit=600., q_table=qtableee)
             # tags, rewardlist, captures, grabs are all for [0] and [1] (the two teams)
             # After each episode update the values of q-table. For this purpose updates are calculated during the episode into the u-table. Now it gets switched with q-table:
             qtableee.qtable = u_table.qtable

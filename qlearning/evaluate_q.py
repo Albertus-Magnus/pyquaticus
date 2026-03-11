@@ -1,7 +1,7 @@
 from matplotlib import pyplot
 import numpy as np
 
-FOLDER = "batch 3 mixed"
+FOLDER = "batch 5"
 """
 To change batch, change FOLDER here, sometimes "vshard_"+ in vis_helper() beginning (now automated), and vis_helper("ddd")-calls in main (very bottom).
 """
@@ -193,18 +193,29 @@ if __name__ == "__main__":
     # vis_helper("lrate0.1_discount0.9_initialq0.0_caps_and_tags")
 
     # Batch 3
-    vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew")
-    vis_helper("lrate0.1_discount0.95_initialq10.0_single_aggressive_rew")
-    vis_helper("lrate0.1_discount0.85_initialq10.0_single_aggressive_rew")
-    vis_helper("lrate0.05_discount0.9_initialq10.0_single_aggressive_rew")
-    vis_helper("lrate0.1_discount0.9_initialq10.0_caps_and_tags")
-    vis_helper("lrate0.2_discount0.9_initialq10.0_caps_and_tags")
-    vis_helper("lrate0.2_discount0.95_initialq10.0_caps_and_tags")
-    vis_helper("lrate0.2_discount0.85_initialq10.0_caps_and_tags")
-    vis_helper("lrate0.15_discount0.9_initialq10.0_caps_and_tags")
-    vis_helper("pretrained_pretrained_lrate0.1_discount0.9_initialq10.0_single_aggressive_rew") #TODO pretrained pretrained? sounds dumb
-    vis_helper("pretrained_pretrained_lrate0.1_discount0.9_initialq10.0_caps_and_tags")
+    # vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew")
+    # vis_helper("lrate0.1_discount0.95_initialq10.0_single_aggressive_rew")
+    # vis_helper("lrate0.1_discount0.85_initialq10.0_single_aggressive_rew")
+    # vis_helper("lrate0.05_discount0.9_initialq10.0_single_aggressive_rew")
+    # vis_helper("lrate0.1_discount0.9_initialq10.0_caps_and_tags")
+    # vis_helper("lrate0.2_discount0.9_initialq10.0_caps_and_tags")
+    # vis_helper("lrate0.2_discount0.95_initialq10.0_caps_and_tags")
+    # vis_helper("lrate0.2_discount0.85_initialq10.0_caps_and_tags")
+    # vis_helper("lrate0.15_discount0.9_initialq10.0_caps_and_tags")
+    # vis_helper("pretrained_pretrained_lrate0.1_discount0.9_initialq10.0_single_aggressive_rew") #TODO pretrained pretrained? sounds dumb
+    # vis_helper("pretrained_pretrained_lrate0.1_discount0.9_initialq10.0_caps_and_tags")
+
+    # Batch 4
+    # vis_helper("lrate0.1_discount0.95_initialq10.0_single_aggressive_rew")
+    # vis_helper("pretrained_lrate0.1_discount0.95_initialq10.0_single_aggressive_rew")
+    # vis_helper("lrate0.05_discount0.95_initialq10.0_single_aggressive_rew")
+    # vis_helper("pretrained_lrate0.05_discount0.95_initialq10.0_single_aggressive_rew")
+
+    # Batch 5
+    "lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck1"
+    "lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck2"
+    "lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck3"
+    "lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck4"
+    "lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck5"
 
     print("Ended visualization.")
-    # Print some scores/averages or something for a table for the parameters
-    #TODO (or I will just read the maximum avg from the bag50 graph, because overfitting might have occurred at the final of 3000 episodes)
