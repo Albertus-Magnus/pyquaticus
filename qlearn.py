@@ -296,7 +296,8 @@ if __name__ == '__main__':
     np.save("q_table.npy", q_object.q_table)
     print(q_object.q_table) #does not print whole table
     
-    import matplotlib.pyplot as plt
+    # delete below?
+    #import matplotlib.pyplot as plt
 
     # Visualize the q-table
     #plt.figure(figsize=(12, 6))

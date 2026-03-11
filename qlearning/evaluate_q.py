@@ -212,10 +212,25 @@ if __name__ == "__main__":
     # vis_helper("pretrained_lrate0.05_discount0.95_initialq10.0_single_aggressive_rew")
 
     # Batch 5
-    vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck1")
-    vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck2")
-    vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck3")
-    vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck4")
-    vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck5")
+    # vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck1")
+    # vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck2")
+    # vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck3")
+    # vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck4")
+    # vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck5")
+
+    # """Finding out how dimensions are mapped onto qtable matrix heatmap:
+    # (toggle comment below to generate markers for the dimension [currently dim. f])"""
+    # qtable = np.zeros((4, 4, 4, 2, 2, 4))
+    # for a in range(4):
+    #     for b in range(4):
+    #         for c in range(4):
+    #             for d in range(2):
+    #                 for e in range(2):
+    #                     for f in range(4):
+    #                         if f == 0:
+    #                             qtable[a][b][c][d][e][f] = 10
+    # na = "f"
+    # matrix_to_heatmap(qtable, f"dimension {na}", f"dimension_{na}_legend", "name")
+    
 
     print("Ended visualization.")
