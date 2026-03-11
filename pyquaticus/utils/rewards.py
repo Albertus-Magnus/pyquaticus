@@ -752,6 +752,9 @@ def single_aggressive_rew(
     max_speeds: list,
     tagging_cooldown: float
 ):
+    """Modified from double_aggressive_rew to be calculated for a single agent (even if it works as part of a larger team).
+    Contains a positional reward (move closer to flag) and rewards for grabbing/capturing the flag as well as negative 
+    rewards for getting tagged and moving out of bounds."""
     #previousreward = state.get('previous_reward', 0.0)  # Get previous reward if it exists, otherwise default to 0.0 TODO
     reward = 0.0
     idx1 = agents.index(agent_id)
@@ -817,21 +820,11 @@ def single_aggressive_rew(
         reward += 1.0
     else:
         reward += rewardable_movement / max_speeds[0]
-    #rewardable_movement = numpy.sqrt(np.sum(prev_diff2**2)) - numpy.sqrt(np.sum(curr_diff2**2))
-    #if rewardable_movement > max_speeds[0]:
-    #    reward += 1.0
-    #else:
-    #    reward += rewardable_movement / max_speeds[0]
-    #rewardable_movement = numpy.sqrt(np.sum(prev_diff3**2)) - numpy.sqrt(np.sum(curr_diff3**2))
-    #if rewardable_movement > max_speeds[0]: TODO seccond glance, is this just copy pasted code from lines above?
-    #    reward += 1.0
-    #else:
-    #    reward += rewardable_movement / max_speeds[0]
 
     # Capture and grab bonuses
     num_grabs = state['grabs'][t]
     num_caps = state['captures'][t]
     prev_num_grabs = prev_state['grabs'][t]
     prev_num_caps = prev_state['captures'][t]
-    reward += 30 * (num_caps - prev_num_caps) + 30 * (num_grabs - prev_num_grabs) #TODO TODO tweak reward amounts, ALSO Perhaps we need sum of rewards instead of per-frame? LOOK THIS UP!
+    reward += 30 * (num_caps - prev_num_caps) + 30 * (num_grabs - prev_num_grabs) #TODO tweak reward amounts, also perhaps we need sum of rewards instead of per-frame? <-not in this function, this is per-step change and fine as is
     return reward

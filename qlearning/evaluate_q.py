@@ -1,9 +1,9 @@
 from matplotlib import pyplot
 import numpy as np
 
-FOLDER = "batch 2 hard"
+FOLDER = "batch 3 mixed"
 """
-To change batch, change FOLDER here, sometimes "vshard_"+ in vis_helper() beginning, and vis_helper("ddd")-calls in main (very bottom).
+To change batch, change FOLDER here, sometimes "vshard_"+ in vis_helper() beginning (now automated), and vis_helper("ddd")-calls in main (very bottom).
 """
 
 
@@ -20,11 +20,16 @@ def visualize_reward_curve(data0, data1, name, bagsize=50):
     plt.title(f"Rewards during Q-Learn Training\n{name}")
     plt.grid(True)
     # Scale x-achsis labels times 50 (or times bagsize):
-    plt.gca().set_xticklabels([f'{int(x*bagsize)}' for x in plt.gca().get_xticks()])
+    ticks = plt.gca().get_xticks()
+    ticks = ticks[1:(len(ticks)-1)]
+    #print("\nticks: ",ticks)
+    plt.gca().set_xticks(ticks)
+    plt.gca().set_xticklabels([f'{int(x*bagsize)}' for x in ticks])
     plt.legend()
     # Save figure to file:
     plt.savefig(f"qtrainlog/{FOLDER}/figures/{name}_reward.png", dpi=300, bbox_inches='tight')
     #plt.show()
+    plt.close() #
 #End of visualize_reward_curve()
 
 def visualize_curve(data0, data1, ylabel="Score", name="Training Progress", bagsize=50):
@@ -40,7 +45,10 @@ def visualize_curve(data0, data1, ylabel="Score", name="Training Progress", bags
     plt.title(f"{ylabel}\n{name}")
     plt.grid(True)
     # Scale x-achsis labels times 50 (or times bagsize):
-    plt.gca().set_xticklabels([f'{int(x*bagsize)}' for x in plt.gca().get_xticks()])
+    ticks = plt.gca().get_xticks()
+    ticks = ticks[1:(len(ticks)-1)]
+    plt.gca().set_xticks(ticks)
+    plt.gca().set_xticklabels([f'{int(x*bagsize)}' for x in ticks])
     plt.legend()
     # Save figure to file:
     plt.savefig(f"qtrainlog/{FOLDER}/figures/{name}_{ylabel}.png", dpi=300, bbox_inches='tight')
@@ -69,7 +77,7 @@ def matrix_to_heatmap(matrix, title, filename, name):
 
 def vis_helper(filename_suffix0):
     ############################################################
-    filename_suffix0 = "vshard_" + filename_suffix0
+    if FOLDER=="batch 2 hard": filename_suffix0 = "vshard_" + filename_suffix0
     filename_suffix = "qtrainlog/"+FOLDER+"/" + filename_suffix0
     ############################################################
 
@@ -148,12 +156,18 @@ def vis_helper(filename_suffix0):
     winrate1 = [np.sum(np.array(scores1[i:i+bagsize]) > np.array(scores0[i:i+bagsize])) / bagsize for i in range(0, len(scores1), bagsize)]
 
     # Visualization
+    ####################################################################################################################################################
     visualize_reward_curve(rewards0_avg, rewards1_avg, filename_suffix0)
     visualize_curve(scores0_avg, scores1_avg, ylabel=f"Score (avg per {bagsize} episodes)", name=filename_suffix0)
     visualize_curve(tags1_avg, tags0_avg, ylabel=f"Tags (avg per {bagsize} episodes)", name=filename_suffix0)
     matrix_to_heatmap(q_table, filename_suffix0, "qtrainlog/"+FOLDER+"/figures/"+filename_suffix0+"qheatmap.png", "Q-value (expected reward)")
     matrix_to_heatmap(s_table, filename_suffix0, "qtrainlog/"+FOLDER+"/figures/"+filename_suffix0+"visitcount.png", "States visited (count per state)")
     visualize_curve(winrate0, winrate1, ylabel=f"Winrate (avg per {bagsize} episodes)", name=filename_suffix0)
+    ####################################################################################################################################################
+    print(f"{filename_suffix0} 20th value - Rewards: {rewards0_avg[19]}, {rewards1_avg[19]}")
+    print(f"{filename_suffix0} 20th value - Scores: {scores0_avg[19]}, {scores1_avg[19]}")
+    print(f"{filename_suffix0} 20th value - Winrate: {winrate0[19]}, {winrate1[19]}")
+    print(f"{filename_suffix0} 20th value - Tags: {tags0_avg[19]}, {tags1_avg[19]}")
 
 if __name__ == "__main__":
 
@@ -166,30 +180,30 @@ if __name__ == "__main__":
     #matrix_to_heatmap(q_table, "test_title", "qtrainlog/vshard_example_suffix01_q_table.png")
     
     # Batch 1 and 2
-    vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew")
-    vis_helper("lrate0.1_discount0.9_initialq10.0_caps_and_grabs")
-    vis_helper("lrate0.1_discount0.9_initialq10.0_caps_and_tags")
-    vis_helper("lrate0.2_discount0.9_initialq10.0_single_aggressive_rew")
-    vis_helper("lrate0.2_discount0.9_initialq10.0_caps_and_grabs")
-    vis_helper("lrate0.2_discount0.9_initialq10.0_caps_and_tags")
-    vis_helper("lrate0.1_discount0.95_initialq10.0_single_aggressive_rew")
-    vis_helper("lrate0.1_discount0.95_initialq10.0_caps_and_grabs")
-    vis_helper("lrate0.1_discount0.95_initialq10.0_caps_and_tags")
-    vis_helper("lrate0.1_discount0.9_initialq0.0_single_aggressive_rew")
-    vis_helper("lrate0.1_discount0.9_initialq0.0_caps_and_tags")
+    # vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew")
+    # vis_helper("lrate0.1_discount0.9_initialq10.0_caps_and_grabs")
+    # vis_helper("lrate0.1_discount0.9_initialq10.0_caps_and_tags")
+    # vis_helper("lrate0.2_discount0.9_initialq10.0_single_aggressive_rew")
+    # vis_helper("lrate0.2_discount0.9_initialq10.0_caps_and_grabs")
+    # vis_helper("lrate0.2_discount0.9_initialq10.0_caps_and_tags")
+    # vis_helper("lrate0.1_discount0.95_initialq10.0_single_aggressive_rew")
+    # vis_helper("lrate0.1_discount0.95_initialq10.0_caps_and_grabs")
+    # vis_helper("lrate0.1_discount0.95_initialq10.0_caps_and_tags")
+    # vis_helper("lrate0.1_discount0.9_initialq0.0_single_aggressive_rew")
+    # vis_helper("lrate0.1_discount0.9_initialq0.0_caps_and_tags")
 
     # Batch 3
-    # vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew")
-    # vis_helper("lrate0.1_discount0.95_initialq10.0_single_aggressive_rew")
-    # vis_helper("lrate0.1_discount0.85_initialq10.0_single_aggressive_rew")
-    # vis_helper("lrate0.05_discount0.9_initialq10.0_single_aggressive_rew")
-    # vis_helper("lrate0.1_discount0.9_initialq10.0_caps_and_tags")
-    # vis_helper("lrate0.2_discount0.9_initialq10.0_caps_and_tags")
-    # vis_helper("lrate0.2_discount0.95_initialq10.0_caps_and_tags")
-    # vis_helper("lrate0.2_discount0.85_initialq10.0_caps_and_tags")
-    # vis_helper("lrate0.15_discount0.9_initialq10.0_caps_and_tags")
-    # vis_helper("pretrained_pretrained_lrate0.1_discount0.9_initialq10.0_single_aggressive_rew") #TODO pretrained pretrained? sounds dumb
-    # vis_helper("pretrained_pretrained_lrate0.1_discount0.9_initialq10.0_caps_and_tags")
+    vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew")
+    vis_helper("lrate0.1_discount0.95_initialq10.0_single_aggressive_rew")
+    vis_helper("lrate0.1_discount0.85_initialq10.0_single_aggressive_rew")
+    vis_helper("lrate0.05_discount0.9_initialq10.0_single_aggressive_rew")
+    vis_helper("lrate0.1_discount0.9_initialq10.0_caps_and_tags")
+    vis_helper("lrate0.2_discount0.9_initialq10.0_caps_and_tags")
+    vis_helper("lrate0.2_discount0.95_initialq10.0_caps_and_tags")
+    vis_helper("lrate0.2_discount0.85_initialq10.0_caps_and_tags")
+    vis_helper("lrate0.15_discount0.9_initialq10.0_caps_and_tags")
+    vis_helper("pretrained_pretrained_lrate0.1_discount0.9_initialq10.0_single_aggressive_rew") #TODO pretrained pretrained? sounds dumb
+    vis_helper("pretrained_pretrained_lrate0.1_discount0.9_initialq10.0_caps_and_tags")
 
     print("Ended visualization.")
     # Print some scores/averages or something for a table for the parameters
