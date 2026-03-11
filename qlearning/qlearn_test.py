@@ -254,13 +254,13 @@ if __name__ == "__main__":
             sys.exit(0)
     else:
         print("No rewardchoice given")
-        rewardchoice = "caps_and_tags"
-        filename_suffix = "batch 2 hard/vshard_lrate0.2_discount0.9_initialq10.0_caps_and_tags"
-        LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.2, 0.9, 10.0
+        rewardchoice = "single_aggressive_rew"
+        filename_suffix = "batch 2 hard/vshard_lrate0.1_discount0.95_initialq10.0_single_aggressive_rew"
+        LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.95, 10.0
         print("Manually testing qtable policy with rendering enabled.")
         qt = QTable(LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, ("qtrainlog/" + filename_suffix + "_q_table.npy"))
         st = np.zeros((4, 4, 4, 2, 2), dtype=np.int8)
-        train_qlearn(st, seed=0, difficulty="easy", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt)
+        train_qlearn(st, seed=0, difficulty="hard", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt)
         sys.exit(0)
     #rewardchoice = "single_aggressive_rew"
     #rewardchoice = "double_aggressive_rew"
