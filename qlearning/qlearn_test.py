@@ -184,22 +184,22 @@ if __name__ == "__main__":
     # Prepared experiments are made easier to launch (editor performance is affected once some of these are launched, and they are made to be processed simultaneously)
     if len(sys.argv) > 1:
         #if argument 1 set rewardchoice, etc to x
-        if sys.argv[1] == "1":
-            rewardchoice = "single_aggressive_rew"
-            filename_suffix = "lrate0.1_discount0.9_initialq10.0_single_aggressive_rew"
-            LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.9, 10.0
-        elif sys.argv[1] == "2":
+        if sys.argv[1] == "1": #Set to batch 4
             rewardchoice = "single_aggressive_rew"
             filename_suffix = "lrate0.1_discount0.95_initialq10.0_single_aggressive_rew"
             LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.95, 10.0
-        elif sys.argv[1] == "3":
+        elif sys.argv[1] == "2":#Set to batch 4
             rewardchoice = "single_aggressive_rew"
-            filename_suffix = "lrate0.1_discount0.85_initialq10.0_single_aggressive_rew"
-            LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.85, 10.0
-        elif sys.argv[1] == "4":
+            filename_suffix = "pretrained_lrate0.1_discount0.95_initialq10.0_single_aggressive_rew"
+            LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.95, 10.0
+        elif sys.argv[1] == "3":#Set to batch 4
             rewardchoice = "single_aggressive_rew"
-            filename_suffix = "lrate0.05_discount0.9_initialq10.0_single_aggressive_rew"
-            LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.05, 0.9, 10.0
+            filename_suffix = "lrate0.05_discount0.95_initialq10.0_single_aggressive_rew"
+            LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.05, 0.95, 10.0
+        elif sys.argv[1] == "4":#Set to batch 4
+            rewardchoice = "single_aggressive_rew"
+            filename_suffix = "pretrained_lrate0.05_discount0.95_initialq10.0_single_aggressive_rew"
+            LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.05, 0.95, 10.0
         elif sys.argv[1] == "5":
             rewardchoice = "caps_and_tags"
             filename_suffix = "lrate0.1_discount0.9_initialq10.0_caps_and_tags"
@@ -262,7 +262,7 @@ if __name__ == "__main__":
     #filename_suffix = f"{rewardchoice}_neutral" 
     #filename_suffix = ""
     "--------------------------------------------"
-    filename_suffix = "qtrainlog/batch 3 mixed/"+filename_suffix 
+    filename_suffix = "qtrainlog/batch 4 small/"+filename_suffix 
     
     # Create qtrainlog directory if it doesn't exist
     #os.makedirs("qtrainlog", exist_ok=True) #should exist, except if started from wrong folder...
@@ -291,7 +291,7 @@ if __name__ == "__main__":
         seeed = np.random.randint(0, 100000) #random seed while training, set of seeds when testing (TODO)
         #logstructure = []
         if index < 500 or True: #pretraininng with easy opponents, for more exploration on opponent base  [pretraining"easy" disabled for now, all training against easy(now hard)]
-            rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty="easy", reward_choice=rewardchoice, render_mode=None, timelimit=600., q_table=qtableee)
+            rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty="hard", reward_choice=rewardchoice, render_mode=None, timelimit=600., q_table=qtableee)
             # tags, rewardlist, captures, grabs are all for [0] and [1] (the two teams)
             # After each episode update the values of q-table. For this purpose updates are calculated during the episode into the u-table. Now it gets switched with q-table:
             qtableee.qtable = u_table.qtable
