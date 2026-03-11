@@ -21,3 +21,4 @@ policy_state.pkl
 algorithm_state.pkl
 *.npy
 qtrainlog/batch 3 mixed/figures/most_of_these_against_hard
+qtrainlog/batch 4 small/0 unpretrained_is_vs_hard
