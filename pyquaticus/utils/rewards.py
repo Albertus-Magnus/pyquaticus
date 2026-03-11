@@ -247,7 +247,7 @@ def caps_and_tags(
         prev_num_grabs = prev_state['grabs'][t]
         num_grabs = state['grabs'][t]
         if num_grabs > prev_num_grabs:
-            reward += 5.0 if t == team else 5.0
+            reward += 5.0 if t == team else -5.0
 
         prev_num_caps = prev_state['captures'][t]
         num_caps = state['captures'][t]
