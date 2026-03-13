@@ -24,18 +24,25 @@ versus 2x base_combined agents during the Masters
 thesis (March 2026).
 """
 
+# this class is just there to select (and store for some time) the right parameters and generate filenames (to log the data reliably)
 class ParameterSet:
-    #def __init__(self, rewardchoice: str, lrate: float, discount: float, initialq: float, pretrain: bool, name: str, fodler: str): #test first without type
-    def __init__(self, rewardchoice, lrate, discount, initialq, pretrain, name, folder):
+    #def __init__(self, rewardchoice: str, lrate: float, discount: float, initialq: float, pretrain: bool, name: str, fodler: str, index: int): #test first without type
+    def __init__(self, rewardchoice, lrate, discount, initialq, pretrain, name, folder, index):
         self.rewardchoice = rewardchoice #zB "single_aggressive_rew"
         self.foldername = folder # "lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck1"
         self.LEARNING_RATE, self.DISCOUNT_FACTOR, self.INITIAL_Q_VALUE = lrate, discount, initialq # zB 0.1, 0.9, 10.0
         self.pretrain = pretrain
         self.name = name
+        self.index = index #Do we need to store the index here?
 
     # Create a string for file storage that contains all important info about parameters (as well as an index if parameters are used more than once).
-    def create_name(self, index):
-        n = self.name + str(self.rewardchoice) + index
+    def create_name(self):
+        if self.pretrain:
+            pre = "pretrained"
+        else:
+            pre = "no_pre"
+        # the name of all files (qtable, stats, s-table,...):   ("_qtable" etc are appended)
+        n = self.name + "_" + str(self.rewardchoice) + "_lrate"+ self.LEARNING_RATE + "_discount"+self.DISCOUNT_FACTOR + "_initq" + self.INITIAL_Q_VALUE+  "_" + pre + "_nr" + self.index
         return n
 
 if __name__ == "__main__":
@@ -52,12 +59,24 @@ if __name__ == "__main__":
             # Do large batch training here.
             #########################################
             for i in range(20):
-                parametersets.append(ParameterSet(0.1, 0.9, 10.0, False, "avgtest", "qtrainlog/batch 6 avg/"))
+                parametersets.append(ParameterSet(0.1, 0.9, 10.0, False, "avgtest1", "qtrainlog/batch 6 avg/"))
+            for i in range(20):
+                parametersets.append()
             #########################################
         else:
             # Do visual test match here.
             setup = ParameterSet(0.1, 0.9, 10.0, False, "example", "qtrainlog/example_folder/") #lrate: Any, discount: Any, initialq: Any, pretrain: Any, name: Any, folder)
+            # (do i need to change this so it loads a file?) prolly, 'cause it is for visual test match of trained policy
             # run these settings with 'human' rendering TODO
+            print("No rewardchoice given")
+            rewardchoice = "single_aggressive_rew"
+            filename_suffix = "batch 2 hard/vshard_lrate0.1_discount0.95_initialq10.0_single_aggressive_rew"
+            LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.95, 10.0
+            print("Manually testing qtable policy with rendering enabled.")
+            qt = QTable(LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, ("qtrainlog/" + filename_suffix + "_q_table.npy"))
+            st = np.zeros((4, 4, 4, 2, 2), dtype=np.int8)
+            train_qlearn(st, seed=0, difficulty="hard", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt)
+            sys.exit(0)
 
 
     
