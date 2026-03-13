@@ -239,7 +239,7 @@ if __name__ == "__main__":
             LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.9, 0.0
             print("Manually testing qtable policy with rendering enabled.")
             qt = QTable(LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, ("qtrainlog/" + filename_suffix + "_q_table.npy"))
-            st = np.zeros((4, 4, 4, 2, 2), dtype=np.int8)
+            st = np.zeros((4, 4, 4, 2, 2), dtype=np.int32)
             train_qlearn(st, seed=0, difficulty="easy", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt)
             sys.exit(0)
         else:
@@ -249,7 +249,7 @@ if __name__ == "__main__":
             LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.9, 10.0
             print("Manually testing qtable policy with rendering enabled.")
             qt = QTable(LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, ("qtrainlog/" + filename_suffix + "_q_table.npy"))
-            st = np.zeros((4, 4, 4, 2, 2), dtype=np.int8)
+            st = np.zeros((4, 4, 4, 2, 2), dtype=np.int32)
             train_qlearn(st, seed=0, difficulty="easy", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt)
             sys.exit(0)
     else:
@@ -259,7 +259,7 @@ if __name__ == "__main__":
         LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.95, 10.0
         print("Manually testing qtable policy with rendering enabled.")
         qt = QTable(LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, ("qtrainlog/" + filename_suffix + "_q_table.npy"))
-        st = np.zeros((4, 4, 4, 2, 2), dtype=np.int8)
+        st = np.zeros((4, 4, 4, 2, 2), dtype=np.int32)
         train_qlearn(st, seed=0, difficulty="hard", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt)
         sys.exit(0)
     #rewardchoice = "single_aggressive_rew"

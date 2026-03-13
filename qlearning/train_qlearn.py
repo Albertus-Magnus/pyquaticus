@@ -65,16 +65,15 @@ if __name__ == "__main__":
             #########################################
         else:
             # Do visual test match here.
-            setup = ParameterSet(0.1, 0.9, 10.0, False, "example", "qtrainlog/example_folder/") #lrate: Any, discount: Any, initialq: Any, pretrain: Any, name: Any, folder)
+            setup = ParameterSet("single_aggressive_rew", 0.1, 0.9, 10.0, False, "example", "qtrainlog/example_folder/") #lrate: Any, discount: Any, initialq: Any, pretrain: Any, name: Any, folder)
             # (do i need to change this so it loads a file?) prolly, 'cause it is for visual test match of trained policy
             # run these settings with 'human' rendering TODO
-            print("No rewardchoice given")
             rewardchoice = "single_aggressive_rew"
             filename_suffix = "batch 2 hard/vshard_lrate0.1_discount0.95_initialq10.0_single_aggressive_rew"
             LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.95, 10.0
             print("Manually testing qtable policy with rendering enabled.")
             qt = QTable(LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, ("qtrainlog/" + filename_suffix + "_q_table.npy"))
-            st = np.zeros((4, 4, 4, 2, 2), dtype=np.int8)
+            st = np.zeros((4, 4, 4, 2, 2), dtype=np.int32) #dangerous int8-hazard (int8 is insufficient here)
             train_qlearn(st, seed=0, difficulty="hard", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt)
             sys.exit(0)
 
@@ -138,7 +137,7 @@ if __name__ == "__main__":
             LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.9, 0.0
             print("Manually testing qtable policy with rendering enabled.")
             qt = QTable(LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, ("qtrainlog/" + filename_suffix + "_q_table.npy"))
-            st = np.zeros((4, 4, 4, 2, 2), dtype=np.int8)
+            st = np.zeros((4, 4, 4, 2, 2), dtype=np.int32)
             train_qlearn(st, seed=0, difficulty="easy", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt)
             sys.exit(0)
         else:
@@ -148,7 +147,7 @@ if __name__ == "__main__":
             LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.9, 10.0
             print("Manually testing qtable policy with rendering enabled.")
             qt = QTable(LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, ("qtrainlog/" + filename_suffix + "_q_table.npy"))
-            st = np.zeros((4, 4, 4, 2, 2), dtype=np.int8)
+            st = np.zeros((4, 4, 4, 2, 2), dtype=np.int32)
             train_qlearn(st, seed=0, difficulty="easy", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt)
             sys.exit(0)
     else:
@@ -158,7 +157,7 @@ if __name__ == "__main__":
         LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.95, 10.0
         print("Manually testing qtable policy with rendering enabled.")
         qt = QTable(LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, ("qtrainlog/" + filename_suffix + "_q_table.npy"))
-        st = np.zeros((4, 4, 4, 2, 2), dtype=np.int8)
+        st = np.zeros((4, 4, 4, 2, 2), dtype=np.int32)
         train_qlearn(st, seed=0, difficulty="hard", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt)
         sys.exit(0)
     #rewardchoice = "single_aggressive_rew"
