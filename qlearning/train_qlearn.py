@@ -13,166 +13,30 @@ from pyquaticus.base_policies.rhealg_policy2 import RHEA_Agent, RHEA_Environment
 from pyquaticus.base_policies.ultra_def_policy import UltraDefender
 from qtable import QlearnPolicy, QTable
 from pyquaticus.utils.rewards import caps_and_grabs, defensive_rew, double_aggressive_rew, single_aggressive_rew, caps_and_tags
+from qlearn_test import train_qlearn, visualize_reward_curve
 #from multiprocessing import Pool, Value, Lock #i don't need any parallel processing (is qlearn even compatible?), i just need to run 10 scripts in different terminals...
 
 """
-This was copied from magnus_test.py and modified to 
-create a test of 2x qlearn policy agents versus 
-2x base_combined agents during the Masters thesis (Feb 2026).
+This was written to train multiples of a given 
+parameter setting (or multiple settings) in parallel 
+and for each create a test of 2x qlearn policy agents 
+versus 2x base_combined agents during the Masters 
+thesis (March 2026).
 """
 
-# To run the training this is called as a function, with MODE and reward function as parameters.
+class ParameterSet:
+    #def __init__(self, rewardchoice: str, lrate: float, discount: float, initialq: float, pretrain: bool, name: str, fodler: str): #test first without type
+    def __init__(self, rewardchoice, lrate, discount, initialq, pretrain, name, folder):
+        self.rewardchoice = rewardchoice #zB "single_aggressive_rew"
+        self.foldername = folder # "lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck1"
+        self.LEARNING_RATE, self.DISCOUNT_FACTOR, self.INITIAL_Q_VALUE = lrate, discount, initialq # zB 0.1, 0.9, 10.0
+        self.pretrain = pretrain
+        self.name = name
 
-def train_qlearn(
-    #rewardcurve,
-    #scores,
-    #grabslist,
-    s_table: NDArray,
-    seed: int = 12345,
-    # seed for "random" starts
-    difficulty: str = "hard",
-    # difficulty is the MODE of the example agents, can be "hard", "medium" or "easy"
-    reward_choice: str = "adjustmepls", #maybe could be string, but cleaner so?
-    render_mode: str = None,#'human'
-    timelimit: float = 600.,
-    logname: str = "match.log",
-    q_table: QTable = None #str = None #Not a string?! Is already a QTable!
-):
-    
-    # Set score function to the selected reward (match statement syntax might require python version 3.10 or newer)
-    match reward_choice:
-        case "caps_and_grabs":
-            reward_method = caps_and_grabs
-        case "double_aggressive_rew":
-            reward_method = double_aggressive_rew
-        case "single_aggressive_rew":
-            reward_method = single_aggressive_rew
-        case "defensive_rew":
-            reward_method = defensive_rew
-        case "caps_and_tags":
-            reward_method = caps_and_tags
-        case _:
-            print("Error: Invalid reward choice. Please select a valid reward function.")
-            return
-
-    config_dict = {}
-    config_dict["max_time"] = timelimit#600.0
-    config_dict["max_score"] = 100
-    config_dict["render_agent_ids"] = True
-    config_dict["dynamics"] = ["si", "si", "si", "si"
-                               ]
-    config_dict["sim_speedup_factor"] = 3
-    config_dict["default_init"] = False #random starting positions (uses seed)
-
-    #-Logging utility-
-    # logging.basicConfig(
-    #    filename=logname,
-    #    filemode="w",   #"w" to overwrite, "a" to append. Does it overwrite within the loop? if so, a.
-    #    level=logging.INFO,
-    #    format="%(asctime)s %(message)s",
-    #    force=True
-    # )
-
-    env = pyquaticus_v0.PyQuaticusEnv(team_size=2, action_space="discrete", config_dict=config_dict, reward_config={'agent_0': reward_method, 'agent_1': reward_method, 'agent_2': reward_method, 'agent_3': reward_method},
-    render_mode=render_mode) #'human')  #None)#'human')
-    term_g = {'agent_0':False,'agent_1':False,'agent_2':False}
-    truncated_g = {'agent_0':False,'agent_1':False,'agent_2':False}
-    term = term_g
-    trunc = truncated_g
-    #seed = 12345 #SEED for "random" starts
-    reset_opts = {'normalize_obs': False, 'normalize_state': False}
-    obs, info = env.reset(options=reset_opts, seed=seed)
-
-    # temp_captures = env.state["captures"]
-    # temp_grabs = env.state["grabs"]
-    # temp_tags = env.state["tags"]
-    
-
-    # Base_combine agents
-    H_one = Heuristic_CTF_Agent('agent_2', env, mode=difficulty, continuous=False)#TODO try if False works (seems more fair)
-    H_two = Heuristic_CTF_Agent('agent_3', env, mode=difficulty, continuous=False)
-    
-    print("Setting up q-learn agents")
-    if q_table == None: print("Error: q-table not set up before agents are created.")
-    u_table = QTable(q_table.LEARNING_RATE, q_table.DISCOUNT_FACTOR, q_table.INITIAL_Q_VALUE)
-    u_table.qtable = np.copy(q_table.qtable)
-    R_one = QlearnPolicy('agent_0', env, q_table, u_table)
-    R_two = QlearnPolicy('agent_1', env, q_table, u_table)
-
-    step = 0
-    rewardsteps = []   #actually, this is easier (still 2 dim but turned "90°") [[], []] #two-dimensional list to track both agents of this team #TODO check if rewardcurve is meaningless now
-    while True:
-        # Base_combine agents
-        two = H_one.compute_action(obs, info)
-        three = H_two.compute_action(obs, info)
-        
-        zero = R_one.compute_action(obs, info)
-        one = R_two.compute_action(obs, info)
-
-        # For both agents necessary data for q-value update is saved:
-        a0_qstep = R_one.q_Table.prepareUpdate(obs, 'agent_0', zero)
-        a1_qstep = R_two.q_Table.prepareUpdate(obs, 'agent_1', one)
-        #(ownpos, opp1_bearing, opp2_bearing, b_flag, r_flag, action)
-        
-        # 2v2 step
-        obs, reward, term, trunc, info = env.step({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three})
-        #print("\n\nReward:",reward)#Reward: {'agent_0': 0.2734431070341813, 'agent_1': 0.2208806900959132, 'agent_2': -0.12809429110777018, 'agent_3': 0.0, 'agent_4': 0.0, 'agent_5': 0.0}
-        
-        # Update Q-Table for both agents (same table, two updates)
-        #print("\nActions: zero",zero,"; one",one)
-        R_one.set_q_value(a0_qstep[0], a0_qstep[1], a0_qstep[2], a0_qstep[3], a0_qstep[4], a0_qstep[5], reward['agent_0'])
-        s_table[a0_qstep[0]][a0_qstep[1]][a0_qstep[2]][a0_qstep[3]][a0_qstep[4]] += 1        #TODO check if correct address? probably with running and prints
-        R_two.set_q_value(a1_qstep[0], a1_qstep[1], a1_qstep[2], a1_qstep[3], a1_qstep[4], a1_qstep[5], reward['agent_1'])
-        s_table[a1_qstep[0]][a1_qstep[1]][a1_qstep[2]][a1_qstep[3]][a1_qstep[4]] += 1        #TODO check if correct address? probably with running and prints
-        # Keep track of reward (TODO need to get an underlying curve and visualize it for full training)
-        rewardsteps.append({'agent_0': reward['agent_0'], 'agent_1': reward['agent_1']})
-        # -Logging utility- (disabled for training, too much memory)
-        # Writes the gamestate info into pyquaticus/match.log #this seems like it is doubled? 
-        #logging.info("obs: %s", obs) 
-        #logging.info("reward: %s", reward)
-        #logging.info("info: %s", info)
-
-        k =  list(term.keys()) #Gameover check.
-
-        step += 1
-        if term[k[0]] == True or trunc[k[0]]==True:
-            # Game over
-            #scores.append(env.state['captures']) #scores for both teams at the end of each episode, for all episodes TODO not for all episodes, perhaps a avg for a number of episodes because memory
-            #grabslist.append(env.state['grabs']) #grabs too #is done outside of train now
-            break
-    # These are some statistics we are exporting: Actually, these lines of code seem not necessary
-    # for i in range(len(env.state["captures"])):
-    #     temp_captures[i] += env.state["captures"][i]
-    # for i in range(len(env.state["grabs"])):
-    #     temp_grabs[i] += env.state["grabs"][i]
-    # for i in range(len(env.state["tags"])):
-    #     temp_tags[i] += env.state["tags"][i]
-
-    print("\n~~~Run Concluded~~~")
-    formatted_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
-    print(f" Time: {formatted_time}")
-    print("agent collisions:",env.state['agent_collisions'])
-    print("SCORE: ",env.state['captures'])
-    print("grabs: ",env.state['grabs'])
-    env.close()
-    return rewardsteps, env.state['captures'], env.state['grabs'], env.state['tags'], u_table 
-#End of train_qlearn()
-
-def visualize_reward_curve(reward_curve_file):
-    import matplotlib.pyplot as plt
-    reward_curve = np.load(reward_curve_file, allow_pickle=True)
-    agent_0_rewards = [step['agent_0'] for step in reward_curve]
-    agent_1_rewards = [step['agent_1'] for step in reward_curve]
-    plt.figure(figsize=(12, 6))
-    plt.plot(agent_0_rewards, label='Agent 0 Rewards')
-    plt.plot(agent_1_rewards, label='Agent 1 Rewards')
-    plt.xlabel("Step")
-    plt.ylabel("Reward")
-    plt.title("Reward Curve")
-    plt.grid(True)
-    plt.legend()
-    plt.show()
-#End of visualize_reward_curve()
+    # Create a string for file storage that contains all important info about parameters (as well as an index if parameters are used more than once).
+    def create_name(self, index):
+        n = self.name + str(self.rewardchoice) + index
+        return n
 
 if __name__ == "__main__":
     # scores = np.load("qtrainlog/lrate0.1_discount0.9_initialq0.0_caps_and_tags_scores.npy", allow_pickle=True)
@@ -180,6 +44,22 @@ if __name__ == "__main__":
     # print(f"Scores shape: {scores.shape}")
     # print(f"Scores ndim: {scores.ndim}")
     # sys.exit(0)
+
+    if len(sys.argv) > 1:
+        # Selecting preset of training parameters ("train" to make sure the files are not overwritten by mistake)
+        parametersets = []
+        if sys.argv[1] == "train":
+            # Do large batch training here.
+            #########################################
+            for i in range(20):
+                parametersets.append(ParameterSet(0.1, 0.9, 10.0, False, "avgtest", "qtrainlog/batch 6 avg/"))
+            #########################################
+        else:
+            # Do visual test match here.
+            setup = ParameterSet(0.1, 0.9, 10.0, False, "example", "qtrainlog/example_folder/") #lrate: Any, discount: Any, initialq: Any, pretrain: Any, name: Any, folder)
+            # run these settings with 'human' rendering TODO
+
+
     
     # Prepared experiments are made easier to launch (editor performance is affected once some of these are launched, and they are made to be processed simultaneously)
     if len(sys.argv) > 1:
@@ -284,13 +164,15 @@ if __name__ == "__main__":
     #qtablo = QTable("q_table_aggr_hard_overnight_neutral_rew.npy")
     #print(qtablo.qtable)
 
-    # If using existing q-table, load from file
-    if tablefromfile:
-        qtableee = QTable(LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, filepath)
-
     # Run training loop for multiple iterations (one setting, repeated with the same qtable)
-    print("Setting up Q-Table")
-    qtableee = QTable(LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE)
+    # If using existing q-table, load from file
+    tablefromfile = False
+    if tablefromfile:
+        print("Loading Q-Table from file")
+        qtableee = QTable(LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, filename_suffix)#TODO filename_suffix correct?
+    else:
+        print("Setting up Q-Table")
+        qtableee = QTable(LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE)
     s_table = np.zeros((4, 4, 4, 2, 2), dtype=np.uint32) #statecount-table
     # same dimensionality as qtable, but no action-options (because we just want to know about the state... for now)
     # statecount-table (to measure how many times a state was updated)
@@ -300,7 +182,7 @@ if __name__ == "__main__":
     tagslist = []
     index = 0 
     for i in range(500): #set batch 5
-    #while datetime.now().hour < 11 or datetime.now().hour > 20: #train until 1 am, then save the q-table and reward curve (TODO visualize the reward cuve later)
+    #while datetime.now().hour < 11 or datetime.now().hour > 20: #train until 1 am, then save the q-table and reward curve
         print("Beginning training run at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
         seeed = np.random.randint(0, 100000) #random seed while training, set of seeds when testing (TODO)
         #logstructure = []
