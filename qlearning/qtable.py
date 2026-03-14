@@ -53,7 +53,7 @@ class QTable:
             opponent flag grabbed: Bool
             action space: 0-3
         '''
-        print("Q-Table created, size",self.qtable.size)
+        # print("Q-Table created, size",self.qtable.size)
     #End of init()
 
     """

@@ -1,5 +1,6 @@
 from datetime import datetime
 #import logging
+from functools import partial
 import os
 import sys
 #import os
@@ -15,9 +16,10 @@ from pyquaticus.base_policies.ultra_def_policy import UltraDefender
 from qtable import QlearnPolicy, QTable
 from pyquaticus.utils.rewards import caps_and_grabs, defensive_rew, double_aggressive_rew, single_aggressive_rew, caps_and_tags
 from qlearn_test import train_qlearn, visualize_reward_curve
-from multiprocessing import Pool, Lock #i don't need any parallel processing (is qlearn even compatible?), i just need to run 10 scripts in different terminals...
+from multiprocessing import Pool, Lock, Value #i don't need any parallel processing (is qlearn even compatible?), i just need to run 10 scripts in different terminals...
 
-# lock = Lock() #TODO find a way to implement counter?
+lock = Lock()
+counter = Value('i', 0)
 # number_jobs = -1
 # counter = -1
 
@@ -49,16 +51,17 @@ class ParameterSet:
         else:
             pre = "no_pre"
         # the name of all files (qtable, stats, s-table,...):   ("_qtable" etc are appended)
-        n = self.name + "_" + str(self.rewardchoice) + "_" + self.dif + "_lrate"+ str(self.LEARNING_RATE) + "_discount" + str(self.DISCOUNT_FACTOR) + "_initq" + str(self.INITIAL_Q_VALUE) + "_" + pre + "_nr" + str(self.index)
+        n = self.name + "_" + str(self.rewardchoice) + "_" + self.dif + "_lrate"+ str(self.LEARNING_RATE) + "_discount" + str(self.DISCOUNT_FACTOR) + "_initq" + str(self.INITIAL_Q_VALUE) + "_" + "1000ep_" + pre + "_nr" + str(self.index)
+        #number of episodes (and 500-pretrained?) has to be hand-adjusted, perhaps change that...
         return n
 
-def doTraining(parameterset: ParameterSet):
+def doTraining(parameterset: ParameterSet, number_jobs):
     # Run training loop for multiple iterations (one setting, repeated with the same qtable)
     # If using existing q-table, load from file
     tablefromfile = False
     if tablefromfile:
         # print("Loading Q-Table from file")
-        qtableee = QTable(parameterset.LEARNING_RATE, parameterset.DISCOUNT_FACTOR, parameterset.INITIAL_Q_VALUE, parameterset.foldername+parameterset.create_name())#TODO filename_suffix correct?
+        qtableee = QTable(parameterset.LEARNING_RATE, parameterset.DISCOUNT_FACTOR, parameterset.INITIAL_Q_VALUE, parameterset.foldername+parameterset.create_name())
     else:
         # print("Setting up Q-Table")
         qtableee = QTable(parameterset.LEARNING_RATE, parameterset.DISCOUNT_FACTOR, parameterset.INITIAL_Q_VALUE)
@@ -72,7 +75,7 @@ def doTraining(parameterset: ParameterSet):
     index = 0 
     for i in range(1000): #set batch 6
     #while datetime.now().hour < 11 or datetime.now().hour > 20: #train until 1 am, then save the q-table and reward curve
-        print("Beginning training run at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
+        # print("Beginning training run at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
         seeed = np.random.randint(0, 100000) #random seed while training, set of seeds when testing (TODO)
         #logstructure = []
         if index < 500 and parameterset.pretrain: #pretraininng with easy opponents, for more exploration on opponent base  [pretraining"easy" disabled for now, all training against easy(now hard)]
@@ -124,25 +127,27 @@ def doTraining(parameterset: ParameterSet):
         # discard logstructure now, so memory does not leak
         #logstructure = []
         index += 1
-        print(f"Completed training run {index}")
+        # print(f"Completed training run {index}")
 
     # Epilog (saving q-table and reward curve to file)
-    print(f"Storing q-table to file \"{parameterset.foldername + parameterset.create_name()}_q_table.npy\".")
+    # print(f"Storing q-table to file \"{parameterset.foldername + parameterset.create_name()}_q_table.npy\".")
     qtableee.toFile(f"{parameterset.foldername + parameterset.create_name()}_q_table.npy") #Hmm. Do we need a better naming system, some way to keep track of trained  policies (maybe even in thesis? certainly in slides...), better way to automatically name things, actual pipeline in general
     #testqtable = QTable("q_table.npy")
-    print(f"Storing rewardcurve to file \"{parameterset.foldername + parameterset.create_name()}_reward_curve.npy\".")
+    # print(f"Storing rewardcurve to file \"{parameterset.foldername + parameterset.create_name()}_reward_curve.npy\".")
     np.save(f"{parameterset.foldername + parameterset.create_name()}_reward_curve.npy", rewardcurve)
     #print("Storing logstructure to file", "logstructure.npy")
     #np.save(f"{parameterset.foldername + parameterset.create_name()}_logstructure.npy", logstructure) 
-    print(f"Storing scorelist to file \"{parameterset.foldername + parameterset.create_name()}_scores.npy\".")
+    # print(f"Storing scorelist to file \"{parameterset.foldername + parameterset.create_name()}_scores.npy\".")
     np.save(f"{parameterset.foldername + parameterset.create_name()}_scores.npy", scorelist)
-    print(f"Storing grabslist to file \"{parameterset.foldername + parameterset.create_name()}_grabslist.npy\".")
+    # print(f"Storing grabslist to file \"{parameterset.foldername + parameterset.create_name()}_grabslist.npy\".")
     np.save(f"{parameterset.foldername + parameterset.create_name()}_grabslist.npy", grabslist)
-    print(f"Storing tagslist to file \"{parameterset.foldername + parameterset.create_name()}_tagslist.npy\".")
+    # print(f"Storing tagslist to file \"{parameterset.foldername + parameterset.create_name()}_tagslist.npy\".")
     np.save(f"{parameterset.foldername + parameterset.create_name()}_tagslist.npy", tagslist)
-    # with lock:
-    #     counter += 1
-    #     print(f"Concluded job {counter} out of {number_jobs}")
+    with lock:
+        # counter += 1
+        counter.value += 1
+        print(f"Concluded experiment {counter.value} out of {number_jobs}")
+        # print(f"Concluded job {counter} out of {number_jobs}")
 #End of doTraining
 
 if __name__ == "__main__":
@@ -154,25 +159,43 @@ if __name__ == "__main__":
         # Do large batch training here.
         #########################################
         #vanilla parameters WITHOUT pretrain
-        for i in range(20):
-            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, False, "avgtest1", "qtrainlog/batch 6 avg/", i))
-        for i in range(20):
-            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "avgtest1", "qtrainlog/batch 6 avg/", i))
+        # for i in range(20):
+        #     parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, False, "avgtest1", "qtrainlog/batch 6 avg/", i))
+        # for i in range(20):
+        #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "avgtest1", "qtrainlog/batch 6 avg/", i))
         #vanilla parameters with pretrain
+        # for i in range(20):
+        #     parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, True, "avgtest1", "qtrainlog/batch 6 avg/", i))
+        # for i in range(20):
+        #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, True, "avgtest1", "qtrainlog/batch 6 avg/", i))
+        
+        # 2nd set of parameters without pre
         for i in range(20):
-            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, True, "avgtest1", "qtrainlog/batch 6 avg/", i))
+            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.9, 10.0, False, "avgtest2", "qtrainlog/batch 6 avg/", i))
         for i in range(20):
-            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, True, "avgtest1", "qtrainlog/batch 6 avg/", i))
+            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.9, 10.0, False, "avgtest2", "qtrainlog/batch 6 avg/", i))
+        # 3rd set of parameters without pre
+        for i in range(20):
+            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.95, 10.0, False, "avgtest2", "qtrainlog/batch 6 avg/", i))
+        for i in range(20):
+            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.95, 10.0, False, "avgtest2", "qtrainlog/batch 6 avg/", i))
+        # 4th set of parameters without pre (will be run tomorrow)
+        for i in range(20):
+            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "avgtest2", "qtrainlog/batch 6 avg/", i))
+        for i in range(20):
+            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.95, 10.0, False, "avgtest2", "qtrainlog/batch 6 avg/", i))
         #########################################
         #rewardchoice = "single_aggressive_rew"
         #rewardchoice = "double_aggressive_rew" (outdated)
         #rewardchoice = "caps_and_grabs" (outdated)
         #rewardchoice = "caps_and_tags"
+    elif len(sys.argv) > 1 and sys.argv[1] == "eval":
+        print("evaluation pipeline not yet implemented")
+        sys.exit(0)
     else:
         # Do visual test match here.
         setup = ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, False, "example", "qtrainlog/example_folder/", 0) #lrate: Any, discount: Any, initialq: Any, pretrain: Any, name: Any, folder)
         # (do i need to change this so it loads a file?) prolly, 'cause it is for visual test match of trained policy
-        # run these settings with 'human' rendering TODO
         rewardchoice = "single_aggressive_rew"
         #filename_suffix = "/vshard_lrate0.1_discount0.95_initialq10.0_single_aggressive_rew"
         print("Manually testing qtable policy with rendering enabled.")
@@ -182,24 +205,29 @@ if __name__ == "__main__":
         sys.exit(0)
 
     # Run all scheduled parameters in parallel
-    # number_jobs = len(parametersets)
-    # counter = 0
+    num_jobs = len(parametersets)
+    counter.value = 0
 
-    num_workers = max(1, os.cpu_count() - 1)
+    num_workers = max(1, os.cpu_count() + 5)#TODO test performance of +5 (12 cores, 17 processes now)
     print(f"Selecting {num_workers} as num_workers.")
 
     with Pool(processes=num_workers) as pool:
-        pool.map(doTraining, parametersets)
+        # pool.map(doTraining, parametersets)
+        # Need strange partial to fix the num_jobs number into the doTraining calls, just for a counter ("job 4 of 80")
+        doTrainingWithCounter = partial(doTraining, number_jobs=num_jobs)
+        # Now map the function
+        pool.map(doTrainingWithCounter, parametersets)
 
-    for i in range(len(parametersets)):
-        #run parameterset
-        doTraining(parametersets[i])
+    # for i in range(len(parametersets)): #NEVER have this uncommented when pool.map is running (I forgot to comment this out :/ )
+    #     #run parameterset
+    #     doTraining(parametersets[i], num_jobs)
         
         # with lock:
         #     counter.value += 1
-        #     print(f"Concluded q-table training {counter} out of {number_jobs}")
+        #     print(f"Concluded q-table training {counter} out of {num_jobs}")
 
     # Print the time the code took
     end_time = datetime.now()
     elapsed_time = end_time - timestamp
     print(f"Total execution time: {elapsed_time} (h:min:sec) for {len(parametersets)} policy trainings.")
+    # beware, this line is useless if the terminal is closed without reading the final print. Perhaps print statistics including these to a small textfile?
