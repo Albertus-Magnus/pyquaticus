@@ -102,7 +102,7 @@ def doTraining(parameterset: ParameterSet, number_jobs):
         tagslist.append(tag_entry) #zB [ 2 16]
 
         # Print all important data (especially the q-table!) regularly to file:
-        if (index % 50) == 0: 
+        if (index % 50) == 49: 
             # print(f"(Pre-storing q-table to file \"{parameterset.foldername + parameterset.create_name()}_q_table.npy\" at index {index}.)")
             qtableee.toFile(f"{parameterset.foldername + parameterset.create_name()}_q_table.npy")
             # print(f"(Pre-storing rewardcurve to file \"{parameterset.foldername + parameterset.create_name()}_reward_curve.npy\" at index {index}.)")
@@ -119,7 +119,7 @@ def doTraining(parameterset: ParameterSet, number_jobs):
             np.save(f"{parameterset.foldername + parameterset.create_name()}_statecount.npy", s_table) 
             #print("Statecount table: ",s_table)
         # Print qtable regularly as checkpoint to additional file (but not too oft because memory leak)
-        if (index % 500) == 0: 
+        if (index % 500) == 499: 
             # print(f"(In-between-storing q-table to file \"{parameterset.foldername + parameterset.create_name()}_q_table_i{index}.npy\".)")
             qtableee.toFile(f"{parameterset.foldername + parameterset.create_name()}_q_table_i{index}.npy")
 
