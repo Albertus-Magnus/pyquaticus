@@ -92,7 +92,7 @@ def train_qlearn(
     H_one = Heuristic_CTF_Agent('agent_2', env, mode=difficulty, continuous=False)#TODO try if False works (seems more fair)
     H_two = Heuristic_CTF_Agent('agent_3', env, mode=difficulty, continuous=False)
     
-    print("Setting up q-learn agents")
+    # print("Setting up q-learn agents")
     if q_table == None: print("Error: q-table not set up before agents are created.")
     u_table = QTable(q_table.LEARNING_RATE, q_table.DISCOUNT_FACTOR, q_table.INITIAL_Q_VALUE)
     u_table.qtable = np.copy(q_table.qtable)
@@ -148,12 +148,12 @@ def train_qlearn(
     # for i in range(len(env.state["tags"])):
     #     temp_tags[i] += env.state["tags"][i]
 
-    print("\n~~~Run Concluded~~~")
-    formatted_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
-    print(f" Time: {formatted_time}")
-    print("agent collisions:",env.state['agent_collisions'])
-    print("SCORE: ",env.state['captures'])
-    print("grabs: ",env.state['grabs'])
+    # print("\n~~~Run Concluded~~~")
+    # formatted_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+    # print(f" Time: {formatted_time}")
+    # print("agent collisions:",env.state['agent_collisions'])
+    # print("SCORE: ",env.state['captures'])
+    # print("grabs: ",env.state['grabs'])
     env.close()
     return rewardsteps, env.state['captures'], env.state['grabs'], env.state['tags'], u_table 
 #End of train_qlearn()
@@ -285,7 +285,7 @@ if __name__ == "__main__":
     #print(qtablo.qtable)
 
     # Run training loop for multiple iterations (one setting, repeated with the same qtable)
-    print("Setting up Q-Table")
+    # print("Setting up Q-Table")
     qtableee = QTable(LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE)
     s_table = np.zeros((4, 4, 4, 2, 2), dtype=np.uint32) #statecount-table
     # same dimensionality as qtable, but no action-options (because we just want to know about the state... for now)
@@ -297,7 +297,7 @@ if __name__ == "__main__":
     index = 0 
     for i in range(500): #set batch 5
     #while datetime.now().hour < 11 or datetime.now().hour > 20: #train until 1 am, then save the q-table and reward curve (TODO visualize the reward cuve later)
-        print("Beginning training run at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
+        # print("Beginning training run at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
         seeed = np.random.randint(0, 100000) #random seed while training, set of seeds when testing (TODO)
         #logstructure = []
         if index < 500 or True: #pretraininng with easy opponents, for more exploration on opponent base  [pretraining"easy" disabled for now, all training against easy(now hard)]
@@ -325,43 +325,43 @@ if __name__ == "__main__":
 
         # Print all important data (especially the q-table!) regularly to file:
         if (index % 50) == 0: 
-            print(f"(Pre-storing q-table to file \"{filename_suffix}_q_table.npy\" at index {index}.)")
+            # print(f"(Pre-storing q-table to file \"{filename_suffix}_q_table.npy\" at index {index}.)")
             qtableee.toFile(f"{filename_suffix}_q_table.npy")
-            print(f"(Pre-storing rewardcurve to file \"{filename_suffix}_reward_curve.npy\" at index {index}.)")
+            # print(f"(Pre-storing rewardcurve to file \"{filename_suffix}_reward_curve.npy\" at index {index}.)")
             np.save(f"{filename_suffix}_reward_curve.npy", rewardcurve)
             #print("Storing logstructure to file", "logstructure.npy")
             #np.save(f"{filename_suffix}_logstructure.npy", logstructure) 
-            print(f"(Pre-storing scores to file \"{filename_suffix}_scores.npy\" at index {index}.)")
+            # print(f"(Pre-storing scores to file \"{filename_suffix}_scores.npy\" at index {index}.)")
             np.save(f"{filename_suffix}_scores.npy", scorelist) 
-            print(f"(Pre-storing grabslist to file \"{filename_suffix}_grabslist.npy\" at index {index}.)")
+            # print(f"(Pre-storing grabslist to file \"{filename_suffix}_grabslist.npy\" at index {index}.)")
             np.save(f"{filename_suffix}_grabslist.npy", grabslist)
-            print(f"(Pre-storing tagslist to file \"{filename_suffix}_tagslist.npy\" at index {index}.)")
+            # print(f"(Pre-storing tagslist to file \"{filename_suffix}_tagslist.npy\" at index {index}.)")
             np.save(f"{filename_suffix}_tagslist.npy", tagslist) 
-            print(f"(Pre-storing statecount-table to file \"{filename_suffix}_statecount.npy\" at index {index}.)")
+            # print(f"(Pre-storing statecount-table to file \"{filename_suffix}_statecount.npy\" at index {index}.)")
             np.save(f"{filename_suffix}_statecount.npy", s_table) 
             #print("Statecount table: ",s_table)
         # Print qtable regularly as checkpoint to additional file (but not too oft because memory leak)
         if (index % 500) == 0: 
-            print(f"(In-between-storing q-table to file \"{filename_suffix}_q_table_i{index}.npy\".)")
+            # print(f"(In-between-storing q-table to file \"{filename_suffix}_q_table_i{index}.npy\".)")
             qtableee.toFile(f"{filename_suffix}_q_table_i{index}.npy")
 
         #np.save(f"{filename_suffix}_logstructure{index}.npy", logstructure) 
         # discard logstructure now, so memory does not leak
         #logstructure = []
         index += 1
-        print(f"Completed training run {index}")
+        # print(f"Completed training run {index}")
 
     # Epilog (saving q-table and reward curve to file)
-    print(f"Storing q-table to file \"{filename_suffix}_q_table.npy\".")
+    # print(f"Storing q-table to file \"{filename_suffix}_q_table.npy\".")
     qtableee.toFile(f"{filename_suffix}_q_table.npy") #Hmm. Do we need a better naming system, some way to keep track of trained  policies (maybe even in thesis? certainly in slides...), better way to automatically name things, actual pipeline in general
     #testqtable = QTable("q_table.npy")
-    print(f"Storing rewardcurve to file \"{filename_suffix}_reward_curve.npy\".")
+    # print(f"Storing rewardcurve to file \"{filename_suffix}_reward_curve.npy\".")
     np.save(f"{filename_suffix}_reward_curve.npy", rewardcurve)
     #print("Storing logstructure to file", "logstructure.npy")
     #np.save(f"{filename_suffix}_logstructure.npy", logstructure) 
-    print(f"Storing scorelist to file \"{filename_suffix}_scores.npy\".")
+    # print(f"Storing scorelist to file \"{filename_suffix}_scores.npy\".")
     np.save(f"{filename_suffix}_scores.npy", scorelist)
-    print(f"Storing grabslist to file \"{filename_suffix}_grabslist.npy\".")
+    # print(f"Storing grabslist to file \"{filename_suffix}_grabslist.npy\".")
     np.save(f"{filename_suffix}_grabslist.npy", grabslist)
-    print(f"Storing tagslist to file \"{filename_suffix}_tagslist.npy\".")
+    # print(f"Storing tagslist to file \"{filename_suffix}_tagslist.npy\".")
     np.save(f"{filename_suffix}_tagslist.npy", tagslist)
