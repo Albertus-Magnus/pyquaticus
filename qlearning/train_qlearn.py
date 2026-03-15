@@ -58,6 +58,7 @@ class ParameterSet:
 def doTraining(parameterset: ParameterSet, number_jobs):
     # Run training loop for multiple iterations (one setting, repeated with the same qtable)
     # If using existing q-table, load from file
+    time_s = datetime.now()
     tablefromfile = False
     if tablefromfile:
         # print("Loading Q-Table from file")
@@ -78,13 +79,14 @@ def doTraining(parameterset: ParameterSet, number_jobs):
         # print("Beginning training run at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
         seeed = np.random.randint(0, 100000) #random seed while training, set of seeds when testing (TODO)
         #logstructure = []
+        timel = 1.
         if index < 500 and parameterset.pretrain: #pretraininng with easy opponents, for more exploration on opponent base  [pretraining"easy" disabled for now, all training against easy(now hard)]
-            rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty="easy", reward_choice=parameterset.rewardchoice, render_mode=None, timelimit=600., q_table=qtableee) #might make timelimit a parameterset choice too...
+            rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty="easy", reward_choice=parameterset.rewardchoice, render_mode=None, timelimit=timel, q_table=qtableee) #might make timelimit a parameterset choice too...
             # tags, rewardlist, captures, grabs are all for [0] and [1] (the two teams)
             # After each episode update the values of q-table. For this purpose updates are calculated during the episode into the u-table. Now it gets switched with q-table:
             qtableee.qtable = u_table.qtable
         else:
-            rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty=parameterset.dif, reward_choice=parameterset.rewardchoice, render_mode=None, timelimit=600., q_table=qtableee)
+            rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty=parameterset.dif, reward_choice=parameterset.rewardchoice, render_mode=None, timelimit=timel, q_table=qtableee)
             qtableee.qtable = u_table.qtable
 
         # Some of the data we are tracking needs to be added to another list structure:
@@ -143,10 +145,11 @@ def doTraining(parameterset: ParameterSet, number_jobs):
     np.save(f"{parameterset.foldername + parameterset.create_name()}_grabslist.npy", grabslist)
     # print(f"Storing tagslist to file \"{parameterset.foldername + parameterset.create_name()}_tagslist.npy\".")
     np.save(f"{parameterset.foldername + parameterset.create_name()}_tagslist.npy", tagslist)
+    print(f"Training length: {time_s - datetime.now()} (h:min:sec)", flush=True)
     with lock:
         # counter += 1
         counter.value += 1
-        print(f"Concluded experiment {counter.value} out of {number_jobs}")
+        print(f"Concluded experiment {counter.value} out of {number_jobs}", flush=True)
         # print(f"Concluded job {counter} out of {number_jobs}")
 #End of doTraining
 
@@ -170,20 +173,20 @@ if __name__ == "__main__":
         #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, True, "avgtest1", "qtrainlog/batch 6 avg/", i))
         
         # 2nd set of parameters without pre
-        for i in range(20):
-            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.9, 10.0, False, "avgtest2", "qtrainlog/batch 6 part two/", i))
-        for i in range(20):
-            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.9, 10.0, False, "avgtest2", "qtrainlog/batch 6 part two/", i))
-        # 3rd set of parameters without pre
-        for i in range(20):
-            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.95, 10.0, False, "avgtest2", "qtrainlog/batch 6 part two/", i))
-        for i in range(20):
-            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.95, 10.0, False, "avgtest2", "qtrainlog/batch 6 part two/", i))
+        # for i in range(20):
+        #     parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.9, 10.0, False, "avgtest2", "qtrainlog/batch 6 part two/", i))
+        # for i in range(20):
+        #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.9, 10.0, False, "avgtest2", "qtrainlog/batch 6 part two/", i))
+        # # 3rd set of parameters without pre
+        # for i in range(20):
+        #     parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.95, 10.0, False, "avgtest2", "qtrainlog/batch 6 part two/", i))
+        # for i in range(20):
+        #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.95, 10.0, False, "avgtest2", "qtrainlog/batch 6 part two/", i))
         # # 4th set of parameters without pre (will be run tomorrow)
-        # for i in range(20):
-        #     parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "avgtest2", "qtrainlog/batch 6 avg/", i))
-        # for i in range(20):
-        #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.95, 10.0, False, "avgtest2", "qtrainlog/batch 6 avg/", i))
+        for i in range(20):
+            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "avgtest2", "qtrainlog/batch 6 part three/", i))
+        for i in range(20):
+            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.95, 10.0, False, "avgtest2", "qtrainlog/batch 6 part three/", i))
         #########################################
         #rewardchoice = "single_aggressive_rew"
         #rewardchoice = "double_aggressive_rew" (outdated)
