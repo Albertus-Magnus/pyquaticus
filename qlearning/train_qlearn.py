@@ -171,19 +171,19 @@ if __name__ == "__main__":
         
         # 2nd set of parameters without pre
         for i in range(20):
-            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.9, 10.0, False, "avgtest2", "qtrainlog/batch 6 avg/", i))
+            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.9, 10.0, False, "avgtest2", "qtrainlog/batch 6 part two/", i))
         for i in range(20):
-            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.9, 10.0, False, "avgtest2", "qtrainlog/batch 6 avg/", i))
+            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.9, 10.0, False, "avgtest2", "qtrainlog/batch 6 part two/", i))
         # 3rd set of parameters without pre
         for i in range(20):
-            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.95, 10.0, False, "avgtest2", "qtrainlog/batch 6 avg/", i))
+            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.95, 10.0, False, "avgtest2", "qtrainlog/batch 6 part two/", i))
         for i in range(20):
-            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.95, 10.0, False, "avgtest2", "qtrainlog/batch 6 avg/", i))
-        # 4th set of parameters without pre (will be run tomorrow)
-        for i in range(20):
-            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "avgtest2", "qtrainlog/batch 6 avg/", i))
-        for i in range(20):
-            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.95, 10.0, False, "avgtest2", "qtrainlog/batch 6 avg/", i))
+            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.95, 10.0, False, "avgtest2", "qtrainlog/batch 6 part two/", i))
+        # # 4th set of parameters without pre (will be run tomorrow)
+        # for i in range(20):
+        #     parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "avgtest2", "qtrainlog/batch 6 avg/", i))
+        # for i in range(20):
+        #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.95, 10.0, False, "avgtest2", "qtrainlog/batch 6 avg/", i))
         #########################################
         #rewardchoice = "single_aggressive_rew"
         #rewardchoice = "double_aggressive_rew" (outdated)
@@ -208,7 +208,8 @@ if __name__ == "__main__":
     num_jobs = len(parametersets)
     counter.value = 0
 
-    num_workers = max(1, os.cpu_count() + 5)#TODO test performance of +5 (12 cores, 17 processes now)
+    num_workers = 20
+    #num_workers = max(1, os.cpu_count() + 5)#TODO test performance of +5 (12 cores, 17 processes now)
     print(f"Selecting {num_workers} as num_workers.")
 
     with Pool(processes=num_workers) as pool:
