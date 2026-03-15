@@ -79,7 +79,7 @@ def doTraining(parameterset: ParameterSet, number_jobs):
         # print("Beginning training run at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
         seeed = np.random.randint(0, 100000) #random seed while training, set of seeds when testing (TODO)
         #logstructure = []
-        timel = 1.
+        timel = 600.
         if index < 500 and parameterset.pretrain: #pretraininng with easy opponents, for more exploration on opponent base  [pretraining"easy" disabled for now, all training against easy(now hard)]
             rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty="easy", reward_choice=parameterset.rewardchoice, render_mode=None, timelimit=timel, q_table=qtableee) #might make timelimit a parameterset choice too...
             # tags, rewardlist, captures, grabs are all for [0] and [1] (the two teams)
@@ -145,7 +145,7 @@ def doTraining(parameterset: ParameterSet, number_jobs):
     np.save(f"{parameterset.foldername + parameterset.create_name()}_grabslist.npy", grabslist)
     # print(f"Storing tagslist to file \"{parameterset.foldername + parameterset.create_name()}_tagslist.npy\".")
     np.save(f"{parameterset.foldername + parameterset.create_name()}_tagslist.npy", tagslist)
-    print(f"Training length: {time_s - datetime.now()} (h:min:sec)", flush=True)
+    print(f"Training length: {datetime.now() - time_s} (h:min:sec)", flush=True)
     with lock:
         # counter += 1
         counter.value += 1
@@ -155,7 +155,7 @@ def doTraining(parameterset: ParameterSet, number_jobs):
 
 if __name__ == "__main__":
     timestamp = datetime.now()
-    print("Starting experiments at ",timestamp)
+    print("Starting experiments at ",timestamp.now().strftime("%d-%m-%Y %H:%M:%S"))
     #if len(sys.argv) > 1:
     # Selecting preset of training parameters ("train" to make sure the files are not overwritten by mistake)
     parametersets = []
@@ -185,9 +185,19 @@ if __name__ == "__main__":
         #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.95, 10.0, False, "avgtest2", "qtrainlog/batch 6 part two/", i))
         # # 4th set of parameters without pre (will be run tomorrow)
         for i in range(20):
-            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "avgtest2", "qtrainlog/batch 6 part three/", i))
+            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", i))
         for i in range(20):
-            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.95, 10.0, False, "avgtest2", "qtrainlog/batch 6 part three/", i))
+            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.95, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", i))
+        # # 5th set of parameters without pre 
+        for i in range(20):
+            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.15, 0.9, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", i))
+        for i in range(20):
+            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.15, 0.9, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", i))
+        # # 6th set of parameters without pre 
+        for i in range(20):
+            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.85, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", i))
+        for i in range(20):
+            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.85, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", i))
         #########################################
         #rewardchoice = "single_aggressive_rew"
         #rewardchoice = "double_aggressive_rew" (outdated)
@@ -212,7 +222,7 @@ if __name__ == "__main__":
     num_jobs = len(parametersets)
     counter.value = 0
 
-    num_workers = 13
+    num_workers = 15 #15 was best number for my PC in small tests... (cores is 12)
     #num_workers = max(1, os.cpu_count() + 5)#TODO test performance of +5 (12 cores, 17 processes now)
     print(f"Selecting {num_workers} as num_workers.")
 
