@@ -155,6 +155,7 @@ def doTraining(parameterset: ParameterSet, number_jobs):
 
 if __name__ == "__main__":
     timestamp = datetime.now()
+    print("Starting experiments at ",timestamp)
     #if len(sys.argv) > 1:
     # Selecting preset of training parameters ("train" to make sure the files are not overwritten by mistake)
     parametersets = []
@@ -211,7 +212,7 @@ if __name__ == "__main__":
     num_jobs = len(parametersets)
     counter.value = 0
 
-    num_workers = 20
+    num_workers = 13
     #num_workers = max(1, os.cpu_count() + 5)#TODO test performance of +5 (12 cores, 17 processes now)
     print(f"Selecting {num_workers} as num_workers.")
 
