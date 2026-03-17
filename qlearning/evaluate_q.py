@@ -76,6 +76,7 @@ def matrix_to_heatmap(matrix, title, filename, name):
 #End of matrix_to_heatmap()
 
 def vis_helper(filename_suffix0):
+    """Used for batches 1-5 to create the visualizations. Has to be called for every training run (per filename-prefix)."""
     ############################################################
     if FOLDER=="batch 2 hard": filename_suffix0 = "vshard_" + filename_suffix0
     filename_suffix = "qtrainlog/"+FOLDER+"/" + filename_suffix0
@@ -84,6 +85,101 @@ def vis_helper(filename_suffix0):
     # Load data for visualization
     #print(f"Loading q-table from file \"{filename_suffix}_q_table.npy\".")
     q_table = np.load(f"{filename_suffix}_q_table.npy")
+    s_table = np.load(f"{filename_suffix}_statecount.npy")
+    #print("\ns_table:",s_table) 
+    s_table = s_table.astype(np.int32)
+    s_table = np.abs(s_table) #TODO remove bugfix for negative values in counter-table once not needed
+    #print(f"Loading rewardcurve from file \"{filename_suffix}_reward_curve.npy\".")
+    rewardcurve = np.load(f"{filename_suffix}_reward_curve.npy")
+    #print(f"Loading scorelist from file \"{filename_suffix}_scores.npy\".")
+    scorelist = np.load(f"{filename_suffix}_scores.npy")
+    #print(scorelist)
+    #print(f"Loading grabslist from file \"{filename_suffix}_grabslist.npy\".")
+    grabslist = np.load(f"{filename_suffix}_grabslist.npy")
+    #print(f"Loading tagslist from file \"{filename_suffix}_tagslist.npy\".")
+    tagslist = np.load(f"{filename_suffix}_tagslist.npy")
+    # All data loaded
+
+    # Understanding the data shapes and contents
+    #print(f"q_table shape: {q_table.shape}")
+    #print(f"rewardcurve shape: {rewardcurve.shape}")
+    '''rewardcurve is a 2D array of length 3000 (rn 4), where each entry is the 
+    reward for agent 0 and agent 1 respectively obtained in that training episode.
+    zB [[-1.17930907e+04 -1.13255293e+04]
+    [-3.99995513e+03 -3.07597898e+02]
+    [-6.07547337e-03 -3.54126305e-02]
+    [ 1.71399542e+00 -2.12815341e+02]]'''
+    #print(f"scorelist shape: {scorelist.shape}")
+    '''same for scorelist (and the following) but entries are integers.
+    zB [[ 4 35]
+    [ 0 34]
+    [ 0 26]
+    [ 0 29]]'''
+    #print(f"grabslist shape: {grabslist.shape}")
+    #print(f"tagslist shape: {tagslist.shape}")
+    '''zB [[ 6  4]
+    [11  0]
+    [15  0]
+    [15  0]] (contains episodic entries for env.state['tags'], which 
+    contains [{times team blues agents got tagged} {times team reds agents got tagged}])'''
+    # print("rewardcurve: ", rewardcurve)
+    # print("scorelist: ", scorelist)
+    # print("grabslist: ", grabslist)
+    # print("tagslist: ", tagslist)
+
+    # Preprocess data where applicable
+    # Helper function:
+    def avgbags(datalist, bagsize):
+        avg_rewards = []
+        for i in range(0, len(datalist), bagsize):
+            bag = datalist[i:i+bagsize]
+            avg_rewards.append(np.mean(bag, axis=0))
+        return avg_rewards
+    bagsize = 50
+    # rewardcurve:
+    rewards0 = [step[0] for step in rewardcurve]
+    rewards1 = [step[1] for step in rewardcurve]
+    rewards0_avg = avgbags(rewards0, bagsize)
+    rewards1_avg = avgbags(rewards1, bagsize)
+    # score:
+    scores0 = [step[0] for step in scorelist]
+    scores1 = [step[1] for step in scorelist]
+    scores0_avg = avgbags(scores0, bagsize)
+    scores1_avg = avgbags(scores1, bagsize)
+    # grabs are not necessary, just stored them as file just in case.
+    # tags:
+    tags0 = [step[0] for step in tagslist] #KEEP IN MIND: tags0 is how many times red agents tagged blue agents, so display reversed as [1 0], not [0 1]...
+    tags1 = [step[1] for step in tagslist]
+    tags0_avg = avgbags(tags0, bagsize)
+    tags1_avg = avgbags(tags1, bagsize)
+    # Calculate winrates
+    winrate0 = [np.sum(np.array(scores0[i:i+bagsize]) > np.array(scores1[i:i+bagsize])) / bagsize for i in range(0, len(scores0), bagsize)]
+    winrate1 = [np.sum(np.array(scores1[i:i+bagsize]) > np.array(scores0[i:i+bagsize])) / bagsize for i in range(0, len(scores1), bagsize)]
+
+    # Visualization
+    ####################################################################################################################################################
+    visualize_reward_curve(rewards0_avg, rewards1_avg, filename_suffix0)
+    visualize_curve(scores0_avg, scores1_avg, ylabel=f"Score (avg per {bagsize} episodes)", name=filename_suffix0)
+    visualize_curve(tags1_avg, tags0_avg, ylabel=f"Tags (avg per {bagsize} episodes)", name=filename_suffix0)
+    matrix_to_heatmap(q_table, filename_suffix0, "qtrainlog/"+FOLDER+"/figures/"+filename_suffix0+"qheatmap.png", "Q-value (expected reward)")
+    matrix_to_heatmap(s_table, filename_suffix0, "qtrainlog/"+FOLDER+"/figures/"+filename_suffix0+"visitcount.png", "States visited (count per state)")
+    visualize_curve(winrate0, winrate1, ylabel=f"Winrate (avg per {bagsize} episodes)", name=filename_suffix0)
+    ####################################################################################################################################################
+    print(f"{filename_suffix0} 20th value - Rewards: {rewards0_avg[9]}, {rewards1_avg[9]}") #TODO is 10th step rn
+    print(f"{filename_suffix0} 20th value - Scores: {scores0_avg[9]}, {scores1_avg[9]}")
+    print(f"{filename_suffix0} 20th value - Winrate: {winrate0[9]}, {winrate1[9]}")
+    print(f"{filename_suffix0} 20th value - Tags: {tags0_avg[9]}, {tags1_avg[9]}")
+
+def avg_vis_helper(filename_suffix0):
+    """Is called for every group of training runs using the same parameters to generate the visualizations of averages between the same parameters (e.g. 20 training runs into one plot)."""
+    ############################################################
+    #if FOLDER=="batch 2 hard": filename_suffix0 = "vshard_" + filename_suffix0 #not necessary for avg_vis_helper
+    filename_suffix = "qtrainlog/"+FOLDER+"/" + filename_suffix0
+    ############################################################
+
+    # Load data for visualization
+    #print(f"Loading q-table from file \"{filename_suffix}_q_table.npy\".")
+    q_table = [np.load(f"{filename_suffix}_nr{i}_q_table.npy") for i in range(20)] #TODO continue here coding
     s_table = np.load(f"{filename_suffix}_statecount.npy")
     #print("\ns_table:",s_table) 
     s_table = s_table.astype(np.int32)

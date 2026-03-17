@@ -1,0 +1,244 @@
+Starting experiments at  15-03-2026 23:46:34
+Selecting 15 as num_workers.
+Training length: 3:09:37.556474 (h:min:sec)
+Concluded experiment 1 out of 120
+Training length: 3:09:45.901871 (h:min:sec)
+Concluded experiment 2 out of 120
+Training length: 3:10:04.222703 (h:min:sec)
+Concluded experiment 3 out of 120
+Training length: 3:10:06.549254 (h:min:sec)
+Concluded experiment 4 out of 120
+Training length: 3:12:41.398006 (h:min:sec)
+Concluded experiment 5 out of 120
+Training length: 3:13:03.364787 (h:min:sec)
+Concluded experiment 6 out of 120
+Training length: 3:13:17.433038 (h:min:sec)
+Concluded experiment 7 out of 120
+Training length: 3:13:35.538492 (h:min:sec)
+Concluded experiment 8 out of 120
+Training length: 3:13:37.653684 (h:min:sec)
+Concluded experiment 9 out of 120
+Training length: 3:13:48.287882 (h:min:sec)
+Concluded experiment 10 out of 120
+Training length: 3:13:58.617450 (h:min:sec)
+Concluded experiment 11 out of 120
+Training length: 3:14:04.574069 (h:min:sec)
+Concluded experiment 12 out of 120
+Training length: 3:16:39.237681 (h:min:sec)
+Concluded experiment 13 out of 120
+Training length: 3:17:27.019947 (h:min:sec)
+Concluded experiment 14 out of 120
+Training length: 3:19:19.319398 (h:min:sec)
+Concluded experiment 15 out of 120
+Training length: 3:07:41.041687 (h:min:sec)
+Concluded experiment 16 out of 120
+Training length: 3:08:11.980818 (h:min:sec)
+Concluded experiment 17 out of 120
+Training length: 3:07:54.513644 (h:min:sec)
+Concluded experiment 18 out of 120
+Training length: 3:08:31.669109 (h:min:sec)
+Concluded experiment 19 out of 120
+Training length: 3:10:09.386862 (h:min:sec)
+Concluded experiment 20 out of 120
+Training length: 3:11:36.093495 (h:min:sec)
+Concluded experiment 21 out of 120
+Training length: 3:11:39.338707 (h:min:sec)
+Concluded experiment 22 out of 120
+Training length: 3:11:25.848783 (h:min:sec)
+Concluded experiment 23 out of 120
+Training length: 3:11:47.740688 (h:min:sec)
+Concluded experiment 24 out of 120
+Training length: 3:13:32.964230 (h:min:sec)
+Concluded experiment 25 out of 120
+Training length: 3:15:01.498037 (h:min:sec)
+Concluded experiment 26 out of 120
+Training length: 3:18:43.178803 (h:min:sec)
+Concluded experiment 27 out of 120
+Training length: 3:19:15.380245 (h:min:sec)
+Concluded experiment 28 out of 120
+Training length: 3:18:52.679339 (h:min:sec)
+Concluded experiment 29 out of 120
+Training length: 3:19:09.595027 (h:min:sec)
+Concluded experiment 30 out of 120
+Training length: 3:06:55.081113 (h:min:sec)
+Concluded experiment 31 out of 120
+Training length: 3:09:02.915161 (h:min:sec)
+Concluded experiment 32 out of 120
+Training length: 3:08:03.567930 (h:min:sec)
+Concluded experiment 33 out of 120
+Training length: 3:07:29.851087 (h:min:sec)
+Concluded experiment 34 out of 120
+Training length: 3:13:09.832992 (h:min:sec)
+Concluded experiment 35 out of 120
+Training length: 3:10:20.771845 (h:min:sec)
+Concluded experiment 36 out of 120
+Training length: 3:10:04.610509 (h:min:sec)
+Concluded experiment 37 out of 120
+Training length: 3:11:06.534443 (h:min:sec)
+Concluded experiment 38 out of 120
+Training length: 3:13:33.181399 (h:min:sec)
+Concluded experiment 39 out of 120
+Training length: 3:17:12.344462 (h:min:sec)
+Concluded experiment 40 out of 120
+Training length: 3:16:12.668042 (h:min:sec)
+Concluded experiment 41 out of 120
+Training length: 3:16:33.796019 (h:min:sec)
+Concluded experiment 42 out of 120
+Training length: 3:17:03.744978 (h:min:sec)
+Concluded experiment 43 out of 120
+Training length: 3:17:38.928613 (h:min:sec)
+Concluded experiment 44 out of 120
+Training length: 3:16:41.114949 (h:min:sec)
+Concluded experiment 45 out of 120
+Training length: 3:07:16.142546 (h:min:sec)
+Concluded experiment 46 out of 120
+Training length: 3:10:30.888933 (h:min:sec)
+Concluded experiment 47 out of 120
+Training length: 3:09:12.519802 (h:min:sec)
+Concluded experiment 48 out of 120
+Training length: 3:13:25.713663 (h:min:sec)
+Concluded experiment 49 out of 120
+Training length: 3:13:03.928876 (h:min:sec)
+Concluded experiment 50 out of 120
+Training length: 3:09:35.296944 (h:min:sec)
+Concluded experiment 51 out of 120
+Training length: 3:10:03.172960 (h:min:sec)
+Concluded experiment 52 out of 120
+Training length: 3:10:54.386735 (h:min:sec)
+Concluded experiment 53 out of 120
+Training length: 3:17:08.944110 (h:min:sec)
+Concluded experiment 54 out of 120
+Training length: 3:17:12.737317 (h:min:sec)
+Concluded experiment 55 out of 120
+Training length: 3:15:39.060951 (h:min:sec)
+Concluded experiment 56 out of 120
+Training length: 3:16:24.612070 (h:min:sec)
+Concluded experiment 57 out of 120
+Training length: 3:16:19.380130 (h:min:sec)
+Concluded experiment 58 out of 120
+Training length: 3:16:49.290337 (h:min:sec)
+Concluded experiment 59 out of 120
+Training length: 3:16:52.293579 (h:min:sec)
+Concluded experiment 60 out of 120
+Training length: 3:07:30.915927 (h:min:sec)
+Concluded experiment 61 out of 120
+Training length: 3:13:01.567113 (h:min:sec)
+Concluded experiment 62 out of 120
+Training length: 3:13:00.671801 (h:min:sec)
+Concluded experiment 63 out of 120
+Training length: 3:13:04.981194 (h:min:sec)
+Concluded experiment 64 out of 120
+Training length: 3:08:52.376464 (h:min:sec)
+Concluded experiment 65 out of 120
+Training length: 3:08:50.177981 (h:min:sec)
+Concluded experiment 66 out of 120
+Training length: 3:11:01.724712 (h:min:sec)
+Concluded experiment 67 out of 120
+Training length: 3:13:18.392635 (h:min:sec)
+Concluded experiment 68 out of 120
+Training length: 3:13:55.959363 (h:min:sec)
+Concluded experiment 69 out of 120
+Training length: 3:13:50.599872 (h:min:sec)
+Concluded experiment 70 out of 120
+Training length: 3:15:39.586777 (h:min:sec)
+Concluded experiment 71 out of 120
+Training length: 3:16:40.489970 (h:min:sec)
+Concluded experiment 72 out of 120
+Training length: 3:17:24.555989 (h:min:sec)
+Concluded experiment 73 out of 120
+Training length: 3:16:48.873152 (h:min:sec)
+Concluded experiment 74 out of 120
+Training length: 3:17:13.786833 (h:min:sec)
+Concluded experiment 75 out of 120
+Training length: 3:07:04.446585 (h:min:sec)
+Concluded experiment 76 out of 120
+Training length: 3:12:49.497190 (h:min:sec)
+Concluded experiment 77 out of 120
+Training length: 3:12:40.893162 (h:min:sec)
+Concluded experiment 78 out of 120
+Training length: 3:13:04.617658 (h:min:sec)
+Concluded experiment 79 out of 120
+Training length: 3:13:14.893747 (h:min:sec)
+Concluded experiment 80 out of 120
+Training length: 3:13:28.313991 (h:min:sec)
+Concluded experiment 81 out of 120
+Training length: 3:13:31.613864 (h:min:sec)
+Concluded experiment 82 out of 120
+Training length: 3:12:57.815135 (h:min:sec)
+Concluded experiment 83 out of 120
+Training length: 3:13:25.113632 (h:min:sec)
+Concluded experiment 84 out of 120
+Training length: 3:13:04.280946 (h:min:sec)
+Concluded experiment 85 out of 120
+Training length: 3:15:43.265014 (h:min:sec)
+Concluded experiment 86 out of 120
+Training length: 3:16:27.125909 (h:min:sec)
+Concluded experiment 87 out of 120
+Training length: 3:16:37.757225 (h:min:sec)
+Concluded experiment 88 out of 120
+Training length: 3:17:02.598307 (h:min:sec)
+Concluded experiment 89 out of 120
+Training length: 3:16:51.170851 (h:min:sec)
+Concluded experiment 90 out of 120
+Training length: 3:08:33.330396 (h:min:sec)
+Concluded experiment 91 out of 120
+Training length: 3:13:59.916644 (h:min:sec)
+Concluded experiment 92 out of 120
+Training length: 3:14:29.288347 (h:min:sec)
+Concluded experiment 93 out of 120
+Training length: 3:14:42.175190 (h:min:sec)
+Concluded experiment 94 out of 120
+Training length: 3:14:43.032600 (h:min:sec)
+Concluded experiment 95 out of 120
+Training length: 3:12:05.003364 (h:min:sec)
+Concluded experiment 96 out of 120
+Training length: 3:12:08.864475 (h:min:sec)
+Concluded experiment 97 out of 120
+Training length: 3:12:36.187906 (h:min:sec)
+Concluded experiment 98 out of 120
+Training length: 3:12:20.935033 (h:min:sec)
+Concluded experiment 99 out of 120
+Training length: 3:11:37.638916 (h:min:sec)
+Concluded experiment 100 out of 120
+Training length: 3:11:07.191970 (h:min:sec)
+Concluded experiment 101 out of 120
+Training length: 3:11:20.036031 (h:min:sec)
+Concluded experiment 102 out of 120
+Training length: 3:11:30.352163 (h:min:sec)
+Concluded experiment 103 out of 120
+Training length: 3:11:23.203015 (h:min:sec)
+Concluded experiment 104 out of 120
+Training length: 3:11:42.028876 (h:min:sec)
+Concluded experiment 105 out of 120
+Training length: 3:08:22.456374 (h:min:sec)
+Concluded experiment 106 out of 120
+Training length: 3:12:23.944923 (h:min:sec)
+Concluded experiment 107 out of 120
+Training length: 3:10:57.945753 (h:min:sec)
+Concluded experiment 108 out of 120
+Training length: 3:09:10.257356 (h:min:sec)
+Concluded experiment 109 out of 120
+Training length: 3:09:06.581485 (h:min:sec)
+Concluded experiment 110 out of 120
+Training length: 3:09:12.902321 (h:min:sec)
+Concluded experiment 111 out of 120
+Training length: 3:11:18.785194 (h:min:sec)
+Concluded experiment 112 out of 120
+Training length: 3:10:29.245588 (h:min:sec)
+Concluded experiment 113 out of 120
+Training length: 3:02:00.917049 (h:min:sec)
+Concluded experiment 114 out of 120
+Training length: 2:59:23.599549 (h:min:sec)
+Concluded experiment 115 out of 120
+Training length: 2:55:37.695599 (h:min:sec)
+Concluded experiment 116 out of 120
+Training length: 2:53:55.216228 (h:min:sec)
+Concluded experiment 117 out of 120
+Training length: 2:55:00.736221 (h:min:sec)
+Concluded experiment 118 out of 120
+Training length: 2:48:41.709377 (h:min:sec)
+Concluded experiment 119 out of 120
+Training length: 2:52:13.629556 (h:min:sec)
+Concluded experiment 120 out of 120
+Total execution time: 1 day, 1:48:16.279972 (h:min:sec) for 120 policy trainings.
+->26h für 120 trainings
