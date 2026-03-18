@@ -85,7 +85,8 @@ def doTraining(parameterset: ParameterSet, number_jobs):
     grabslist = []
     tagslist = []
     index = 0 
-    for i in range(1000): #set batch 6
+    #for i in range(1000): #set batch 6
+    for i in range(500): #set batch 7
     #while datetime.now().hour < 11 or datetime.now().hour > 20: #train until 1 am, then save the q-table and reward curve
         # print("Beginning training run at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
         seeed = np.random.randint(0, 100000) #random seed while training, set of seeds when testing (TODO)
@@ -93,9 +94,9 @@ def doTraining(parameterset: ParameterSet, number_jobs):
         timel = 600.
         if index < 500 and parameterset.pretrain: #pretraininng with easy opponents, for more exploration on opponent base  [pretraining"easy" disabled for now, all training against easy(now hard)]
             rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty="easy", reward_choice=parameterset.rewardchoice, render_mode=None, timelimit=timel, q_table=qtableee) #might make timelimit a parameterset choice too...
-            # tags, rewardlist, captures, grabs are all for [0] and [1] (the two teams)
-            # After each episode update the values of q-table. For this purpose updates are calculated during the episode into the u-table. Now it gets switched with q-table:
             qtableee.qtable = u_table.qtable
+            # tags, rewardlist, captures, grabs are all for [0] and [1] (the two teams)
+            # After each episode update the values of q-table. For this purpose updates are calculated during the episode into the u-table. Afterwards it gets switched with q-table.
         else:
             rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty=parameterset.dif, reward_choice=parameterset.rewardchoice, render_mode=None, timelimit=timel, q_table=qtableee)
             qtableee.qtable = u_table.qtable
@@ -211,11 +212,17 @@ if __name__ == "__main__":
         # for i in range(20):
         #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.85, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", i))
 
-        # Only template for next try
+        # Only template for next try #NOTE this will take too long, need to shorten it pre-meeting?
         for i in range(20):
-            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, False, "formulatest", "qtrainlog/example_folder/", i))
+            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, False, "testmath", "qtrainlog/batch 7/", i))
         for i in range(20):
-            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "formulatest", "qtrainlog/example_folder/", i))
+            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "testmath", "qtrainlog/batch 7/", i))
+        for i in range(20):
+            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.99, 10.0, False, "ratehigh", "qtrainlog/batch 7/", i))
+        for i in range(20):
+            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.99, 10.0, False, "ratehigh", "qtrainlog/batch 7/", i))
+        for i in range(20):
+            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.95, 0.0, False, "ratehigh", "qtrainlog/batch 7/", i))
         #########################################
         #rewardchoice = "single_aggressive_rew"
         #rewardchoice = "double_aggressive_rew" (outdated)
