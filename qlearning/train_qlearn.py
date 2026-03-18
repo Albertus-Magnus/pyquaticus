@@ -233,12 +233,14 @@ if __name__ == "__main__":
         sys.exit(0)
     else:
         # Do visual test match here.
-        setup = ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, False, "example", "qtrainlog/example_folder/", 0) #lrate: Any, discount: Any, initialq: Any, pretrain: Any, name: Any, folder)
+        setup = ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "example", "qtrainlog/example_folder/", 0) #lrate: Any, discount: Any, initialq: Any, pretrain: Any, name: Any, folder)
+        #setup = ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", 0) #TODO is this dangerous to overwrite my thing?
         # (do i need to change this so it loads a file?) prolly, 'cause it is for visual test match of trained policy
         rewardchoice = "single_aggressive_rew"
         #filename_suffix = "/vshard_lrate0.1_discount0.95_initialq10.0_single_aggressive_rew"
         print("Manually testing qtable policy with rendering enabled.")
-        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, (setup.foldername + setup.create_name() + "_q_table.npy"))
+        #qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, (setup.foldername + setup.create_name() + "_q_table.npy"))
+        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/example_folder/avgtest3_single_aggressive_rew_hard_lrate0.2_discount0.95_initq10.0_1000ep_no_pre_nr2_q_table.npy")
         st = np.zeros((4, 4, 4, 2, 2), dtype=np.int32) #dangerous int8-hazard (int8 is insufficient here)
         train_qlearn(st, seed=0, difficulty="hard", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt)#TODO change to use parameterset i guess...
         sys.exit(0)
