@@ -32,8 +32,8 @@ def train_qlearn(
     # seed for "random" starts
     difficulty: str = "hard",
     # difficulty is the MODE of the example agents, can be "hard", "medium" or "easy"
-    reward_choice: str = "adjustmepls", #maybe could be string, but cleaner so?
-    render_mode: str = None,#'human'
+    reward_choice: str = "adjustmepls", 
+    render_mode: str = None, # or 'human'
     timelimit: float = 600.,
     logname: str = "match.log",
     q_table: QTable = None #str = None #Not a string?! Is already a QTable!
@@ -94,10 +94,10 @@ def train_qlearn(
     
     # print("Setting up q-learn agents")
     if q_table == None: print("Error: q-table not set up before agents are created.")
-    u_table = QTable(q_table.LEARNING_RATE, q_table.DISCOUNT_FACTOR, q_table.INITIAL_Q_VALUE)
-    u_table.qtable = np.copy(q_table.qtable)
-    R_one = QlearnPolicy('agent_0', env, q_table, u_table)
-    R_two = QlearnPolicy('agent_1', env, q_table, u_table)
+    #u_table = QTable(q_table.LEARNING_RATE, q_table.DISCOUNT_FACTOR, q_table.INITIAL_Q_VALUE)
+    #u_table.qtable = np.copy(q_table.qtable)
+    R_one = QlearnPolicy('agent_0', env, q_table)
+    R_two = QlearnPolicy('agent_1', env, q_table)
 
     step = 0
     rewardsteps = []   #actually, this is easier (still 2 dim but turned "90°") [[], []] #two-dimensional list to track both agents of this team #TODO check if rewardcurve is meaningless now
@@ -118,13 +118,17 @@ def train_qlearn(
         obs, reward, term, trunc, info = env.step({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three})
         #print("\n\nReward:",reward)#Reward: {'agent_0': 0.2734431070341813, 'agent_1': 0.2208806900959132, 'agent_2': -0.12809429110777018, 'agent_3': 0.0, 'agent_4': 0.0, 'agent_5': 0.0}
         
-        # Update Q-Table for both agents (same table, two updates)
+        # Update Q-Table for both agents (same table, two updates) NOTE the qtable is only updated after the game (batch). But necessary information is saved here
+        a0_step2 = R_one.q_Table.prepareUpdate(obs, 'agent_0', 4) #action 4 is not being used, but 4 so there is no "error" printed.
+        a1_step2 = R_two.q_Table.prepareUpdate(obs, 'agent_1', 4)
         #print("\nActions: zero",zero,"; one",one)
-        R_one.set_q_value(a0_qstep[0], a0_qstep[1], a0_qstep[2], a0_qstep[3], a0_qstep[4], a0_qstep[5], reward['agent_0'])
-        s_table[a0_qstep[0]][a0_qstep[1]][a0_qstep[2]][a0_qstep[3]][a0_qstep[4]] += 1        #TODO check if correct address? probably with running and prints
-        R_two.set_q_value(a1_qstep[0], a1_qstep[1], a1_qstep[2], a1_qstep[3], a1_qstep[4], a1_qstep[5], reward['agent_1'])
-        s_table[a1_qstep[0]][a1_qstep[1]][a1_qstep[2]][a1_qstep[3]][a1_qstep[4]] += 1        #TODO check if correct address? probably with running and prints
-        # Keep track of reward (TODO need to get an underlying curve and visualize it for full training)
+
+        R_one.set_q_value(a0_step2[0], a0_step2[1], a0_step2[2], a0_step2[3], a0_step2[4], a0_qstep[5], reward['agent_0']) #only action is used from previous frame/timestep
+        s_table[a0_qstep[0]][a0_qstep[1]][a0_qstep[2]][a0_qstep[3]][a0_qstep[4]] += 1
+        R_two.set_q_value(a1_step2[0], a1_step2[1], a1_step2[2], a1_step2[3], a1_step2[4], a1_qstep[5], reward['agent_1']) #only action is used from previous frame/timestep
+        s_table[a1_qstep[0]][a1_qstep[1]][a1_qstep[2]][a1_qstep[3]][a1_qstep[4]] += 1
+        
+        # Keep track of reward
         rewardsteps.append({'agent_0': reward['agent_0'], 'agent_1': reward['agent_1']})
         # -Logging utility- (disabled for training, too much memory)
         # Writes the gamestate info into pyquaticus/match.log #this seems like it is doubled? 
@@ -155,7 +159,7 @@ def train_qlearn(
     # print("SCORE: ",env.state['captures'])
     # print("grabs: ",env.state['grabs'])
     env.close()
-    return rewardsteps, env.state['captures'], env.state['grabs'], env.state['tags'], u_table 
+    return rewardsteps, env.state['captures'], env.state['grabs'], env.state['tags']#, u_table 
 #End of train_qlearn()
 
 def visualize_reward_curve(reward_curve_file):
@@ -301,13 +305,15 @@ if __name__ == "__main__":
         seeed = np.random.randint(0, 100000) #random seed while training, set of seeds when testing (TODO)
         #logstructure = []
         if index < 500 or True: #pretraininng with easy opponents, for more exploration on opponent base  [pretraining"easy" disabled for now, all training against easy(now hard)]
-            rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty="hard", reward_choice=rewardchoice, render_mode=None, timelimit=600., q_table=qtableee)
+            rewardsteps, capture_entry, grab_entry, tag_entry = train_qlearn(s_table, seed=seeed, difficulty="hard", reward_choice=rewardchoice, render_mode=None, timelimit=600., q_table=qtableee)
             # tags, rewardlist, captures, grabs are all for [0] and [1] (the two teams)
             # After each episode update the values of q-table. For this purpose updates are calculated during the episode into the u-table. Now it gets switched with q-table:
-            qtableee.qtable = u_table.qtable
+            #qtableee.qtable = u_table.qtable
+            qtableee.avgQUpdate()
         else:
-            rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty="hard", reward_choice=rewardchoice, render_mode=None, timelimit=600., q_table=qtableee)
-            qtableee.qtable = u_table.qtable
+            rewardsteps, capture_entry, grab_entry, tag_entry = train_qlearn(s_table, seed=seeed, difficulty="hard", reward_choice=rewardchoice, render_mode=None, timelimit=600., q_table=qtableee)
+            #qtableee.qtable = u_table.qtable
+            qtableee.avgQUpdate()
 
         # Some of the data we are tracking needs to be added to another list structure:
         #rewardcurve.append(rewardsteps)#wrong, need to sum it up exactly before that

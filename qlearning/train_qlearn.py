@@ -86,20 +86,22 @@ def doTraining(parameterset: ParameterSet, number_jobs):
     tagslist = []
     index = 0 
     #for i in range(1000): #set batch 6
-    for i in range(500): #set batch 7
+    for i in range(1000): #set batch 7
     #while datetime.now().hour < 11 or datetime.now().hour > 20: #train until 1 am, then save the q-table and reward curve
         # print("Beginning training run at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
         seeed = np.random.randint(0, 100000) #random seed while training, set of seeds when testing (TODO)
         #logstructure = []
         timel = 600.
         if index < 500 and parameterset.pretrain: #pretraininng with easy opponents, for more exploration on opponent base  [pretraining"easy" disabled for now, all training against easy(now hard)]
-            rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty="easy", reward_choice=parameterset.rewardchoice, render_mode=None, timelimit=timel, q_table=qtableee) #might make timelimit a parameterset choice too...
-            qtableee.qtable = u_table.qtable
+            rewardsteps, capture_entry, grab_entry, tag_entry = train_qlearn(s_table, seed=seeed, difficulty="easy", reward_choice=parameterset.rewardchoice, render_mode=None, timelimit=timel, q_table=qtableee) #might make timelimit a parameterset choice too...
+            #qtableee.qtable = u_table.qtable
+            qtableee.avgQUpdate()
             # tags, rewardlist, captures, grabs are all for [0] and [1] (the two teams)
             # After each episode update the values of q-table. For this purpose updates are calculated during the episode into the u-table. Afterwards it gets switched with q-table.
         else:
-            rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty=parameterset.dif, reward_choice=parameterset.rewardchoice, render_mode=None, timelimit=timel, q_table=qtableee)
-            qtableee.qtable = u_table.qtable
+            rewardsteps, capture_entry, grab_entry, tag_entry = train_qlearn(s_table, seed=seeed, difficulty=parameterset.dif, reward_choice=parameterset.rewardchoice, render_mode=None, timelimit=timel, q_table=qtableee)
+            #qtableee.qtable = u_table.qtable
+            qtableee.avgQUpdate()
 
         # Some of the data we are tracking needs to be added to another list structure:
         #rewardcurve.append(rewardsteps)#wrong, need to sum it up exactly before that
@@ -218,11 +220,12 @@ if __name__ == "__main__":
         for i in range(20):
             parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "testmath", "qtrainlog/batch 7/", i))
         for i in range(20):
-            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.99, 10.0, False, "ratehigh", "qtrainlog/batch 7/", i))
+            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.99, 10.0, False, "ratehigh", "qtrainlog/batch 7/", i)) #testing a much higher discount factor
         for i in range(20):
             parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.99, 10.0, False, "ratehigh", "qtrainlog/batch 7/", i))
         for i in range(20):
-            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.95, 0.0, False, "ratehigh", "qtrainlog/batch 7/", i))
+            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.95, 0.0, False, "ratehigh", "qtrainlog/batch 7/", i)) #testing the init q value 0 for capsntags
+            # (although capsntags is to be retired and aggr_tags is to be made?)
         #########################################
         #rewardchoice = "single_aggressive_rew"
         #rewardchoice = "double_aggressive_rew" (outdated)

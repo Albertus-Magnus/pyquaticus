@@ -24,6 +24,11 @@ class QTable:
         self.LEARNING_RATE = LEARNING_RATE
         self.DISCOUNT_FACTOR = DISCOUNT_FACTOR
         self.INITIAL_Q_VALUE = INITIAL_Q_VALUE
+
+        self.u_lists = np.empty((4, 4, 4, 2, 2, 4), dtype=list)#object?
+        for idx in np.ndindex((4, 4, 4, 2, 2, 4)):
+            self.u_lists[idx] = []
+
         if not filename == None:
             self.qtable = np.load(filename)
             #print(self.qtable)
@@ -55,6 +60,35 @@ class QTable:
         '''
         # print("Q-Table created, size",self.qtable.size)
     #End of init()
+
+    def avgQUpdate(self):
+        """computes an update according to panda et al for the q-table after a batch (game) of transitions (frames)"""
+        #shape (4, 4, 4, 2, 2, 4)
+        for a in range(4):
+            for b in range(4):
+                for c in range(4):
+                    for d in range(2):
+                        for e in range(2):
+                            for f in range(4):
+                                if not self.u_lists[a][b][c][d][e][f] == []:
+                                    # If observations about this Q(s,a) were made during the game, now we compute an update using an average of these observations:
+                                    l = len(self.u_lists[a][b][c][d][e][f])
+                                    avg_r = 0.
+                                    avg_ofv = 0.
+                                    for g in range(l):
+                                        avg_r += self.u_lists[a][b][c][d][e][f][g][0]
+                                        avg_ofv += self.u_lists[a][b][c][d][e][f][g][1]
+                                    avg_r = avg_r / l
+                                    avg_ofv = avg_ofv / l
+                                    # print(f"avg_r={avg_r}, avg_ofv={avg_ofv}")#TODO remove prints
+
+                                    # Update this q-value 
+                                    old_q = self.qtable[a][b][c][d][e][f]
+                                    self.qtable[a][b][c][d][e][f] = old_q + self.LEARNING_RATE * ((avg_r + self.DISCOUNT_FACTOR * avg_ofv) - old_q)
+                                    # print("\nqtable updated to",self.qtable[a][b][c][d][e][f])
+
+                                    # empty the update-list for this q-value
+
 
     """
     Moved set_q_value to QlearnPolicy(), because updates now require both qtables stored in the agent policy.
@@ -101,7 +135,7 @@ class QlearnPolicy(BaseAgentPolicy):
         agent_id: str,
         env: Union[PyQuaticusEnv, PyQuaticusMoosBridge],
         q_table: QTable,
-        u_table: QTable,
+        #u_table: QTable,
         flag_keepout: float = config_dict_std["flag_keepout"],
         catch_radius: float = config_dict_std["catch_radius"],
         continuous: bool = False
@@ -111,7 +145,7 @@ class QlearnPolicy(BaseAgentPolicy):
         #self.env = env
         self.q_Table = q_table
         # copy of q_table (update-table) is used for updates of q-values, while old unmodified q_table is used only for action selection (and max(future action) in the update calculation)
-        self.u_Table = u_table
+        #self.u_Table = u_table
 
     @staticmethod #either this line or self as first argument. Python stinks sometimes...
     def headingDiff(heading, pos1, pos2): #TODO check if math correct
@@ -126,8 +160,13 @@ class QlearnPolicy(BaseAgentPolicy):
         return diff
     
     ###############UPDATE##OF##QVALUE################################################
-    def set_q_value(self, ownpos, opp1, opp2, b_flag, r_flag, action, reward: float):
+    #def set_q_value(self, ownpos, opp1, opp2, b_flag, r_flag, action, reward: float):
+    def set_q_value(self, ownpos, opp1, opp2, b_flag, r_flag, action, reward: float): #TODO change input to next-frame so opt_future_value can be computed for the post-transition state
         """Adjusts the value of a q-value in the update-table object stored by this agent policy.
+        NOTE description not quite accurate anymore, this saves necessary values to a structure~ 
+        and later the q value is updated with the average of all these.
+        ->
+        This method saves the current reward nd the current states "expected optimal future value" into q_table.u_lists as a tuple (r, mx).
         
         :ownpos: is self-position (relative heading towards objective): 0-3 
             
@@ -145,19 +184,21 @@ class QlearnPolicy(BaseAgentPolicy):
 
         reward is from frame n+1, the rest of the values are from frame n (action being the action between these frames, so selected in frame n).
         """
-        # old_q is taken from the (during this episode) updated q-value
-        old_q = self.u_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][action]
+        # old_q is taken from the (during this episode) updated q-value NO
+        #old_q = self.q_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][action]
+        #not needed here...
 
         # Calculation of loss etc as per the qlearn algorithm
-        opt_future_value = -100000000000. #"." cause reward is continuous
+        opt_future_value = -10000000000000. #"." cause reward is continuous
         for i in range(4): #for every possible action do...
             # opt_future_value is taken from the un-updated qtable that is also used for action selection.
             opt_future_value = max(opt_future_value, self.q_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][ i ])
         # Loss function is used to compute new q-value:
-        new_q = (1 - self.q_Table.LEARNING_RATE) * old_q + self.q_Table.LEARNING_RATE * (reward + self.q_Table.DISCOUNT_FACTOR * opt_future_value)
-        # LEARNING_RATE and other parameters should remain the same between both tables
+        #new_q = (1 - self.q_Table.LEARNING_RATE) * old_q + self.q_Table.LEARNING_RATE * (reward + self.q_Table.DISCOUNT_FACTOR * opt_future_value)
+
         #print(f"Updating Q-value for state ({ownpos}, {opp1}, {opp2}, {b_flag}, {r_flag}) and action {action} from {old_q} to {new_q} based on reward {reward} and optimal future value {opt_future_value}.")
-        self.u_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][action] = new_q
+        #self.u_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][action] = new_q
+        self.q_Table.u_lists[ownpos][opp1][opp2][b_flag][r_flag][action].append((reward, opt_future_value))
     #End of set_q_value()
 
     def compute_action(self, obs, info: dict[str, dict]):
