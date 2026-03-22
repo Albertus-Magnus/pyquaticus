@@ -106,7 +106,7 @@ def doTraining(parameterset: ParameterSet, number_jobs):
         # Some of the data we are tracking needs to be added to another list structure:
         #rewardcurve.append(rewardsteps)#wrong, need to sum it up exactly before that
         rewardsum = [0., 0.]
-        #print("\n\n -##########- \grab_entry: ",grab_entry)
+        
         for r in rewardsteps:
             # agent0 and agent1 are the ones where reward is interesting for us.
             rewardsum[0] += r['agent_0']

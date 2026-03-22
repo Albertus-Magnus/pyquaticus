@@ -1,0 +1,203 @@
+Starting experiments at  20-03-2026 19:57:19
+Selecting 15 as num_workers.
+Training length: 4:29:47.742116 (h:min:sec)
+Concluded experiment 1 out of 100
+Training length: 4:30:24.774764 (h:min:sec)
+Concluded experiment 2 out of 100
+Training length: 4:32:53.922850 (h:min:sec)
+Concluded experiment 3 out of 100
+Training length: 4:38:11.231831 (h:min:sec)
+Concluded experiment 4 out of 100
+Training length: 4:38:27.691747 (h:min:sec)
+Concluded experiment 5 out of 100
+Training length: 4:38:36.983139 (h:min:sec)
+Concluded experiment 6 out of 100
+Training length: 4:38:52.219272 (h:min:sec)
+Concluded experiment 7 out of 100
+Training length: 4:39:31.039516 (h:min:sec)
+Concluded experiment 8 out of 100
+Training length: 4:39:46.608857 (h:min:sec)
+Concluded experiment 9 out of 100
+Training length: 4:40:19.581438 (h:min:sec)
+Concluded experiment 10 out of 100
+Training length: 4:40:46.461508 (h:min:sec)
+Concluded experiment 11 out of 100
+Training length: 4:40:49.074076 (h:min:sec)
+Concluded experiment 12 out of 100
+Training length: 4:48:18.489214 (h:min:sec)
+Concluded experiment 13 out of 100
+Training length: 4:49:57.101941 (h:min:sec)
+Concluded experiment 14 out of 100
+Training length: 4:50:54.785500 (h:min:sec)
+Concluded experiment 15 out of 100
+Training length: 4:25:06.534849 (h:min:sec)
+Concluded experiment 16 out of 100
+Training length: 4:25:25.824268 (h:min:sec)
+Concluded experiment 17 out of 100
+Training length: 4:35:25.048806 (h:min:sec)
+Concluded experiment 18 out of 100
+Training length: 4:33:28.535729 (h:min:sec)
+Concluded experiment 19 out of 100
+Training length: 4:33:32.491753 (h:min:sec)
+Concluded experiment 20 out of 100
+Training length: 4:34:56.940078 (h:min:sec)
+Concluded experiment 21 out of 100
+Training length: 4:42:06.396734 (h:min:sec)
+Concluded experiment 22 out of 100
+Training length: 4:43:17.866104 (h:min:sec)
+Concluded experiment 23 out of 100
+Training length: 4:43:14.871313 (h:min:sec)
+Concluded experiment 24 out of 100
+Training length: 4:42:49.802315 (h:min:sec)
+Concluded experiment 25 out of 100
+Training length: 4:35:14.433171 (h:min:sec)
+Concluded experiment 26 out of 100
+Training length: 4:42:58.819673 (h:min:sec)
+Concluded experiment 27 out of 100
+Training length: 4:43:18.273687 (h:min:sec)
+Concluded experiment 28 out of 100
+Training length: 4:42:19.822296 (h:min:sec)
+Concluded experiment 29 out of 100
+Training length: 4:43:09.767530 (h:min:sec)
+Concluded experiment 30 out of 100
+Training length: 4:32:20.125559 (h:min:sec)
+Concluded experiment 31 out of 100
+Training length: 4:32:07.119328 (h:min:sec)
+Concluded experiment 32 out of 100
+Training length: 4:28:27.933340 (h:min:sec)
+Concluded experiment 33 out of 100
+Training length: 4:32:05.348117 (h:min:sec)
+Concluded experiment 34 out of 100
+Training length: 4:32:22.438644 (h:min:sec)
+Concluded experiment 35 out of 100
+Training length: 4:35:37.211971 (h:min:sec)
+Concluded experiment 36 out of 100
+Training length: 4:34:11.621415 (h:min:sec)
+Concluded experiment 37 out of 100
+Training length: 4:35:41.985530 (h:min:sec)
+Concluded experiment 38 out of 100
+Training length: 4:38:07.913529 (h:min:sec)
+Concluded experiment 39 out of 100
+Training length: 4:41:24.638528 (h:min:sec)
+Concluded experiment 40 out of 100
+Training length: 4:40:29.342480 (h:min:sec)
+Concluded experiment 41 out of 100
+Training length: 4:41:33.045994 (h:min:sec)
+Concluded experiment 42 out of 100
+Training length: 4:41:48.712457 (h:min:sec)
+Concluded experiment 43 out of 100
+Training length: 4:40:29.802972 (h:min:sec)
+Concluded experiment 44 out of 100
+Training length: 4:41:19.529397 (h:min:sec)
+Concluded experiment 45 out of 100
+Training length: 4:32:18.333691 (h:min:sec)
+Concluded experiment 46 out of 100
+Training length: 4:32:32.788889 (h:min:sec)
+Concluded experiment 47 out of 100
+Training length: 4:26:17.034524 (h:min:sec)
+Concluded experiment 48 out of 100
+Training length: 4:32:59.380964 (h:min:sec)
+Concluded experiment 49 out of 100
+Training length: 4:33:08.828138 (h:min:sec)
+Concluded experiment 50 out of 100
+Training length: 4:42:03.635093 (h:min:sec)
+Concluded experiment 51 out of 100
+Training length: 4:32:26.618837 (h:min:sec)
+Concluded experiment 52 out of 100
+Training length: 4:41:04.773430 (h:min:sec)
+Concluded experiment 53 out of 100
+Training length: 4:42:40.335924 (h:min:sec)
+Concluded experiment 54 out of 100
+Training length: 4:41:15.079675 (h:min:sec)
+Concluded experiment 55 out of 100
+Training length: 4:41:35.295291 (h:min:sec)
+Concluded experiment 56 out of 100
+Training length: 4:42:39.619098 (h:min:sec)
+Concluded experiment 57 out of 100
+Training length: 4:42:14.221901 (h:min:sec)
+Concluded experiment 58 out of 100
+Training length: 4:42:14.518748 (h:min:sec)
+Concluded experiment 59 out of 100
+Training length: 4:42:01.505636 (h:min:sec)
+Concluded experiment 60 out of 100
+Training length: 4:31:40.574164 (h:min:sec)
+Concluded experiment 61 out of 100
+Training length: 4:32:24.734383 (h:min:sec)
+Concluded experiment 62 out of 100
+Training length: 4:24:13.886847 (h:min:sec)
+Concluded experiment 63 out of 100
+Training length: 4:32:29.241128 (h:min:sec)
+Concluded experiment 64 out of 100
+Training length: 4:32:22.339830 (h:min:sec)
+Concluded experiment 65 out of 100
+Training length: 4:23:49.679754 (h:min:sec)
+Concluded experiment 66 out of 100
+Training length: 4:32:52.155830 (h:min:sec)
+Concluded experiment 67 out of 100
+Training length: 4:31:53.196423 (h:min:sec)
+Concluded experiment 68 out of 100
+Training length: 4:33:17.466076 (h:min:sec)
+Concluded experiment 69 out of 100
+Training length: 4:32:45.300452 (h:min:sec)
+Concluded experiment 70 out of 100
+Training length: 4:32:47.689647 (h:min:sec)
+Concluded experiment 71 out of 100
+Training length: 4:31:46.871824 (h:min:sec)
+Concluded experiment 72 out of 100
+Training length: 4:32:19.799941 (h:min:sec)
+Concluded experiment 73 out of 100
+Training length: 4:31:49.215493 (h:min:sec)
+Concluded experiment 74 out of 100
+Training length: 4:32:59.784964 (h:min:sec)
+Concluded experiment 75 out of 100
+Training length: 4:24:59.764002 (h:min:sec)
+Concluded experiment 76 out of 100
+Training length: 4:32:09.400319 (h:min:sec)
+Concluded experiment 77 out of 100
+Training length: 4:32:16.477148 (h:min:sec)
+Concluded experiment 78 out of 100
+Training length: 4:33:30.228829 (h:min:sec)
+Concluded experiment 79 out of 100
+Training length: 4:22:56.981738 (h:min:sec)
+Concluded experiment 80 out of 100
+Training length: 4:32:24.734691 (h:min:sec)
+Concluded experiment 81 out of 100
+Training length: 4:31:18.174500 (h:min:sec)
+Concluded experiment 82 out of 100
+Training length: 4:31:12.364968 (h:min:sec)
+Concluded experiment 83 out of 100
+Training length: 4:22:17.013232 (h:min:sec)
+Concluded experiment 84 out of 100
+Training length: 4:29:11.668892 (h:min:sec)
+Concluded experiment 85 out of 100
+Training length: 4:26:49.278653 (h:min:sec)
+Concluded experiment 86 out of 100
+Training length: 4:28:30.431292 (h:min:sec)
+Concluded experiment 87 out of 100
+Training length: 4:28:20.056374 (h:min:sec)
+Concluded experiment 88 out of 100
+Training length: 4:24:07.039797 (h:min:sec)
+Concluded experiment 89 out of 100
+Training length: 4:22:51.551855 (h:min:sec)
+Concluded experiment 90 out of 100
+Training length: 2:22:25.596862 (h:min:sec)
+Concluded experiment 91 out of 100
+Training length: 2:20:53.432432 (h:min:sec)
+Concluded experiment 92 out of 100
+Training length: 2:14:35.204405 (h:min:sec)
+Concluded experiment 93 out of 100
+Training length: 2:18:13.714481 (h:min:sec)
+Concluded experiment 94 out of 100
+Training length: 2:12:18.060581 (h:min:sec)
+Concluded experiment 95 out of 100
+Training length: 1:58:41.264112 (h:min:sec)
+Concluded experiment 96 out of 100
+Training length: 1:58:13.312146 (h:min:sec)
+Concluded experiment 97 out of 100
+Training length: 1:58:41.705021 (h:min:sec)
+Concluded experiment 98 out of 100
+Training length: 1:58:29.812105 (h:min:sec)
+Concluded experiment 99 out of 100
+Training length: 1:58:23.042060 (h:min:sec)
+Concluded experiment 100 out of 100
+Total execution time: 1 day, 7:30:56.184299 (h:min:sec) for 100 policy trainings.
