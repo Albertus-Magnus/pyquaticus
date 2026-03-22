@@ -5,7 +5,7 @@ import matplotlib.ticker as ticker
 import numpy as np
 from train_qlearn import ParameterSet
 
-FOLDER = "batch 5"
+FOLDER = "wrong folder"#zb "batch 5"
 """
 To change batch, change FOLDER here, sometimes "vshard_"+ in vis_helper() beginning (now automated), and vis_helper("ddd")-calls in main (very bottom).
 """
@@ -482,12 +482,19 @@ if __name__ == "__main__":
     # avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.1, 0.95, 10.0, False, "avgtest2", "qtrainlog/batch 6 part two/", 0))
 
     # Batch 6 part 3
-    avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", 0))
+    #avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", 0))
     # avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.2, 0.95, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", 0))
     # avg_vis_helper(ParameterSet("single_aggeressive_rew", "hard", 0.15, 0.9, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", 0))
     # avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.15, 0.9, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", 0))
     # avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.85, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", 0))
     # avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.2, 0.85, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", 0))
+
+    # Batch 7
+    avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, False, "testmath", "qtrainlog/batch 7/", 0))
+    avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "testmath", "qtrainlog/batch 7/", 0))
+    avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.99, 10.0, False, "ratehigh", "qtrainlog/batch 7/", 0)) #testing a much higher discount factor
+    avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.2, 0.99, 10.0, False, "ratehigh", "qtrainlog/batch 7/", 0))
+    avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.1, 0.95, 0.0, False, "ratehigh", "qtrainlog/batch 7/", 0)) #testing the init q value 0 for capsntags
 
 
     # """Finding out how dimensions are mapped onto qtable matrix heatmap:
