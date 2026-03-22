@@ -61,6 +61,11 @@ class QTable:
         # print("Q-Table created, size",self.qtable.size)
     #End of init()
 
+    def reset_u(self):
+        self.u_lists = np.empty((4, 4, 4, 2, 2, 4), dtype=list)#object?
+        for idx in np.ndindex((4, 4, 4, 2, 2, 4)):
+            self.u_lists[idx] = []
+
     def avgQUpdate(self):
         """computes an update according to panda et al for the q-table after a batch (game) of transitions (frames)"""
         #shape (4, 4, 4, 2, 2, 4)
@@ -80,7 +85,7 @@ class QTable:
                                         avg_ofv += self.u_lists[a][b][c][d][e][f][g][1]
                                     avg_r = avg_r / l
                                     avg_ofv = avg_ofv / l
-                                    # print(f"avg_r={avg_r}, avg_ofv={avg_ofv}")#TODO remove prints
+                                    # print(f"avg_r={avg_r}, avg_ofv={avg_ofv}")
 
                                     # Update this q-value 
                                     old_q = self.qtable[a][b][c][d][e][f]
@@ -88,6 +93,7 @@ class QTable:
                                     # print("\nqtable updated to",self.qtable[a][b][c][d][e][f])
 
                                     # empty the update-list for this q-value
+                                    self.reset_u() #TODO test if this fixes math
 
 
     """

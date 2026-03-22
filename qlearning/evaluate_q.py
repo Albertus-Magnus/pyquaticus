@@ -495,7 +495,7 @@ if __name__ == "__main__":
     avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.99, 10.0, False, "ratehigh", "qtrainlog/batch 7/", 0)) #testing a much higher discount factor
     avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.2, 0.99, 10.0, False, "ratehigh", "qtrainlog/batch 7/", 0))
     avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.1, 0.95, 0.0, False, "ratehigh", "qtrainlog/batch 7/", 0)) #testing the init q value 0 for capsntags
-
+    # TODO add variance (see example qlearn paper)
 
     # """Finding out how dimensions are mapped onto qtable matrix heatmap:
     # (toggle comment below to generate markers for the dimension [currently dim. f])"""
