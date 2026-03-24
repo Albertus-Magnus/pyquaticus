@@ -86,7 +86,7 @@ def doTraining(parameterset: ParameterSet, number_jobs):
     tagslist = []
     index = 0 
     #for i in range(1000): #set batch 6
-    for i in range(1000): #set batch 7
+    for i in range(500): #set batch 7 #TODO set to 1000?
     #while datetime.now().hour < 11 or datetime.now().hour > 20: #train until 1 am, then save the q-table and reward curve
         # print("Beginning training run at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
         seeed = np.random.randint(0, 100000) #random seed while training, set of seeds when testing (TODO)
@@ -143,7 +143,8 @@ def doTraining(parameterset: ParameterSet, number_jobs):
         # discard logstructure now, so memory does not leak
         #logstructure = []
         index += 1
-        # print(f"Completed training run {index}")
+        print(f"Completed training run {index}")
+    #End of doTraining()
 
     # Epilog (saving q-table and reward curve to file)
     # print(f"Storing q-table to file \"{parameterset.foldername + parameterset.create_name()}_q_table.npy\".")
@@ -215,10 +216,10 @@ if __name__ == "__main__":
         #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.85, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", i))
 
         # Only template for next try #NOTE this will take too long, need to shorten it pre-meeting?
-        for i in range(20):
+        for i in range(1):#TODO set to 20
             parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, False, "testmath", "qtrainlog/batch 7/", i))
-        for i in range(20):
-            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "testmath", "qtrainlog/batch 7/", i))
+        # for i in range(20): #uncommentme
+        #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "testmath", "qtrainlog/batch 7/", i))
         # for i in range(20):
         #     parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.99, 10.0, False, "ratehigh", "qtrainlog/batch 7/", i)) #testing a much higher discount factor
         # for i in range(20):
@@ -236,14 +237,14 @@ if __name__ == "__main__":
         sys.exit(0)
     else:
         # Do visual test match here.
-        setup = ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "example", "qtrainlog/example_folder/", 0) #lrate: Any, discount: Any, initialq: Any, pretrain: Any, name: Any, folder)
+        setup = ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, False, "example", "qtrainlog/example_folder/", 0) #lrate: Any, discount: Any, initialq: Any, pretrain: Any, name: Any, folder)
         #setup = ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", 0) #TODO is this dangerous to overwrite my thing?
         # (do i need to change this so it loads a file?) prolly, 'cause it is for visual test match of trained policy
         rewardchoice = "single_aggressive_rew"
         #filename_suffix = "/vshard_lrate0.1_discount0.95_initialq10.0_single_aggressive_rew"
         print("Manually testing qtable policy with rendering enabled.")
         #qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, (setup.foldername + setup.create_name() + "_q_table.npy"))
-        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/example_folder/avgtest3_single_aggressive_rew_hard_lrate0.2_discount0.95_initq10.0_1000ep_no_pre_nr2_q_table.npy")
+        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/example_folder/testmath_single_aggressive_rew_hard_lrate0.1_discount0.9_initq10.0_1000ep_no_pre_nr0_q_table.npy")
         st = np.zeros((4, 4, 4, 2, 2), dtype=np.int32) #dangerous int8-hazard (int8 is insufficient here)
         train_qlearn(st, seed=0, difficulty="hard", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt)#TODO change to use parameterset i guess...
         sys.exit(0)
@@ -253,7 +254,8 @@ if __name__ == "__main__":
     counter.value = 0
 
     #num_workers = 15 #15 was best number for my PC in small tests... (cores is 12)
-    num_workers = max(1, os.cpu_count() + 2)
+    #num_workers = max(1, os.cpu_count() + 2)
+    num_workers = 1
     print(f"Selecting {num_workers} as num_workers.")
 
     with Pool(processes=num_workers) as pool:

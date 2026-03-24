@@ -92,8 +92,8 @@ class QTable:
                                     self.qtable[a][b][c][d][e][f] = old_q + self.LEARNING_RATE * ((avg_r + self.DISCOUNT_FACTOR * avg_ofv) - old_q)
                                     # print("\nqtable updated to",self.qtable[a][b][c][d][e][f])
 
-                                    # empty the update-list for this q-value
-                                    self.reset_u() #TODO test if this fixes math
+        # empty the entire (!) update-list after applying all (!) updates
+        self.reset_u() #TODO test if this fixes math
 
 
     """
