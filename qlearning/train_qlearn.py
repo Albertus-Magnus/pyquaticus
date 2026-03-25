@@ -86,7 +86,7 @@ def doTraining(parameterset: ParameterSet, number_jobs):
     tagslist = []
     index = 0 
     #for i in range(1000): #set batch 6
-    for i in range(500): #set batch 7 #TODO set to 1000?
+    for i in range(1000): #set batch 7 #TODO set to 1000?
     #while datetime.now().hour < 11 or datetime.now().hour > 20: #train until 1 am, then save the q-table and reward curve
         # print("Beginning training run at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
         seeed = np.random.randint(0, 100000) #random seed while training, set of seeds when testing (TODO)
@@ -143,7 +143,7 @@ def doTraining(parameterset: ParameterSet, number_jobs):
         # discard logstructure now, so memory does not leak
         #logstructure = []
         index += 1
-        print(f"Completed training run {index}")
+        print(f"Completed training run {index} at {datetime.now()}")
     #End of doTraining()
 
     # Epilog (saving q-table and reward curve to file)
@@ -216,12 +216,12 @@ if __name__ == "__main__":
         #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.85, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", i))
 
         # Only template for next try #NOTE this will take too long, need to shorten it pre-meeting?
-        for i in range(1):#TODO set to 20
+        for i in range(20):#TODO set to 20
             parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, False, "testmath", "qtrainlog/batch 7/", i))
         # for i in range(20): #uncommentme
         #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "testmath", "qtrainlog/batch 7/", i))
-        # for i in range(20):
-        #     parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.99, 10.0, False, "ratehigh", "qtrainlog/batch 7/", i)) #testing a much higher discount factor
+        for i in range(20):
+            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.99, 10.0, False, "ratehigh", "qtrainlog/batch 7/", i)) #testing a much higher discount factor
         # for i in range(20):
         #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.99, 10.0, False, "ratehigh", "qtrainlog/batch 7/", i))
         # for i in range(20):
@@ -255,7 +255,7 @@ if __name__ == "__main__":
 
     #num_workers = 15 #15 was best number for my PC in small tests... (cores is 12)
     #num_workers = max(1, os.cpu_count() + 2)
-    num_workers = 1
+    num_workers = 11
     print(f"Selecting {num_workers} as num_workers.")
 
     with Pool(processes=num_workers) as pool:

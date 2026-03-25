@@ -301,7 +301,7 @@ def vis_helper(filename_suffix0):
     print(f"{filename_suffix0} 20th value - Tags: {tags0_avg[19]}, {tags1_avg[19]}")
 
 def avg_vis_helper(paraset: ParameterSet):
-    TWENTY = 1
+    TWENTY = 20 #take a wild guess what the standard setting of this variable is (in integer)
     """Is called for every group of training runs using the same parameters to generate the visualizations of averages between the same parameters (e.g. 20 training runs into one plot)."""
     filename_suffix0 = paraset.create_name_without_index()
     ############################################################
@@ -311,8 +311,7 @@ def avg_vis_helper(paraset: ParameterSet):
 
     # Load data for visualization #TODO testing with scores rn, need to reenable the others
     q_table = np.load(f"{filename_suffix}_nr0_q_table.npy")
-    # s_table = np.load(f"{filename_suffix}_statecount.npy")            #TODO but the s-table and q-table? Do they need to be averaged? s-table perhaps, but q-table?? Implement this last.
-    # s_table = s_table.astype(np.int32)
+    
     rewardcurve = [np.load(f"{filename_suffix}_nr{i}_reward_curve.npy") for i in range(TWENTY)]
     scorelist = [np.load(f"{filename_suffix}_nr{i}_scores.npy") for i in range(TWENTY)]
     grabslist = [np.load(f"{filename_suffix}_nr{i}_grabslist.npy") for i in range(TWENTY)]
@@ -492,6 +491,7 @@ if __name__ == "__main__":
 
     # Batch 7
     avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, False, "testmath", "qtrainlog/batch 7/", 0))
+    avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.99, 10.0, False, "ratehigh", "qtrainlog/batch 7/", 0))
     # avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "testmath", "qtrainlog/batch 7/", 0))
     # avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.99, 10.0, False, "ratehigh", "qtrainlog/batch 7/", 0)) #testing a much higher discount factor
     # avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.2, 0.99, 10.0, False, "ratehigh", "qtrainlog/batch 7/", 0))
