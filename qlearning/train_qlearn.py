@@ -14,7 +14,7 @@ from pyquaticus.base_policies.multi_rhea_policy import MRHEA_Agent, MRHEA_Enviro
 from pyquaticus.base_policies.rhealg_policy2 import RHEA_Agent, RHEA_Environment
 from pyquaticus.base_policies.ultra_def_policy import UltraDefender
 from qtable import QlearnPolicy, QTable
-from pyquaticus.utils.rewards import caps_and_grabs, defensive_rew, double_aggressive_rew, single_aggressive_rew, caps_and_tags
+from pyquaticus.utils.rewards import caps_and_grabs, defensive_rew, double_aggressive_rew, single_aggressive_rew, caps_and_tags, aggr_rew_alt
 from qlearn_test import train_qlearn, visualize_reward_curve
 from multiprocessing import Pool, Lock, Value #i don't need any parallel processing (is qlearn even compatible?), i just need to run 10 scripts in different terminals...
 
@@ -215,18 +215,22 @@ if __name__ == "__main__":
         # for i in range(20):
         #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.85, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", i))
 
-        # Only template for next try #NOTE this will take too long, need to shorten it pre-meeting?
-        for i in range(20):#TODO set to 20
-            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, False, "testmath", "qtrainlog/batch 7/", i))
+        # Only template for next try
+                # for i in range(20):
+                #     parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, False, "testmath", "qtrainlog/batch 7/", i))
         # for i in range(20): #uncommentme
         #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "testmath", "qtrainlog/batch 7/", i))
-        for i in range(20):
-            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.99, 10.0, False, "ratehigh", "qtrainlog/batch 7/", i)) #testing a much higher discount factor
+                # for i in range(20):
+                #     parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.99, 10.0, False, "ratehigh", "qtrainlog/batch 7/", i)) #testing a much higher discount factor
         # for i in range(20):
         #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.99, 10.0, False, "ratehigh", "qtrainlog/batch 7/", i))
         # for i in range(20):
         #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.95, 0.0, False, "ratehigh", "qtrainlog/batch 7/", i)) #testing the init q value 0 for capsntags
             # (although capsntags is to be retired and aggr_tags is to be made?)
+
+        # TEST OF MATH2 REW2:
+        for i in range(20):
+            parametersets.append(ParameterSet("aggr_rew_alt", "hard", 0.1, 0.9, 10.0, False, "testrew2", "qtrainlog/batch 7/", i))
         #########################################
         #rewardchoice = "single_aggressive_rew"
         #rewardchoice = "double_aggressive_rew" (outdated)
@@ -243,10 +247,13 @@ if __name__ == "__main__":
         rewardchoice = "single_aggressive_rew"
         #filename_suffix = "/vshard_lrate0.1_discount0.95_initialq10.0_single_aggressive_rew"
         print("Manually testing qtable policy with rendering enabled.")
-        #qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, (setup.foldername + setup.create_name() + "_q_table.npy"))
+        # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, (setup.foldername + setup.create_name() + "_q_table.npy"))
+        # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/example_folder/avgtest3_single_aggressive_rew_hard_lrate0.2_discount0.95_initq10.0_1000ep_no_pre_nr2_q_table.npy")
         qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/example_folder/testmath_single_aggressive_rew_hard_lrate0.1_discount0.9_initq10.0_1000ep_no_pre_nr0_q_table.npy")
+        # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/example_folder/testmath_single_aggressive_rew_hard_lrate0.1_discount0.9_initq10.0_1000ep_no_pre_nr0_q_table_i499.npy")
+
         st = np.zeros((4, 4, 4, 2, 2), dtype=np.int32) #dangerous int8-hazard (int8 is insufficient here)
-        train_qlearn(st, seed=0, difficulty="hard", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt)#TODO change to use parameterset i guess...
+        train_qlearn(st, seed=0, difficulty="hard", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt)#TODO change to use parameterset i guess... "human"
         sys.exit(0)
 
     # Run all scheduled parameters in parallel
@@ -254,8 +261,8 @@ if __name__ == "__main__":
     counter.value = 0
 
     #num_workers = 15 #15 was best number for my PC in small tests... (cores is 12)
-    #num_workers = max(1, os.cpu_count() + 2)
-    num_workers = 11
+    num_workers = max(1, os.cpu_count() - 1)
+    #num_workers = 11
     print(f"Selecting {num_workers} as num_workers.")
 
     with Pool(processes=num_workers) as pool:

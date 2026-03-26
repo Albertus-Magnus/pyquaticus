@@ -826,5 +826,83 @@ def single_aggressive_rew(
     num_caps = state['captures'][t]
     prev_num_grabs = prev_state['grabs'][t]
     prev_num_caps = prev_state['captures'][t]
-    reward += 30 * (num_caps - prev_num_caps) + 30 * (num_grabs - prev_num_grabs) #TODO tweak reward amounts, also perhaps we need sum of rewards instead of per-frame? <-not in this function, this is per-step change and fine as is
+    reward += 30 * (num_caps - prev_num_caps) + 30 * (num_grabs - prev_num_grabs)
+    return reward
+
+
+
+    
+def aggr_rew_alt(
+    agent_id: str,
+    team: Team,
+    agents: list,
+    agent_inds_of_team: dict,
+    state: dict,
+    prev_state: dict,
+    env_size: np.ndarray,
+    agent_radius: np.ndarray,
+    catch_radius: float,
+    scrimmage_coords: np.ndarray,
+    max_speeds: list,
+    tagging_cooldown: float
+):
+    """Modified from double_aggressive_rew to be calculated for a single 
+    agent (even if it works as part of a larger team).
+    Contains a positional reward (move closer to flag) and rewards for 
+    grabbing/capturing the flag as well as negative rewards for getting 
+    tagged and moving out of bounds.
+    
+    single_aggressive_rew but with higher positive rewards, since final 
+    rewardsum often turned out to be high negative values or very small 
+    positive values, to test if this results in agents finding non-local 
+    optimums."""
+    reward = 0.0
+    idx1 = agents.index(agent_id)
+    position1 = np.array(state['agent_position'][idx1])
+    prev_position1 = np.array(prev_state['agent_position'][idx1])
+
+    # If tagged, return minus one #exact number got adjusted
+    if state['agent_is_tagged'][idx1]:
+        reward += -5.0 
+
+    # If out of bounds, return minus one
+    if position1[0] > 160.0 or position1[1] > 80.0 or position1[0] < 0.0 or position1[1] < 0.0:
+        reward += -10.0
+    # If close to out of bounds, start punishing
+    if position1[0] > 155.0 or position1[1] > 75.0 or position1[0] < 5.0 or position1[1] < 5.0:
+        reward += -5.0
+    if position1[0] > 150.0 or position1[1] > 70.0 or position1[0] < 10.0 or position1[1] < 10.0:
+        reward += -1.0
+
+    # Determine flag homes
+    flag_homes = np.array(state['flag_home'])
+    if isinstance(team, Team):
+        t = team.value 
+    else:
+        t = 0 if str(team).lower() == 'blue_team' else 1
+    team_home = flag_homes[t]
+    opp_home = flag_homes[(t + 1) % 2]
+    # Determine which flag to aim for
+    has_flag1 = bool(state['agent_has_flag'][idx1])
+    # Go to the enemy flag, if grabbed flag then go to own base.
+    target_flag_pos1 = team_home if has_flag1 else opp_home
+
+    # Reward movement toward target
+    prev_diff1 = prev_position1 - target_flag_pos1
+    curr_diff1 = position1 - target_flag_pos1
+
+    rewardable_movement = numpy.sqrt(np.sum(prev_diff1**2)) - numpy.sqrt(np.sum(curr_diff1**2))
+    if rewardable_movement > max_speeds[0]:
+        reward += 1.0
+    else:
+        if rewardable_movement > 0.:
+            rewardable_movement = rewardable_movement * 5
+        reward += rewardable_movement / max_speeds[0]
+
+    # Capture and grab bonuses
+    num_grabs = state['grabs'][t]
+    num_caps = state['captures'][t]
+    prev_num_grabs = prev_state['grabs'][t]
+    prev_num_caps = prev_state['captures'][t]
+    reward += 30 * (num_caps - prev_num_caps) + 30 * (num_grabs - prev_num_grabs)
     return reward

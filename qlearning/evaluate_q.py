@@ -1,7 +1,7 @@
-import sys
+# import sys
 
 from matplotlib import pyplot as plt
-import matplotlib.ticker as ticker
+# import matplotlib.ticker as ticker
 import numpy as np
 from train_qlearn import ParameterSet
 
@@ -12,7 +12,6 @@ To change batch, change FOLDER here, sometimes "vshard_"+ in vis_helper() beginn
 
 
 def visualize_reward_curve(data0, data1, name, bagsize=50, foldern=f"qtrainlog/{FOLDER}/"):
-    import matplotlib.pyplot as plt
     # reward_curve = np.load(reward_curve_file, allow_pickle=True)
     # rewards0 = [step[0] for step in reward_curve]
     # rewards1 = [step[1] for step in reward_curve]
@@ -497,6 +496,8 @@ if __name__ == "__main__":
     # avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.2, 0.99, 10.0, False, "ratehigh", "qtrainlog/batch 7/", 0))
     # avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.1, 0.95, 0.0, False, "ratehigh", "qtrainlog/batch 7/", 0)) #testing the init q value 0 for capsntags
     # TODO add variance (see example qlearn paper)
+
+    avg_vis_helper(ParameterSet("aggr_rew_alt", "hard", 0.1, 0.9, 10.0, False, "testrew2", "qtrainlog/batch 7/", 0))
 
     # """Finding out how dimensions are mapped onto qtable matrix heatmap:
     # (toggle comment below to generate markers for the dimension [currently dim. f])"""
