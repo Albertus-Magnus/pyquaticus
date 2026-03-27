@@ -229,8 +229,10 @@ if __name__ == "__main__":
             # (although capsntags is to be retired and aggr_tags is to be made?)
 
         # TEST OF MATH2 REW2:
+        # for i in range(20):
+        #     parametersets.append(ParameterSet("aggr_rew_alt", "hard", 0.1, 0.9, 10.0, False, "testrew2", "qtrainlog/batch 7/", i)) #disappointment, but showed positive rewards (even if small, because circeling still risk-min.)
         for i in range(20):
-            parametersets.append(ParameterSet("aggr_rew_alt", "hard", 0.1, 0.9, 10.0, False, "testrew2", "qtrainlog/batch 7/", i))
+            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "testrew2", "qtrainlog/batch 7/", i)) #lets see if this finds another maximum...
         #########################################
         #rewardchoice = "single_aggressive_rew"
         #rewardchoice = "double_aggressive_rew" (outdated)
@@ -261,8 +263,8 @@ if __name__ == "__main__":
     counter.value = 0
 
     #num_workers = 15 #15 was best number for my PC in small tests... (cores is 12)
-    num_workers = max(1, os.cpu_count() - 1)
-    #num_workers = 11
+    #num_workers = max(1, os.cpu_count() - 1)
+    num_workers = 14
     print(f"Selecting {num_workers} as num_workers.")
 
     with Pool(processes=num_workers) as pool:
