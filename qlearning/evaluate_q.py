@@ -408,12 +408,12 @@ def avg_vis_helper(paraset: ParameterSet):
     visualize_curve(scores0, scores1, ylabel=f"Score (NO AVG, scorelist_avg direct test)", name=filename_suffix0, foldern=paraset.foldername, bagsize=1) #bagsize 50 is standard, 1 has to be set here
     visualize_curve(tags1_avg, tags0_avg, ylabel=f"Tags (avg per {bagsize} episodes)", name=filename_suffix0, foldern=paraset.foldername)
     visualize_curve(tags1, tags0, ylabel=f"Tags (NO AVG)", name=filename_suffix0, foldern=paraset.foldername, bagsize=1)
-    matrix_to_heatmap(q_table, filename_suffix0, paraset.foldername + "figures/" + filename_suffix0 + "qheatmap.png", "Q-value (expected reward)") #TODO TODO TODO this today, everything else tomorrow and after...
+    matrix_to_heatmap(q_table, filename_suffix0, paraset.foldername + "figures/" + filename_suffix0 + "qheatmap.png", "Q-value (expected reward)") 
     # matrix_to_heatmap(s_table, filename_suffix0, "qtrainlog/"+FOLDER+"/figures/"+filename_suffix0+"visitcount.png", "States visited (count per state)")
     visualize_curve(winrate0, winrate1, ylabel=f"Winrate (avg per {bagsize} episodes)", name=filename_suffix0, foldern=paraset.foldername)
     visualize_curve(winrate0, winrate1, ylabel=f"Winrate (avg per {bagsize} episodes)", name=filename_suffix0, foldern=paraset.foldername)
     ####################################################################################################################################################
-    print(f"{filename_suffix0} 20th value - Rewards: {rewards0_avg[19]}, {rewards1_avg[19]}") #TODO is 10th step rn
+    print(f"{filename_suffix0} 20th value - Rewards: {rewards0_avg[19]}, {rewards1_avg[19]}")
     print(f"{filename_suffix0} 20th value - Scores: {scores0_avg[19]}, {scores1_avg[19]}") # scores0_avg has length 20. 20 should not be the length here?!<-Yes it should be. It is just set to give episode500 value because of small batch5! Do I need to change the handling of the lists? thought it would be same list format but avg value instead of single value now...
     print(f"{filename_suffix0} 20th value - Winrate: {winrate0[19]}, {winrate1[19]}")
     print(f"{filename_suffix0} 20th value - Tags: {tags0_avg[19]}, {tags1_avg[19]}")

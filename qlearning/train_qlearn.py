@@ -256,8 +256,11 @@ if __name__ == "__main__":
         #filename_suffix = "/vshard_lrate0.1_discount0.95_initialq10.0_single_aggressive_rew"
         print("Manually testing qtable policy with rendering enabled.")
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, (setup.foldername + setup.create_name() + "_q_table.npy"))
+        #qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/example_folder/testmath_single_aggressive_rew_hard_lrate0.1_discount0.9_initq10.0_1000ep_no_pre_nr0_q_table.npy")
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/example_folder/avgtest3_single_aggressive_rew_hard_lrate0.2_discount0.95_initq10.0_1000ep_no_pre_nr2_q_table.npy")
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/example_folder/testmath_single_aggressive_rew_hard_lrate0.1_discount0.9_initq10.0_1000ep_no_pre_nr0_q_table.npy")
+        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/example_folder/ratehigh_single_aggressive_rew_hard_lrate0.2_discount0.99_initq10.0_1000ep_no_pre_nr0_q_table.npy")
+
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/example_folder/testmath_single_aggressive_rew_hard_lrate0.1_discount0.9_initq10.0_1000ep_no_pre_nr0_q_table_i499.npy")
         qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/example_folder/testrew2_caps_and_tags_hard_lrate0.1_discount0.9_initq10.0_1000ep_no_pre_nr0_q_table.npy")
 
