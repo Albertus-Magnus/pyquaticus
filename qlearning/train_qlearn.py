@@ -10,8 +10,8 @@ import numpy as np
 from numpy.typing import NDArray
 from pyquaticus import pyquaticus_v0
 from pyquaticus.base_policies.base_combined import Heuristic_CTF_Agent
-from pyquaticus.base_policies.multi_rhea_policy import MRHEA_Agent, MRHEA_Environment
-from pyquaticus.base_policies.rhealg_policy2 import RHEA_Agent, RHEA_Environment
+# from pyquaticus.base_policies.multi_rhea_policy import MRHEA_Agent, MRHEA_Environment
+# from pyquaticus.base_policies.rhealg_policy2 import RHEA_Agent, RHEA_Environment
 from pyquaticus.base_policies.ultra_def_policy import UltraDefender
 from qtable import QlearnPolicy, QTable
 from pyquaticus.utils.rewards import caps_and_grabs, defensive_rew, double_aggressive_rew, single_aggressive_rew, caps_and_tags, aggr_rew_alt
