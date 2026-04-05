@@ -98,7 +98,7 @@ class QTable:
                                     # print("\nqtable updated to",self.qtable[a][b][c][d][e][f])
 
         # empty the entire (!) update-list after applying all (!) updates
-        self.reset_u() #TODO test if this fixes math
+        self.reset_u()
 
 
     """

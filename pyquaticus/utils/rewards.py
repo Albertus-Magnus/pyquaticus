@@ -846,11 +846,7 @@ def aggr_rew_alt(
     max_speeds: list,
     tagging_cooldown: float
 ):
-    """Modified from double_aggressive_rew to be calculated for a single 
-    agent (even if it works as part of a larger team).
-    Contains a positional reward (move closer to flag) and rewards for 
-    grabbing/capturing the flag as well as negative rewards for getting 
-    tagged and moving out of bounds.
+    """copied from single_aggressive_rew...
     
     single_aggressive_rew but with higher positive rewards, since final 
     rewardsum often turned out to be high negative values or very small 

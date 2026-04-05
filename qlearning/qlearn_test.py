@@ -22,7 +22,6 @@ create a test of 2x qlearn policy agents versus
 """
 
 # To run the training this is called as a function, with MODE and reward function as parameters.
-
 def train_qlearn(
     #rewardcurve,
     #scores,
