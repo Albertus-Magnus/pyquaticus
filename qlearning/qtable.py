@@ -71,7 +71,7 @@ class QTable:
         for idx in np.ndindex((4, 4, 4, 2, 2, 4)):
             self.u_lists[idx] = []
 
-    def avgQUpdate(self):
+    def avgQUpdate(self): #TODO restore old math as parameteroption [DO THIS NEXT!]
         """computes an update according to panda et al for the q-table after a batch (game) of transitions (frames)"""
         #shape (4, 4, 4, 2, 2, 4)
         for a in range(4):
