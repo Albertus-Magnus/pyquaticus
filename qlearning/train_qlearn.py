@@ -1,20 +1,14 @@
 from datetime import datetime
-#import logging
 from functools import partial
-import os
 import sys
-#import os
-#import os.path
-#import pyquaticus
 import numpy as np
 from numpy.typing import NDArray
-from pyquaticus import pyquaticus_v0
 from pyquaticus.base_policies.base_combined import Heuristic_CTF_Agent
 # from pyquaticus.base_policies.multi_rhea_policy import MRHEA_Agent, MRHEA_Environment
 # from pyquaticus.base_policies.rhealg_policy2 import RHEA_Agent, RHEA_Environment
-from pyquaticus.base_policies.ultra_def_policy import UltraDefender
+# from pyquaticus.base_policies.ultra_def_policy import UltraDefender
 from qtable import QlearnPolicy, QTable
-from pyquaticus.utils.rewards import caps_and_grabs, defensive_rew, double_aggressive_rew, single_aggressive_rew, caps_and_tags, aggr_rew_alt
+from pyquaticus.utils.rewards import single_aggressive_rew, caps_and_tags, aggressive_tags
 from qlearn_test import train_qlearn, visualize_reward_curve
 from multiprocessing import Pool, Lock, Value #i don't need any parallel processing (is qlearn even compatible?), i just need to run 10 scripts in different terminals...
 
@@ -47,7 +41,7 @@ class ParameterSet:
     # Create a string for file storage that contains all important info about parameters (as well as an index if parameters are used more than once).
     def create_name(self):
         if self.pretrain:
-            pre = "500-pretrained" #TODO change to no "500"
+            pre = "pretrained"
         else:
             pre = "no_pre"
         # the name of all files (qtable, stats, s-table,...):   ("_qtable" etc are appended)
@@ -58,7 +52,7 @@ class ParameterSet:
     # Create a string for file storage that contains all important info about parameters (as well as an index if parameters are used more than once).
     def create_name_without_index(self):
         if self.pretrain:
-            pre = "500-pretrained" #TODO change to no "500" NOTE this 500- is missing from the first set of runs (avgtest1?)
+            pre = "pretrained"
         else:
             pre = "no_pre"
         # the name of all files (qtable, stats, s-table,...):   ("_qtable" etc are appended)
@@ -177,11 +171,62 @@ if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "train":
         # Do large batch training here.
         #########################################
-        for i in range(20):
-            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "26test1", "qtrainlog/batch 1/", i))
-            #TODO change reward
+        #vanilla parameters WITHOUT pretrain #batch 6 part one:
+        # for i in range(20):
+        #     parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, False, "avgtest1", "qtrainlog/batch 6 avg/", i))
+        # for i in range(20):
+        #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "avgtest1", "qtrainlog/batch 6 avg/", i))
+        #vanilla parameters with pretrain
+        # for i in range(20):
+        #     parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, True, "avgtest1", "qtrainlog/batch 6 avg/", i))
+        # for i in range(20):
+        #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, True, "avgtest1", "qtrainlog/batch 6 avg/", i))
+        
+        # 2nd set of parameters without pre #batch 6 part two:  (->18h für 80 trainings)
+        # for i in range(20):
+        #     parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.9, 10.0, False, "avgtest2", "qtrainlog/batch 6 part two/", i))
+        # for i in range(20):
+        #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.9, 10.0, False, "avgtest2", "qtrainlog/batch 6 part two/", i))
+        # # 3rd set of parameters without pre
+        # for i in range(20):
+        #     parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.95, 10.0, False, "avgtest2", "qtrainlog/batch 6 part two/", i))
+        # for i in range(20):
+        #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.95, 10.0, False, "avgtest2", "qtrainlog/batch 6 part two/", i))
+        
+        ## 4th set of parameters without pre (will be run tomorrow) #batch 6 part three:    (->26h für 120 trainings)
+        # for i in range(20):
+        #     parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", i))
         # for i in range(20):
         #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.95, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", i))
+        ## 5th set of parameters without pre 
+        # for i in range(20):
+        #     parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.15, 0.9, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", i))
+        # for i in range(20):
+        #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.15, 0.9, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", i))
+        ## 6th set of parameters without pre 
+        # for i in range(20):
+        #     parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.85, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", i))
+        # for i in range(20):
+        #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.85, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", i))
+
+        # Only template for next try
+                # for i in range(20):
+                #     parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, False, "testmath", "qtrainlog/batch 7/", i))
+        # for i in range(20): #uncommentme
+        #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "testmath", "qtrainlog/batch 7/", i))
+                # for i in range(20):
+                #     parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.99, 10.0, False, "ratehigh", "qtrainlog/batch 7/", i)) #testing a much higher discount factor
+        # for i in range(20):
+        #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.99, 10.0, False, "ratehigh", "qtrainlog/batch 7/", i))
+        # for i in range(20):
+        #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.95, 0.0, False, "ratehigh", "qtrainlog/batch 7/", i)) #testing the init q value 0 for capsntags
+            # (although capsntags is to be retired and aggr_tags is to be made?)
+
+        # TEST OF MATH2 REW2:
+        # for i in range(20):
+        #     parametersets.append(ParameterSet("aggr_rew_alt", "hard", 0.1, 0.9, 10.0, False, "testrew2", "qtrainlog/batch 7/", i)) #disappointment, but showed positive rewards (even if small, because circeling still risk-min.)
+        for i in range(20):
+            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "testrew2", "qtrainlog/batch 7/", i)) #lets see if this finds another maximum...
         #########################################
         #rewardchoice = "single_aggressive_rew"
         #rewardchoice = "double_aggressive_rew" (outdated)

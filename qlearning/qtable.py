@@ -4,14 +4,14 @@ from pyquaticus.envs.pyquaticus import PyQuaticusEnv
 from pyquaticus.moos_bridge.pyquaticus_moos_bridge import PyQuaticusMoosBridge
 #from pyquaticus.utils.rewards import triple_aggressive_rew, triple_caps_and_grabs
 import numpy as np
-# import random
-# import ast
-# import re
+import random
+import ast
+import re
 from pyquaticus.base_policies.base_policy import BaseAgentPolicy
 from pyquaticus.config import config_dict_std, ACTION_MAP
 
 # Parameters for Q-Learning:
-#LEARNING_RATE = 0.1
+#LEARNING_RATE = 0.1                        TODO NOTE This file must be deleted and re-copied from main after qtable has been edited to include old math.
 #DISCOUNT_FACTOR = 0.9
 #INITIAL_Q_VALUE = 10.0 #high initial q-value encourages exploration, low (even negative) encourages exploitation
 
@@ -93,7 +93,7 @@ class QTable:
                                     # print("\nqtable updated to",self.qtable[a][b][c][d][e][f])
 
         # empty the entire (!) update-list after applying all (!) updates
-        self.reset_u() #TODO test if this fixes math
+        self.reset_u()
 
 
     """
