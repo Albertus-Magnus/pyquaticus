@@ -36,7 +36,8 @@ def train_qlearn(
     render_mode: str = None, # or 'human'
     timelimit: float = 600.,
     logname: str = "match.log",
-    q_table: QTable = None #str = None #Not a string?! Is already a QTable!
+    q_table: QTable = None, #str = None #Not a string?! Is already a QTable!
+    math2: bool = False
 ):
     
     # Set score function to the selected reward (match statement syntax might require python version 3.10 or newer)
@@ -96,8 +97,11 @@ def train_qlearn(
     
     # print("Setting up q-learn agents")
     if q_table == None: print("Error: q-table not set up before agents are created.")
-    #u_table = QTable(q_table.LEARNING_RATE, q_table.DISCOUNT_FACTOR, q_table.INITIAL_Q_VALUE)
-    #u_table.qtable = np.copy(q_table.qtable)
+    if math2:
+        u_table = None
+    else:
+        u_table = QTable(q_table.LEARNING_RATE, q_table.DISCOUNT_FACTOR, q_table.INITIAL_Q_VALUE)
+        u_table.qtable = np.copy(q_table.qtable)
     R_one = QlearnPolicy('agent_0', env, q_table)
     R_two = QlearnPolicy('agent_1', env, q_table)
 
@@ -168,7 +172,7 @@ def train_qlearn(
     #     t1 += e['agent_0']
     #     t2 += e['agent_1']
     # print(f"t1: {t1}   t2: {t2}")
-    return rewardsteps, env.state['captures'], env.state['grabs'], env.state['tags']#, u_table 
+    return rewardsteps, env.state['captures'], env.state['grabs'], env.state['tags'], u_table 
 #End of train_qlearn()
 
 def visualize_reward_curve(reward_curve_file):

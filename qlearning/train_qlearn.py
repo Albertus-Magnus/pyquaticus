@@ -35,12 +35,13 @@ thesis (March 2026).
 # this class is just there to select (and store for some time) the right parameters and generate filenames (to log the data reliably)
 class ParameterSet:
     #def __init__(self, rewardchoice: str, lrate: float, discount: float, initialq: float, pretrain: bool, name: str, fodler: str, index: int): #test first without type
-    def __init__(self, rewardchoice, dif, lrate, discount, initialq, pretrain, name, folder, index):
+    def __init__(self, rewardchoice, dif, lrate, discount, initialq, pretrain, name, folder, index, math2=False):
         self.rewardchoice = rewardchoice #zB "single_aggressive_rew"
         self.dif = dif
         self.foldername = folder # "lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck1"
         self.LEARNING_RATE, self.DISCOUNT_FACTOR, self.INITIAL_Q_VALUE = lrate, discount, initialq # zB 0.1, 0.9, 10.0
         self.pretrain = pretrain
+        self.math2 = math2
         self.name = name
         self.index = index #Do we need to store the index here? (it is so if training different parametersets it will be per set and not an overarching index)
 
@@ -73,10 +74,10 @@ def doTraining(parameterset: ParameterSet, number_jobs):
     tablefromfile = False
     if tablefromfile:
         # print("Loading Q-Table from file")
-        qtableee = QTable(parameterset.LEARNING_RATE, parameterset.DISCOUNT_FACTOR, parameterset.INITIAL_Q_VALUE, parameterset.foldername+parameterset.create_name())
+        qtableee = QTable(parameterset.LEARNING_RATE, parameterset.DISCOUNT_FACTOR, parameterset.INITIAL_Q_VALUE, parameterset.foldername+parameterset.create_name(), math2=parameterset.math2)
     else:
         # print("Setting up Q-Table")
-        qtableee = QTable(parameterset.LEARNING_RATE, parameterset.DISCOUNT_FACTOR, parameterset.INITIAL_Q_VALUE)
+        qtableee = QTable(parameterset.LEARNING_RATE, parameterset.DISCOUNT_FACTOR, parameterset.INITIAL_Q_VALUE, math2=parameterset.math2) #math2 boolean is given to QTable init (which deploys it to other relevant functions and classes, hopefully.)
     s_table = np.zeros((4, 4, 4, 2, 2), dtype=np.uint32) #statecount-table 
     # same dimensionality as qtable, but no action-options (because we just want to know about the state... for now)
     # statecount-table (to measure how many times a state was updated)
@@ -85,23 +86,25 @@ def doTraining(parameterset: ParameterSet, number_jobs):
     grabslist = []
     tagslist = []
     index = 0 
-    #for i in range(1000): #set batch 6
-    for i in range(1000): #set batch 7 #TODO set to 1000?
+    for i in range(150):#TODO change back to 1000
     #while datetime.now().hour < 11 or datetime.now().hour > 20: #train until 1 am, then save the q-table and reward curve
         # print("Beginning training run at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
-        seeed = np.random.randint(0, 100000) #random seed while training, set of seeds when testing (TODO)
-        #logstructure = []
-        timel = 600.
+        seeed = np.random.randint(0, 100000) 
+        timel = 600. #TODO change back to 600.
         if index < 500 and parameterset.pretrain: #pretraininng with easy opponents, for more exploration on opponent base  [pretraining"easy" disabled for now, all training against easy(now hard)]
-            rewardsteps, capture_entry, grab_entry, tag_entry = train_qlearn(s_table, seed=seeed, difficulty="easy", reward_choice=parameterset.rewardchoice, render_mode=None, timelimit=timel, q_table=qtableee) #might make timelimit a parameterset choice too...
-            #qtableee.qtable = u_table.qtable
-            qtableee.avgQUpdate()
+            rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty="easy", reward_choice=parameterset.rewardchoice, render_mode=None, timelimit=timel, q_table=qtableee) #might make timelimit a parameterset choice too...
+            if parameterset.math2:
+                qtableee.avgQUpdate()
+            else: #if not parameterset.math2:
+                qtableee.qtable = np.copy(u_table.qtable)
             # tags, rewardlist, captures, grabs are all for [0] and [1] (the two teams)
             # After each episode update the values of q-table. For this purpose updates are calculated during the episode into the u-table. Afterwards it gets switched with q-table.
         else:
-            rewardsteps, capture_entry, grab_entry, tag_entry = train_qlearn(s_table, seed=seeed, difficulty=parameterset.dif, reward_choice=parameterset.rewardchoice, render_mode=None, timelimit=timel, q_table=qtableee)
-            #qtableee.qtable = u_table.qtable
-            qtableee.avgQUpdate()
+            rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty=parameterset.dif, reward_choice=parameterset.rewardchoice, render_mode=None, timelimit=timel, q_table=qtableee)
+            if parameterset.math2:
+                qtableee.avgQUpdate()
+            else: #if not parameterset.math2:
+                qtableee.qtable = np.copy(u_table.qtable)
 
         # Some of the data we are tracking needs to be added to another list structure:
         #rewardcurve.append(rewardsteps)#wrong, need to sum it up exactly before that
@@ -229,10 +232,13 @@ if __name__ == "__main__":
             # (although capsntags is to be retired and aggr_tags is to be made?)
 
         # TEST OF MATH2 REW2:
+        # for i in range(20)
+        #     parametersets.append(ParameterSet("aggr_rew_alt", "hard", 0.1, 0.9, 10.0, False, "testrew2", "qtrainlog/batch 7/", i, math2=False)) #disappointment, but showed positive rewards (even if small, because circeling still risk-min.)
+        for i in range(10):#TODO change to 20
+            parametersets.append(ParameterSet("single_aggressive_rew", "easy", 0.1, 0.9, 10.0, False, "math1test", "qtrainlog/batch 8/", i, math2=False)) 
+            # (checking if "new" old math (math1) works as it did back then, hopefully this will be winrate blue>red)
         # for i in range(20):
-        #     parametersets.append(ParameterSet("aggr_rew_alt", "hard", 0.1, 0.9, 10.0, False, "testrew2", "qtrainlog/batch 7/", i)) #disappointment, but showed positive rewards (even if small, because circeling still risk-min.)
-        for i in range(20):
-            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "testrew2", "qtrainlog/batch 7/", i)) #lets see if this finds another maximum...
+        #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "testrew2", "qtrainlog/batch 7/", i)) #lets see if this finds another maximum...
         #########################################
         #rewardchoice = "single_aggressive_rew"
         #rewardchoice = "double_aggressive_rew" (outdated)
@@ -256,7 +262,7 @@ if __name__ == "__main__":
         qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/example_folder/testrew2_caps_and_tags_hard_lrate0.1_discount0.9_initq10.0_1000ep_no_pre_nr0_q_table.npy")
 
         st = np.zeros((4, 4, 4, 2, 2), dtype=np.int32) #dangerous int8-hazard (int8 is insufficient here)
-        train_qlearn(st, seed=0, difficulty="hard", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt)#TODO change to use parameterset i guess... "human"
+        train_qlearn(st, seed=0, difficulty="hard", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt)#TODO change to use parameterset i guess...
         sys.exit(0)
 
     # Run all scheduled parameters in parallel
@@ -264,8 +270,9 @@ if __name__ == "__main__":
     counter.value = 0
 
     #num_workers = 15 #15 was best number for my PC in small tests... (cores is 12)
-    #num_workers = max(1, os.cpu_count() - 1)
-    num_workers = 14
+    num_workers = max(1, os.cpu_count() - 1) #this allows us to use the pc during computations (although not to the fullest extent)
+    #num_workers = 14
+    #num_workers = 10
     print(f"Selecting {num_workers} as num_workers.")
 
     with Pool(processes=num_workers) as pool:

@@ -20,14 +20,19 @@ from pyquaticus.config import config_dict_std, ACTION_MAP
 # opponents: agent_2 and agent_2
 
 class QTable:
-    def __init__(self, LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, filename=None):
+    def __init__(self, LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, filename=None, math2=False):
         self.LEARNING_RATE = LEARNING_RATE
         self.DISCOUNT_FACTOR = DISCOUNT_FACTOR
         self.INITIAL_Q_VALUE = INITIAL_Q_VALUE
 
-        self.u_lists = np.empty((4, 4, 4, 2, 2, 4), dtype=list)#object?
-        for idx in np.ndindex((4, 4, 4, 2, 2, 4)):
-            self.u_lists[idx] = []
+        self.math2 = math2
+
+        if math2:
+            self.u_lists = np.empty((4, 4, 4, 2, 2, 4), dtype=list)#object?
+            for idx in np.ndindex((4, 4, 4, 2, 2, 4)):
+                self.u_lists[idx] = []
+        else:
+            self.u_lists = None
 
         if not filename == None:
             self.qtable = np.load(filename)
@@ -132,6 +137,11 @@ class QTable:
 
     def toFile(self, filename): #zB "q_table.npy"
         np.save(filename, self.qtable)
+
+    def copyQT(self):
+        qtbl = QTable(self.LEARNING_RATE, self.DISCOUNT_FACTOR, self.INITIAL_Q_VALUE, math2=self.math2)
+        qtbl.qtable = np.copy(self.qtable)
+        return qtbl
 #End of QTable()
 
 class QlearnPolicy(BaseAgentPolicy):
@@ -142,6 +152,7 @@ class QlearnPolicy(BaseAgentPolicy):
         env: Union[PyQuaticusEnv, PyQuaticusMoosBridge],
         q_table: QTable,
         #u_table: QTable,
+        math2: bool = False,
         flag_keepout: float = config_dict_std["flag_keepout"],
         catch_radius: float = config_dict_std["catch_radius"],
         continuous: bool = False
@@ -151,7 +162,7 @@ class QlearnPolicy(BaseAgentPolicy):
         #self.env = env
         self.q_Table = q_table
         # copy of q_table (update-table) is used for updates of q-values, while old unmodified q_table is used only for action selection (and max(future action) in the update calculation)
-        #self.u_Table = u_table
+        self.u_Table = q_table.copyQT()
 
     @staticmethod #either this line or self as first argument. Python stinks sometimes...
     def headingDiff(heading, pos1, pos2): #TODO check if math correct
@@ -166,8 +177,7 @@ class QlearnPolicy(BaseAgentPolicy):
         return diff
     
     ###############UPDATE##OF##QVALUE################################################
-    #def set_q_value(self, ownpos, opp1, opp2, b_flag, r_flag, action, reward: float):
-    def set_q_value(self, ownpos, opp1, opp2, b_flag, r_flag, action, reward: float): #TODO change input to next-frame so opt_future_value can be computed for the post-transition state
+    def set_q_value(self, ownpos, opp1, opp2, b_flag, r_flag, action, reward: float): #TODO separate this function into two functions that do math1 and math2 (these if's don't make much sense)
         """Adjusts the value of a q-value in the update-table object stored by this agent policy.
         NOTE description not quite accurate anymore, this saves necessary values to a structure~ 
         and later the q value is updated with the average of all these.
@@ -191,7 +201,8 @@ class QlearnPolicy(BaseAgentPolicy):
         reward is from frame n+1, the rest of the values are from frame n (action being the action between these frames, so selected in frame n).
         """
         # old_q is taken from the (during this episode) updated q-value NO
-        #old_q = self.q_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][action]
+        if not self.q_Table.math2:
+            old_q = self.q_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][action]
         #not needed here...
 
         # Calculation of loss etc as per the qlearn algorithm
@@ -200,11 +211,14 @@ class QlearnPolicy(BaseAgentPolicy):
             # opt_future_value is taken from the un-updated qtable that is also used for action selection.
             opt_future_value = max(opt_future_value, self.q_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][ i ])
         # Loss function is used to compute new q-value:
-        #new_q = (1 - self.q_Table.LEARNING_RATE) * old_q + self.q_Table.LEARNING_RATE * (reward + self.q_Table.DISCOUNT_FACTOR * opt_future_value)
+        if not self.q_Table.math2:
+            new_q = (1 - self.q_Table.LEARNING_RATE) * old_q + self.q_Table.LEARNING_RATE * (reward + self.q_Table.DISCOUNT_FACTOR * opt_future_value)
 
         #print(f"Updating Q-value for state ({ownpos}, {opp1}, {opp2}, {b_flag}, {r_flag}) and action {action} from {old_q} to {new_q} based on reward {reward} and optimal future value {opt_future_value}.")
-        #self.u_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][action] = new_q
-        self.q_Table.u_lists[ownpos][opp1][opp2][b_flag][r_flag][action].append((reward, opt_future_value))
+        if not self.q_Table.math2:
+            self.u_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][action] = new_q
+        if self.q_Table.math2:
+            self.q_Table.u_lists[ownpos][opp1][opp2][b_flag][r_flag][action].append((reward, opt_future_value)) #TODO find out if append works here (not highlighted just now?)
     #End of set_q_value()
 
     def compute_action(self, obs, info: dict[str, dict]):
