@@ -86,11 +86,11 @@ def doTraining(parameterset: ParameterSet, number_jobs):
     grabslist = []
     tagslist = []
     index = 0 
-    for i in range(150):#TODO change back to 1000
+    for i in range(1000):
     #while datetime.now().hour < 11 or datetime.now().hour > 20: #train until 1 am, then save the q-table and reward curve
         # print("Beginning training run at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
         seeed = np.random.randint(0, 100000) 
-        timel = 600. #TODO change back to 600.
+        timel = 600.
         if index < 500 and parameterset.pretrain: #pretraininng with easy opponents, for more exploration on opponent base  [pretraining"easy" disabled for now, all training against easy(now hard)]
             rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty="easy", reward_choice=parameterset.rewardchoice, render_mode=None, timelimit=timel, q_table=qtableee) #might make timelimit a parameterset choice too...
             if parameterset.math2:
@@ -146,7 +146,7 @@ def doTraining(parameterset: ParameterSet, number_jobs):
         # discard logstructure now, so memory does not leak
         #logstructure = []
         index += 1
-        print(f"Completed training run {index} at {datetime.now()}")
+        # print(f"Completed training run {index} at {datetime.now()}")
     #End of doTraining()
 
     # Epilog (saving q-table and reward curve to file)
@@ -234,8 +234,10 @@ if __name__ == "__main__":
         # TEST OF MATH2 REW2:
         # for i in range(20)
         #     parametersets.append(ParameterSet("aggr_rew_alt", "hard", 0.1, 0.9, 10.0, False, "testrew2", "qtrainlog/batch 7/", i, math2=False)) #disappointment, but showed positive rewards (even if small, because circeling still risk-min.)
-        for i in range(10):#TODO change to 20
-            parametersets.append(ParameterSet("single_aggressive_rew", "easy", 0.1, 0.9, 10.0, False, "math1test", "qtrainlog/batch 8/", i, math2=False)) 
+        for i in range(20):
+            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "math1test", "qtrainlog/batch 8/", i, math2=False)) 
+        for i in range(20):
+            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, False, "math1test", "qtrainlog/batch 8/", i, math2=False)) 
             # (checking if "new" old math (math1) works as it did back then, hopefully this will be winrate blue>red)
         # for i in range(20):
         #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "testrew2", "qtrainlog/batch 7/", i)) #lets see if this finds another maximum...
