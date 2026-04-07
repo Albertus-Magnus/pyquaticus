@@ -105,6 +105,7 @@ def matrix_to_heatmap(matrix, title, filename, name):
 #End of matrix_to_heatmap()
 
 def vis_helper(filename_suffix0):
+    TWENTY = 20
     """Used for batches 1-5 to create the visualizations. Has to be called for every training run (per filename-prefix)."""
     ############################################################
     if FOLDER=="batch 2 hard": filename_suffix0 = "vshard_" + filename_suffix0
@@ -194,10 +195,10 @@ def vis_helper(filename_suffix0):
     matrix_to_heatmap(s_table, filename_suffix0, "qtrainlog/"+FOLDER+"/figures/"+filename_suffix0+"visitcount.png", "States visited (count per state)")
     visualize_curve(winrate0, winrate1, ylabel=f"Winrate (avg per {bagsize} episodes)", name=filename_suffix0)
     ####################################################################################################################################################
-    print(f"{filename_suffix0} 20th value - Rewards: {rewards0_avg[19]}, {rewards1_avg[19]}") # 9 for tenth step, 19 for 20th step (500 vs 1000 episodes)
-    print(f"{filename_suffix0} 20th value - Scores: {scores0_avg[19]}, {scores1_avg[19]}")
-    print(f"{filename_suffix0} 20th value - Winrate: {winrate0[19]}, {winrate1[19]}")
-    print(f"{filename_suffix0} 20th value - Tags: {tags0_avg[19]}, {tags1_avg[19]}")
+    print(f"{filename_suffix0} 20th value - Rewards: {rewards0_avg[TWENTY - 1]}, {rewards1_avg[TWENTY - 1]}") # 9 for tenth step, TWENTY - 1 for 20th step (500 vs 1000 episodes)
+    print(f"{filename_suffix0} 20th value - Scores: {scores0_avg[TWENTY - 1]}, {scores1_avg[TWENTY - 1]}")
+    print(f"{filename_suffix0} 20th value - Winrate: {winrate0[TWENTY - 1]}, {winrate1[TWENTY - 1]}")
+    print(f"{filename_suffix0} 20th value - Tags: {tags0_avg[TWENTY - 1]}, {tags1_avg[TWENTY - 1]}")
 
 def avg_vis_helper(paraset: ParameterSet):
     TWENTY = 20 #take a wild guess what the standard setting of this variable is (in integer)
@@ -313,10 +314,10 @@ def avg_vis_helper(paraset: ParameterSet):
     visualize_curve(winrate0, winrate1, ylabel=f"Winrate (avg per {bagsize} episodes)", name=filename_suffix0, foldern=paraset.foldername)
     visualize_curve(winrate0, winrate1, ylabel=f"Winrate (avg per {bagsize} episodes)", name=filename_suffix0, foldern=paraset.foldername)
     ####################################################################################################################################################
-    print(f"{filename_suffix0} 20th value - Rewards: {rewards0_avg[19]}, {rewards1_avg[19]}")
-    print(f"{filename_suffix0} 20th value - Scores: {scores0_avg[19]}, {scores1_avg[19]}") # scores0_avg has length 20. 20 should not be the length here?!<-Yes it should be. It is just set to give episode500 value because of small batch5! Do I need to change the handling of the lists? thought it would be same list format but avg value instead of single value now...
-    print(f"{filename_suffix0} 20th value - Winrate: {winrate0[19]}, {winrate1[19]}")
-    print(f"{filename_suffix0} 20th value - Tags: {tags0_avg[19]}, {tags1_avg[19]}")
+    print(f"{filename_suffix0} 20th value - Rewards: {rewards0_avg[TWENTY-1]}, {rewards1_avg[TWENTY - 1]}")
+    print(f"{filename_suffix0} 20th value - Scores: {scores0_avg[TWENTY - 1]}, {scores1_avg[TWENTY - 1]}") # scores0_avg has length 20. 20 should not be the length here?!<-Yes it should be. It is just set to give episode500 value because of small batch5! Do I need to change the handling of the lists? thought it would be same list format but avg value instead of single value now...
+    print(f"{filename_suffix0} 20th value - Winrate: {winrate0[TWENTY - 1]}, {winrate1[TWENTY - 1]}")
+    print(f"{filename_suffix0} 20th value - Tags: {tags0_avg[TWENTY - 1]}, {tags1_avg[TWENTY - 1]}")
 
 
 if __name__ == "__main__":
@@ -397,8 +398,10 @@ if __name__ == "__main__":
     # avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.1, 0.95, 0.0, False, "ratehigh", "qtrainlog/batch 7/", 0)) #testing the init q value 0 for capsntags
     # TODO add variance (see example qlearn paper)
 
-    avg_vis_helper(ParameterSet("aggr_rew_alt", "hard", 0.1, 0.9, 10.0, False, "testrew2", "qtrainlog/batch 7/", 0))
-    avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "testrew2", "qtrainlog/batch 7/", 0))
+    # avg_vis_helper(ParameterSet("aggr_rew_alt", "hard", 0.1, 0.9, 10.0, False, "testrew2", "qtrainlog/batch 7/", 0))
+    # avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "testrew2", "qtrainlog/batch 7/", 0))
+
+    avg_vis_helper(ParameterSet("single_aggressive_rew", "easy", 0.1, 0.9, 10.0, False, "math1test", "qtrainlog/batch 8/", 0, math2=False)) 
 
     # """Finding out how dimensions are mapped onto qtable matrix heatmap:
     # (toggle comment below to generate markers for the dimension [currently dim. f])"""
