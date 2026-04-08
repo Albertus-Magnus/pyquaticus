@@ -324,85 +324,16 @@ if __name__ == "__main__":
     
     #filename_suffix0 = "vshard_example_suffix01"
     #filename_suffix = "qtrainlog/vshard_"+filename_suffix
+    i = 0
     
     #vis_helper(filename_suffix0)
     print(f"Starting visualization of {FOLDER}.")
     #q_table = np.load("qtrainlog/vshard_example_suffix01_q_table.npy") #TODO visualize Q-Table
     #matrix_to_heatmap(q_table, "test_title", "qtrainlog/vshard_example_suffix01_q_table.png")
     
-    # Batch 1 and 2
-    # vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew")
-    # vis_helper("lrate0.1_discount0.9_initialq10.0_caps_and_grabs")
-    # vis_helper("lrate0.1_discount0.9_initialq10.0_caps_and_tags")
-    # vis_helper("lrate0.2_discount0.9_initialq10.0_single_aggressive_rew")
-    # vis_helper("lrate0.2_discount0.9_initialq10.0_caps_and_grabs")
-    # vis_helper("lrate0.2_discount0.9_initialq10.0_caps_and_tags")
-    # vis_helper("lrate0.1_discount0.95_initialq10.0_single_aggressive_rew")
-    # vis_helper("lrate0.1_discount0.95_initialq10.0_caps_and_grabs")
-    # vis_helper("lrate0.1_discount0.95_initialq10.0_caps_and_tags")
-    # vis_helper("lrate0.1_discount0.9_initialq0.0_single_aggressive_rew")
-    # vis_helper("lrate0.1_discount0.9_initialq0.0_caps_and_tags")
-
-    # Batch 3
-    # vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew")
-    # vis_helper("lrate0.1_discount0.95_initialq10.0_single_aggressive_rew")
-    # vis_helper("lrate0.1_discount0.85_initialq10.0_single_aggressive_rew")
-    # vis_helper("lrate0.05_discount0.9_initialq10.0_single_aggressive_rew")
-    # vis_helper("lrate0.1_discount0.9_initialq10.0_caps_and_tags")
-    # vis_helper("lrate0.2_discount0.9_initialq10.0_caps_and_tags")
-    # vis_helper("lrate0.2_discount0.95_initialq10.0_caps_and_tags")
-    # vis_helper("lrate0.2_discount0.85_initialq10.0_caps_and_tags")
-    # vis_helper("lrate0.15_discount0.9_initialq10.0_caps_and_tags")
-    # vis_helper("pretrained_pretrained_lrate0.1_discount0.9_initialq10.0_single_aggressive_rew") #TODO pretrained pretrained? sounds dumb
-    # vis_helper("pretrained_pretrained_lrate0.1_discount0.9_initialq10.0_caps_and_tags")
-
-    # Batch 4
-    # vis_helper("lrate0.1_discount0.95_initialq10.0_single_aggressive_rew")
-    # vis_helper("pretrained_lrate0.1_discount0.95_initialq10.0_single_aggressive_rew")
-    # vis_helper("lrate0.05_discount0.95_initialq10.0_single_aggressive_rew")
-    # vis_helper("pretrained_lrate0.05_discount0.95_initialq10.0_single_aggressive_rew")
-
-    # Batch 5
-    # vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck1")
-    # vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck2")
-    # vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck3")
-    # vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck4")
-    # vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck5")
-
-    # Batch 6 part 1
-    # avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, False, "avgtest1", "qtrainlog/batch 6 avg/", 0))
-    # avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "avgtest1", "qtrainlog/batch 6 avg/", 0))
-    # avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, True, "avgtest1", "qtrainlog/batch 6 avg/", 0))
-    # avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, True, "avgtest1", "qtrainlog/batch 6 avg/", 0))
-
-    # # Batch 6 part 2
-    # avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.9, 10.0, False, "avgtest2", "qtrainlog/batch 6 part two/", 0))
-    # avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.2, 0.9, 10.0, False, "avgtest2", "qtrainlog/batch 6 part two/", 0))
-    # avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.95, 10.0, False, "avgtest2", "qtrainlog/batch 6 part two/", 0))
-    # avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.1, 0.95, 10.0, False, "avgtest2", "qtrainlog/batch 6 part two/", 0))
-
-    # Batch 6 part 3
-    #avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", 0))
-    # avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.2, 0.95, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", 0))
-    # avg_vis_helper(ParameterSet("single_aggeressive_rew", "hard", 0.15, 0.9, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", 0))
-    # avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.15, 0.9, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", 0))
-    # avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.85, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", 0))
-    # avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.2, 0.85, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", 0))
-
-    # Batch 7
-    # avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, False, "testmath", "qtrainlog/batch 7/", 0))
-    # avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.99, 10.0, False, "ratehigh", "qtrainlog/batch 7/", 0))
-    # avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "testmath", "qtrainlog/batch 7/", 0))
-    # avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.99, 10.0, False, "ratehigh", "qtrainlog/batch 7/", 0)) #testing a much higher discount factor
-    # avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.2, 0.99, 10.0, False, "ratehigh", "qtrainlog/batch 7/", 0))
-    # avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.1, 0.95, 0.0, False, "ratehigh", "qtrainlog/batch 7/", 0)) #testing the init q value 0 for capsntags
-    # TODO add variance (see example qlearn paper)
-
-    # avg_vis_helper(ParameterSet("aggr_rew_alt", "hard", 0.1, 0.9, 10.0, False, "testrew2", "qtrainlog/batch 7/", 0))
-    # avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "testrew2", "qtrainlog/batch 7/", 0))
-
-    avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, False, "math1test", "qtrainlog/batch 8/", 0, math2=False)) 
-    avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "math1test", "qtrainlog/batch 8/", 0, math2=False)) 
+    # Batch 0
+    # vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew") (example of non-avg)
+    avg_vis_helper(ParameterSet("aggressive_tags_26", "hard", 0.2, 0.95, 10.0, False, "rules26test0", "qtrainlog/batch 0/", 0, math2=False))
 
     # """Finding out how dimensions are mapped onto qtable matrix heatmap:
     # (toggle comment below to generate markers for the dimension [currently dim. f])"""
