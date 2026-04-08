@@ -86,7 +86,7 @@ def doTraining(parameterset: ParameterSet, number_jobs):
     grabslist = []
     tagslist = []
     index = 0 
-    for i in range(3): #TODO set to 1000
+    for i in range(1000): #TODO set to 1000
     #while datetime.now().hour < 11 or datetime.now().hour > 20: #train until 1 am, then save the q-table and reward curve
         # print("Beginning training run at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
         seeed = np.random.randint(0, 100000) 
@@ -235,8 +235,10 @@ if __name__ == "__main__":
         #     parametersets.append(ParameterSet("aggr_rew_alt", "hard", 0.1, 0.9, 10.0, False, "testrew2", "qtrainlog/batch 7/", i, math2=False)) #disappointment, but showed positive rewards (even if small, because circeling still risk-min.)
         # for i in range(20): ##
         #     parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "math1test", "qtrainlog/batch 8/", i, math2=False)) 
-        for i in range(2):
-            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, False, "math1test", "qtrainlog/batch 8/", i, math2=False)) 
+        for i in range(10): #this and mctf26 would be great pre-meeting
+            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "math1test", "qtrainlog/batch 8/", i, math2=False)) 
+        # for i in range(5):
+        #     parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, False, "math1test", "qtrainlog/batch 8/", i, math2=False)) 
             # (checking if "new" old math (math1) works as it did back then, hopefully this will be winrate blue>red)
         # for i in range(20):
         #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "testrew2", "qtrainlog/batch 7/", i)) #lets see if this finds another maximum...
