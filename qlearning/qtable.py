@@ -110,7 +110,8 @@ class QTable:
         if obs[agentID]['has_flag']:
             # heading towards objective (positional awareness variable) is towards enemy base normally...
             #ownpos = headingToState(obs[agentID]['own_home_bearing']) 
-            ownpos = headingToState(np.array([5.0, 75.0])) #adjusted for 2026 twobase rules
+            #ownpos = headingToState(np.array([5.0, 75.0])) #adjusted for 2026 twobase rules
+            ownpos = headingToState(obs[agentID]['wall_0_bearing']) #TODO TODO this needs to be improved, currently quick and ugly fix!
         else:
             # ...and towards own base (or map half) if agent has grabbed the enemy flag
             #print("own_home_bearing =", obs[agentID]['own_home_bearing'])#output of this is "own_home_bearing = 117.06809126991149"
