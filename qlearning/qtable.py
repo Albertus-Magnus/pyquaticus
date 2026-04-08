@@ -112,7 +112,7 @@ class QTable:
         else:
             # ...and towards own base (or map half) if agent has grabbed the enemy flag
             #print("own_home_bearing =", obs[agentID]['own_home_bearing'])#output of this is "own_home_bearing = 117.06809126991149"
-            ownpos = headingToState(obs[agentID]['opponent_home_bearing'])
+            ownpos = headingToState(obs[agentID]['opponent_home_bearing']) #TODO in 26rules this has to be set to upper base
         # compute opp1 (angle (0-3) between own heading and bearing towards opponent 1)
         opp1_bearing = headingToState(obs[agentID][('opponent_0', 'relative_heading')]) 
         # compute opp2
@@ -134,14 +134,17 @@ class QTable:
             print("Error: Action not recognized in prepareUpdate() of QTable.")
             action_index = -1
         return (ownpos, opp1_bearing, opp2_bearing, b_flag, r_flag, action_index)
+    #End of prepareUpdate()
 
     def toFile(self, filename): #zB "q_table.npy"
         np.save(filename, self.qtable)
+    #End of toFile()
 
     def copyQT(self):
         qtbl = QTable(self.LEARNING_RATE, self.DISCOUNT_FACTOR, self.INITIAL_Q_VALUE, math2=self.math2)
         qtbl.qtable = np.copy(self.qtable)
         return qtbl
+    #End of copyQT()
 #End of QTable()
 
 class QlearnPolicy(BaseAgentPolicy):
@@ -209,7 +212,10 @@ class QlearnPolicy(BaseAgentPolicy):
         opt_future_value = -10000000000000. #"." cause reward is continuous
         for i in range(4): #for every possible action do...
             # opt_future_value is taken from the un-updated qtable that is also used for action selection.
-            opt_future_value = max(opt_future_value, self.q_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][ i ])
+            if self.q_Table.math2:
+                opt_future_value = max(opt_future_value, self.q_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][ i ])
+            else:
+                opt_future_value = max(opt_future_value, self.u_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][ i ])
         # Loss function is used to compute new q-value:
         if not self.q_Table.math2:
             new_q = (1 - self.q_Table.LEARNING_RATE) * old_q + self.q_Table.LEARNING_RATE * (reward + self.q_Table.DISCOUNT_FACTOR * opt_future_value)

@@ -86,7 +86,7 @@ def doTraining(parameterset: ParameterSet, number_jobs):
     grabslist = []
     tagslist = []
     index = 0 
-    for i in range(1000):
+    for i in range(3): #TODO set to 1000
     #while datetime.now().hour < 11 or datetime.now().hour > 20: #train until 1 am, then save the q-table and reward curve
         # print("Beginning training run at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
         seeed = np.random.randint(0, 100000) 
@@ -147,7 +147,6 @@ def doTraining(parameterset: ParameterSet, number_jobs):
         #logstructure = []
         index += 1
         # print(f"Completed training run {index} at {datetime.now()}")
-    #End of doTraining()
 
     # Epilog (saving q-table and reward curve to file)
     # print(f"Storing q-table to file \"{parameterset.foldername + parameterset.create_name()}_q_table.npy\".")
@@ -234,9 +233,9 @@ if __name__ == "__main__":
         # TEST OF MATH2 REW2:
         # for i in range(20)
         #     parametersets.append(ParameterSet("aggr_rew_alt", "hard", 0.1, 0.9, 10.0, False, "testrew2", "qtrainlog/batch 7/", i, math2=False)) #disappointment, but showed positive rewards (even if small, because circeling still risk-min.)
-        for i in range(20):
-            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "math1test", "qtrainlog/batch 8/", i, math2=False)) 
-        for i in range(20):
+        # for i in range(20): ##
+        #     parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "math1test", "qtrainlog/batch 8/", i, math2=False)) 
+        for i in range(2):
             parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, False, "math1test", "qtrainlog/batch 8/", i, math2=False)) 
             # (checking if "new" old math (math1) works as it did back then, hopefully this will be winrate blue>red)
         # for i in range(20):
