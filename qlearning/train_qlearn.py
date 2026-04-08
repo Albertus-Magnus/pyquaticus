@@ -263,10 +263,10 @@ if __name__ == "__main__":
         # # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/example_folder/avgtest3_single_aggressive_rew_hard_lrate0.2_discount0.95_initq10.0_1000ep_no_pre_nr2_q_table.npy")
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/example_folder/testmath_single_aggressive_rew_hard_lrate0.1_discount0.9_initq10.0_1000ep_no_pre_nr0_q_table.npy")
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/example_folder/testmath_single_aggressive_rew_hard_lrate0.1_discount0.9_initq10.0_1000ep_no_pre_nr0_q_table_i499.npy")
-        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/example_folder/testrew2_caps_and_tags_hard_lrate0.1_discount0.9_initq10.0_1000ep_no_pre_nr0_q_table.npy")
+        # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/example_folder/testrew2_caps_and_tags_hard_lrate0.1_discount0.9_initq10.0_1000ep_no_pre_nr0_q_table.npy")
 
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/example_folder/testmath_single_aggressive_rew_hard_lrate0.1_discount0.9_initq10.0_1000ep_no_pre_nr0_q_table_i499.npy")
-        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/example_folder/testrew2_caps_and_tags_hard_lrate0.1_discount0.9_initq10.0_1000ep_no_pre_nr0_q_table.npy")
+        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 8/math1test_single_aggressive_rew_hard_lrate0.2_discount0.95_initq10.0_1000ep_no_pre_nr0_q_table.npy")
 
         st = np.zeros((4, 4, 4, 2, 2), dtype=np.int32) #dangerous int8-hazard (int8 is insufficient here)
         train_qlearn(st, seed=0, difficulty="hard", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt)#TODO change to use parameterset i guess...

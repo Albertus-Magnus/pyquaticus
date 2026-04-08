@@ -201,7 +201,7 @@ def vis_helper(filename_suffix0):
     print(f"{filename_suffix0} 20th value - Tags: {tags0_avg[TWENTY - 1]}, {tags1_avg[TWENTY - 1]}")
 
 def avg_vis_helper(paraset: ParameterSet):
-    TWENTY = 20 #take a wild guess what the standard setting of this variable is (in integer)
+    TWENTY = 10 #TODO take a wild guess what the standard setting of this variable is (in integer)
     """Is called for every group of training runs using the same parameters to generate the visualizations of averages between the same parameters (e.g. 20 training runs into one plot)."""
     filename_suffix0 = paraset.create_name_without_index()
     ############################################################
