@@ -343,7 +343,7 @@ def single_aggressive_rew(
 
 
 # One agent aggressive reward
-def aggressive_tags(
+def aggressive_tags_26(
     agent_id: str,
     team: Team,
     agents: list,
@@ -357,7 +357,9 @@ def aggressive_tags(
     max_speeds: list,
     tagging_cooldown: float
 ):
-    """Modified from single_aggressive_rew to also reward tagging opponents."""
+    """Modified from single_aggressive_rew to also reward tagging opponents.
+    Adjusted to work well in the 2026 MCTF environment.
+    """
     reward = 0.0
     idx1 = agents.index(agent_id)
     position1 = np.array(state['agent_position'][idx1])
@@ -380,7 +382,7 @@ def aggressive_tags(
         t = team.value 
     else:
         t = 0 if str(team).lower() == 'blue_team' else 1
-    team_home = flag_homes[t]
+    team_home = np.array([5.0, 75.0])#.env_size[1] - 5.])    #flag_homes[t]                               #TODO Ugly quick fix, this needs to be adjusted to a better location to steer for. but currently this works reasonably well.
     opp_home = flag_homes[(t + 1) % 2]
     # Determine which flag to aim for
     has_flag1 = bool(state['agent_has_flag'][idx1])

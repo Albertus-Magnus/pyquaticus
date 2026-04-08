@@ -1,6 +1,7 @@
 from typing import Union
 
-from pyquaticus.envs.pyquaticus import PyQuaticusEnv
+# from pyquaticus.envs.pyquaticus import PyQuaticusEnv
+from pyquaticus.envs.competition_pyquaticus import CompPyquaticusEnv
 from pyquaticus.moos_bridge.pyquaticus_moos_bridge import PyQuaticusMoosBridge
 #from pyquaticus.utils.rewards import triple_aggressive_rew, triple_caps_and_grabs
 import numpy as np
@@ -11,7 +12,7 @@ from pyquaticus.base_policies.base_policy import BaseAgentPolicy
 from pyquaticus.config import config_dict_std, ACTION_MAP
 
 # Parameters for Q-Learning:
-#LEARNING_RATE = 0.1                        TODO NOTE This file must be deleted and re-copied from main after qtable has been edited to include old math.
+#LEARNING_RATE = 0.1
 #DISCOUNT_FACTOR = 0.9
 #INITIAL_Q_VALUE = 10.0 #high initial q-value encourages exploration, low (even negative) encourages exploitation
 
@@ -20,14 +21,19 @@ from pyquaticus.config import config_dict_std, ACTION_MAP
 # opponents: agent_2 and agent_2
 
 class QTable:
-    def __init__(self, LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, filename=None):
+    def __init__(self, LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, filename=None, math2=False):
         self.LEARNING_RATE = LEARNING_RATE
         self.DISCOUNT_FACTOR = DISCOUNT_FACTOR
         self.INITIAL_Q_VALUE = INITIAL_Q_VALUE
 
-        self.u_lists = np.empty((4, 4, 4, 2, 2, 4), dtype=list)#object?
-        for idx in np.ndindex((4, 4, 4, 2, 2, 4)):
-            self.u_lists[idx] = []
+        self.math2 = math2
+
+        if math2:
+            self.u_lists = np.empty((4, 4, 4, 2, 2, 4), dtype=list)#object?
+            for idx in np.ndindex((4, 4, 4, 2, 2, 4)):
+                self.u_lists[idx] = []
+        else:
+            self.u_lists = None
 
         if not filename == None:
             self.qtable = np.load(filename)
@@ -103,11 +109,12 @@ class QTable:
     def prepareUpdate(self, obs, agentID, action):
         if obs[agentID]['has_flag']:
             # heading towards objective (positional awareness variable) is towards enemy base normally...
-            ownpos = headingToState(obs[agentID]['own_home_bearing']) 
+            #ownpos = headingToState(obs[agentID]['own_home_bearing']) 
+            ownpos = headingToState(np.array([5.0, 75.0])) #adjusted for 2026 twobase rules
         else:
             # ...and towards own base (or map half) if agent has grabbed the enemy flag
             #print("own_home_bearing =", obs[agentID]['own_home_bearing'])#output of this is "own_home_bearing = 117.06809126991149"
-            ownpos = headingToState(obs[agentID]['opponent_home_bearing'])
+            ownpos = headingToState(obs[agentID]['opponent_home_bearing']) #TODO in 26rules this has to be set to upper base
         # compute opp1 (angle (0-3) between own heading and bearing towards opponent 1)
         opp1_bearing = headingToState(obs[agentID][('opponent_0', 'relative_heading')]) 
         # compute opp2
@@ -129,9 +136,17 @@ class QTable:
             print("Error: Action not recognized in prepareUpdate() of QTable.")
             action_index = -1
         return (ownpos, opp1_bearing, opp2_bearing, b_flag, r_flag, action_index)
+    #End of prepareUpdate()
 
     def toFile(self, filename): #zB "q_table.npy"
         np.save(filename, self.qtable)
+    #End of toFile()
+
+    def copyQT(self):
+        qtbl = QTable(self.LEARNING_RATE, self.DISCOUNT_FACTOR, self.INITIAL_Q_VALUE, math2=self.math2)
+        qtbl.qtable = np.copy(self.qtable)
+        return qtbl
+    #End of copyQT()
 #End of QTable()
 
 class QlearnPolicy(BaseAgentPolicy):
@@ -139,9 +154,11 @@ class QlearnPolicy(BaseAgentPolicy):
     def __init__(
         self,
         agent_id: str,
-        env: Union[PyQuaticusEnv, PyQuaticusMoosBridge],
+        #env: Union[PyQuaticusEnv, PyQuaticusMoosBridge],
+        env: Union[CompPyquaticusEnv, PyQuaticusMoosBridge],
         q_table: QTable,
         #u_table: QTable,
+        math2: bool = False,
         flag_keepout: float = config_dict_std["flag_keepout"],
         catch_radius: float = config_dict_std["catch_radius"],
         continuous: bool = False
@@ -151,7 +168,7 @@ class QlearnPolicy(BaseAgentPolicy):
         #self.env = env
         self.q_Table = q_table
         # copy of q_table (update-table) is used for updates of q-values, while old unmodified q_table is used only for action selection (and max(future action) in the update calculation)
-        #self.u_Table = u_table
+        self.u_Table = q_table.copyQT()
 
     @staticmethod #either this line or self as first argument. Python stinks sometimes...
     def headingDiff(heading, pos1, pos2): #TODO check if math correct
@@ -166,8 +183,7 @@ class QlearnPolicy(BaseAgentPolicy):
         return diff
     
     ###############UPDATE##OF##QVALUE################################################
-    #def set_q_value(self, ownpos, opp1, opp2, b_flag, r_flag, action, reward: float):
-    def set_q_value(self, ownpos, opp1, opp2, b_flag, r_flag, action, reward: float): #TODO change input to next-frame so opt_future_value can be computed for the post-transition state
+    def set_q_value(self, ownpos, opp1, opp2, b_flag, r_flag, action, reward: float): #TODO separate this function into two functions that do math1 and math2 (these if's don't make much sense)
         """Adjusts the value of a q-value in the update-table object stored by this agent policy.
         NOTE description not quite accurate anymore, this saves necessary values to a structure~ 
         and later the q value is updated with the average of all these.
@@ -191,20 +207,27 @@ class QlearnPolicy(BaseAgentPolicy):
         reward is from frame n+1, the rest of the values are from frame n (action being the action between these frames, so selected in frame n).
         """
         # old_q is taken from the (during this episode) updated q-value NO
-        #old_q = self.q_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][action]
+        if not self.q_Table.math2:
+            old_q = self.q_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][action]
         #not needed here...
 
         # Calculation of loss etc as per the qlearn algorithm
         opt_future_value = -10000000000000. #"." cause reward is continuous
         for i in range(4): #for every possible action do...
             # opt_future_value is taken from the un-updated qtable that is also used for action selection.
-            opt_future_value = max(opt_future_value, self.q_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][ i ])
+            if self.q_Table.math2:
+                opt_future_value = max(opt_future_value, self.q_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][ i ])
+            else:
+                opt_future_value = max(opt_future_value, self.u_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][ i ])
         # Loss function is used to compute new q-value:
-        #new_q = (1 - self.q_Table.LEARNING_RATE) * old_q + self.q_Table.LEARNING_RATE * (reward + self.q_Table.DISCOUNT_FACTOR * opt_future_value)
+        if not self.q_Table.math2:
+            new_q = (1 - self.q_Table.LEARNING_RATE) * old_q + self.q_Table.LEARNING_RATE * (reward + self.q_Table.DISCOUNT_FACTOR * opt_future_value)
 
         #print(f"Updating Q-value for state ({ownpos}, {opp1}, {opp2}, {b_flag}, {r_flag}) and action {action} from {old_q} to {new_q} based on reward {reward} and optimal future value {opt_future_value}.")
-        #self.u_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][action] = new_q
-        self.q_Table.u_lists[ownpos][opp1][opp2][b_flag][r_flag][action].append((reward, opt_future_value))
+        if not self.q_Table.math2:
+            self.u_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][action] = new_q
+        if self.q_Table.math2:
+            self.q_Table.u_lists[ownpos][opp1][opp2][b_flag][r_flag][action].append((reward, opt_future_value)) #TODO find out if append works here (not highlighted just now?)
     #End of set_q_value()
 
     def compute_action(self, obs, info: dict[str, dict]):
@@ -225,7 +248,9 @@ class QlearnPolicy(BaseAgentPolicy):
         # compute ownpos:
         if obs[self.id]['has_flag']:
             # heading towards objective (positional awareness variable) is towards enemy base normally...
-            ownpos = headingToState(obs[self.id]['own_home_bearing']) 
+            #ownpos = headingToState(obs[self.id]['own_home_bearing']) 
+            #ownpos = headingToState(np.array([5.0, 75.0])) #adjusted for 26 twobase rules      #TODO TODO reinstate this line, but change [x,y] to bearing towards x,y (perhaps change headingToState to do that?)
+            ownpos = headingToState(obs[self.id]['wall_0_bearing'])
         else:
             # ...and towards own base (or map half) if agent has grabbed the enemy flag
             #print("own_home_bearing =",obs[self.id]['own_home_bearing'])#output of this is "own_home_bearing = 117.06809126991149"
@@ -243,6 +268,7 @@ class QlearnPolicy(BaseAgentPolicy):
         #for loop for self.qtable[ownpos][opp1][opp2][b_flag][r_flag][i]
         q_max = -1000000000000
         a_max = -1
+        #print(np.shape(self.q_Table.qtable))    #this is shape (2,2) -> something is wrong! TODO
         for i in range(4):
             #print(self.q_Table.qtable[ownpos][opp1_bearing][opp2_bearing][b_flag][r_flag])
             if q_max < self.q_Table.qtable[ownpos][opp1_bearing][opp2_bearing][b_flag][r_flag][i]:

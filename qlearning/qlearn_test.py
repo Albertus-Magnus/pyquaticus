@@ -1,15 +1,20 @@
 from datetime import datetime
+#import logging
 import sys
+#import os
+#import os.path
+#import pyquaticus
 import numpy as np
 from numpy.typing import NDArray
-from pyquaticus import pyquaticus_v0
+# from pyquaticus import pyquaticus_v0
+from pyquaticus.envs.competition_pyquaticus import CompPyquaticusEnv
 from pyquaticus.base_policies.base_combined import Heuristic_CTF_Agent
 # from pyquaticus.base_policies.multi_rhea_policy import MRHEA_Agent, MRHEA_Environment
 # from pyquaticus.base_policies.rhealg_policy2 import RHEA_Agent, RHEA_Environment
 # from pyquaticus.base_policies.ultra_def_policy import UltraDefender
 from qtable import QlearnPolicy, QTable
-from pyquaticus.utils.rewards import caps_and_grabs, defensive_rew, double_aggressive_rew, single_aggressive_rew, caps_and_tags, aggr_rew_alt
-#from multiprocessing import Pool, Value, Lock #i don't need any parallel processing (is qlearn even compatible?), i just need to run 10 scripts in different terminals...
+from pyquaticus.utils.rewards import single_aggressive_rew, caps_and_tags, aggressive_tags_26
+from pyquaticus.mctf26_config import config_dict_std as mctf_config
 
 """
 This was copied from magnus_test.py and modified to 
@@ -31,35 +36,38 @@ def train_qlearn(
     render_mode: str = None, # or 'human'
     timelimit: float = 600.,
     logname: str = "match.log",
-    q_table: QTable = None #str = None #Not a string?! Is already a QTable!
+    q_table: QTable = None, #str = None #Not a string?! Is already a QTable!
+    math2: bool = False
 ):
     
     # Set score function to the selected reward (match statement syntax might require python version 3.10 or newer)
     match reward_choice:
-        case "caps_and_grabs":
-            reward_method = caps_and_grabs
-        case "double_aggressive_rew":
-            reward_method = double_aggressive_rew
+        # case "caps_and_grabs":
+        #     reward_method = caps_and_grabs
+        # case "double_aggressive_rew":
+        #     reward_method = double_aggressive_rew
         case "single_aggressive_rew":
             reward_method = single_aggressive_rew
-        case "defensive_rew":
-            reward_method = defensive_rew
+        # case "defensive_rew":
+        #     reward_method = defensive_rew
         case "caps_and_tags":
             reward_method = caps_and_tags
-        case "aggr_rew_alt":
-            reward_method = aggr_rew_alt
+        case "aggressive_tags_26":
+            reward_method = aggressive_tags_26
         case _:
             print("Error: Invalid reward choice. Please select a valid reward function.")
             return
 
-    config_dict = {}
-    config_dict["max_time"] = timelimit#600.0
-    config_dict["max_score"] = 100
-    config_dict["render_agent_ids"] = True
-    config_dict["dynamics"] = ["si", "si", "si", "si"
-                               ]
-    config_dict["sim_speedup_factor"] = 3
-    config_dict["default_init"] = False #random starting positions (uses seed)
+    # config_dict = {}
+    # config_dict["max_time"] = timelimit#600.0
+    # config_dict["max_score"] = 100
+    # config_dict["render_agent_ids"] = True
+    # config_dict["dynamics"] = ["si", "si", "si", "si"
+    #                            ]
+    # config_dict["sim_speedup_factor"] = 3
+    # config_dict["default_init"] = False #random starting positions (uses seed)
+    # config_dict = mctf_config
+    # config_dict[""]
 
     #-Logging utility-
     # logging.basicConfig(
@@ -70,8 +78,8 @@ def train_qlearn(
     #    force=True
     # )
 
-    env = pyquaticus_v0.PyQuaticusEnv(team_size=2, action_space="discrete", config_dict=config_dict, reward_config={'agent_0': reward_method, 'agent_1': reward_method, 'agent_2': reward_method, 'agent_3': reward_method},
-    render_mode=render_mode) #'human')  #None)#'human')
+    #env = pyquaticus_v0.PyQuaticusEnv(team_size=2, action_space="discrete", config_dict=config_dict, reward_config={'agent_0': reward_method, 'agent_1': reward_method, 'agent_2': reward_method, 'agent_3': reward_method},
+    env = CompPyquaticusEnv(action_space="discrete", config_dict=mctf_config, reward_config={'agent_0': reward_method, 'agent_1': reward_method, 'agent_2': reward_method, 'agent_3': reward_method}, render_mode=render_mode) #'human')  #None)#'human')
     term_g = {'agent_0':False,'agent_1':False,'agent_2':False}
     truncated_g = {'agent_0':False,'agent_1':False,'agent_2':False}
     term = term_g
@@ -91,8 +99,11 @@ def train_qlearn(
     
     # print("Setting up q-learn agents")
     if q_table == None: print("Error: q-table not set up before agents are created.")
-    #u_table = QTable(q_table.LEARNING_RATE, q_table.DISCOUNT_FACTOR, q_table.INITIAL_Q_VALUE)
-    #u_table.qtable = np.copy(q_table.qtable)
+    if math2:
+        u_table = None
+    else:
+        u_table = QTable(q_table.LEARNING_RATE, q_table.DISCOUNT_FACTOR, q_table.INITIAL_Q_VALUE)
+        u_table.qtable = np.copy(q_table.qtable)
     R_one = QlearnPolicy('agent_0', env, q_table)
     R_two = QlearnPolicy('agent_1', env, q_table)
 
@@ -163,7 +174,7 @@ def train_qlearn(
     #     t1 += e['agent_0']
     #     t2 += e['agent_1']
     # print(f"t1: {t1}   t2: {t2}")
-    return rewardsteps, env.state['captures'], env.state['grabs'], env.state['tags']#, u_table 
+    return rewardsteps, env.state['captures'], env.state['grabs'], env.state['tags'], u_table 
 #End of train_qlearn()
 
 def visualize_reward_curve(reward_curve_file):
