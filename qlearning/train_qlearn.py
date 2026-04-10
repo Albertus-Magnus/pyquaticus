@@ -14,7 +14,7 @@ from pyquaticus.base_policies.multi_rhea_policy import MRHEA_Agent, MRHEA_Enviro
 from pyquaticus.base_policies.rhealg_policy2 import RHEA_Agent, RHEA_Environment
 from pyquaticus.base_policies.ultra_def_policy import UltraDefender
 from qtable import QlearnPolicy, QTable
-from pyquaticus.utils.rewards import caps_and_grabs, defensive_rew, double_aggressive_rew, single_aggressive_rew, caps_and_tags, aggr_rew_alt
+from pyquaticus.utils.rewards import caps_and_grabs, defensive_rew, double_aggressive_rew, single_aggressive_rew, caps_and_tags, aggr_rew_alt, aggressive_tags_24
 from qlearn_test import train_qlearn, visualize_reward_curve
 from multiprocessing import Pool, Lock, Value #i don't need any parallel processing (is qlearn even compatible?), i just need to run 10 scripts in different terminals...
 
@@ -86,7 +86,7 @@ def doTraining(parameterset: ParameterSet, number_jobs):
     grabslist = []
     tagslist = []
     index = 0 
-    for i in range(1000): #TODO set to 1000
+    for i in range(2): #TODO set to 1000
     #while datetime.now().hour < 11 or datetime.now().hour > 20: #train until 1 am, then save the q-table and reward curve
         # print("Beginning training run at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
         seeed = np.random.randint(0, 100000) 
@@ -244,8 +244,26 @@ if __name__ == "__main__":
         #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "testrew2", "qtrainlog/batch 7/", i)) #lets see if this finds another maximum...
         #########################################
         # HPC parameter scattershot for math2 #
-        parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0))
-        parametersets.append(ParameterSet("aggressive_tags", "hard", 0.1, 0.9, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0))
+        parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.9, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        parametersets.append(ParameterSet("aggressive_tags_24", "hard", 0.2, 0.9, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        parametersets.append(ParameterSet("caps_and_tags", "hard", 0.3, 0.9, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        parametersets.append(ParameterSet("aggressive_tags_24", "hard", 0.3, 0.9, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        parametersets.append(ParameterSet("caps_and_tags", "hard", 0.05, 0.9, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        parametersets.append(ParameterSet("aggressive_tags_24", "hard", 0.05, 0.9, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        parametersets.append(ParameterSet("caps_and_tags", "hard", 0.25, 0.9, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        parametersets.append(ParameterSet("aggressive_tags_24", "hard", 0.25, 0.9, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        parametersets.append(ParameterSet("caps_and_tags", "hard", 0.75, 0.9, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        parametersets.append(ParameterSet("aggressive_tags_24", "hard", 0.75, 0.9, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.85, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        parametersets.append(ParameterSet("aggressive_tags_24", "hard", 0.2, 0.85, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.85, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        parametersets.append(ParameterSet("aggressive_tags_24", "hard", 0.1, 0.85, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        parametersets.append(ParameterSet("caps_and_tags", "hard", 0.3, 0.85, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        parametersets.append(ParameterSet("aggressive_tags_24", "hard", 0.3, 0.85, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.7, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        parametersets.append(ParameterSet("aggressive_tags_24", "hard", 0.1, 0.7, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.8, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        parametersets.append(ParameterSet("aggressive_tags_24", "hard", 0.2, 0.8, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
         #########################################
         #rewardchoice = "single_aggressive_rew"
         #rewardchoice = "double_aggressive_rew" (outdated)
