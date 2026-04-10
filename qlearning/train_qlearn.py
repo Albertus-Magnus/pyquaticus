@@ -86,7 +86,7 @@ def doTraining(parameterset: ParameterSet, number_jobs):
     grabslist = []
     tagslist = []
     index = 0 
-    for i in range(2): #TODO set to 1000
+    for i in range(1000): #TODO set to 1000
     #while datetime.now().hour < 11 or datetime.now().hour > 20: #train until 1 am, then save the q-table and reward curve
         # print("Beginning training run at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
         seeed = np.random.randint(0, 100000) 
