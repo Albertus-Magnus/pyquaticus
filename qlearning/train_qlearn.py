@@ -299,7 +299,7 @@ if __name__ == "__main__":
     counter.value = 0
 
     #num_workers = 15 #15 was best number for my PC in small tests... (cores is 12)
-    num_workers = max(1, os.cpu_count() - 1) #this allows us to use the pc during computations (although not to the fullest extent)
+    num_workers = max(1, os.cpu_count()) #this allows us to use the pc during computations (although not to the fullest extent)
     #num_workers = 14
     #num_workers = 10
     print(f"Selecting {num_workers} as num_workers.")
