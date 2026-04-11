@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 from train_qlearn import ParameterSet
 
-FOLDER = "wrong folder"#zb "batch 5"
+FOLDER = "batch 9"#zb "batch 5"
 """
 To change batch, change FOLDER here, sometimes "vshard_"+ in vis_helper() beginning (now automated), and vis_helper("ddd")-calls in main (very bottom).
 """
@@ -108,7 +108,7 @@ def vis_helper(filename_suffix0):
     TWENTY = 20
     """Used for batches 1-5 to create the visualizations. Has to be called for every training run (per filename-prefix)."""
     ############################################################
-    if FOLDER=="batch 2 hard": filename_suffix0 = "vshard_" + filename_suffix0
+    #if FOLDER=="batch 9": filename_suffix0 = "vshard_" + filename_suffix0 #this is wrong now, was just there to deal with batch 5(or 4?)
     filename_suffix = "qtrainlog/"+FOLDER+"/" + filename_suffix0
     ############################################################
 
@@ -192,16 +192,17 @@ def vis_helper(filename_suffix0):
     visualize_curve(scores0_avg, scores1_avg, ylabel=f"Score (avg per {bagsize} episodes)", name=filename_suffix0)
     visualize_curve(tags1_avg, tags0_avg, ylabel=f"Tags (avg per {bagsize} episodes)", name=filename_suffix0)
     matrix_to_heatmap(q_table, filename_suffix0, "qtrainlog/"+FOLDER+"/figures/"+filename_suffix0+"qheatmap.png", "Q-value (expected reward)")
-    matrix_to_heatmap(s_table, filename_suffix0, "qtrainlog/"+FOLDER+"/figures/"+filename_suffix0+"visitcount.png", "States visited (count per state)")
+    # matrix_to_heatmap(s_table, filename_suffix0, "qtrainlog/"+FOLDER+"/figures/"+filename_suffix0+"visitcount.png", "States visited (count per state)")
+    # TODO reactivate heatmap for statecount, but need to deal with different dimensionality (see resulting error...)
     visualize_curve(winrate0, winrate1, ylabel=f"Winrate (avg per {bagsize} episodes)", name=filename_suffix0)
     ####################################################################################################################################################
-    print(f"{filename_suffix0} 20th value - Rewards: {rewards0_avg[TWENTY - 1]}, {rewards1_avg[TWENTY - 1]}") # 9 for tenth step, TWENTY - 1 for 20th step (500 vs 1000 episodes)
-    print(f"{filename_suffix0} 20th value - Scores: {scores0_avg[TWENTY - 1]}, {scores1_avg[TWENTY - 1]}")
-    print(f"{filename_suffix0} 20th value - Winrate: {winrate0[TWENTY - 1]}, {winrate1[TWENTY - 1]}")
-    print(f"{filename_suffix0} 20th value - Tags: {tags0_avg[TWENTY - 1]}, {tags1_avg[TWENTY - 1]}")
+    print(f"{filename_suffix0} 20th value - Rewards: {rewards0_avg[len(rewards0_avg) - 1]}, {rewards1_avg[len(rewards0_avg) - 1]}") # 9 for tenth step, TWENTY - 1 for 20th step (500 vs 1000 episodes)
+    print(f"{filename_suffix0} 20th value - Scores: {scores0_avg[len(rewards0_avg) - 1]}, {scores1_avg[len(rewards0_avg) - 1]}")
+    print(f"{filename_suffix0} 20th value - Winrate: {winrate0[len(rewards0_avg) - 1]}, {winrate1[len(rewards0_avg) - 1]}")
+    print(f"{filename_suffix0} 20th value - Tags: {tags0_avg[len(rewards0_avg) - 1]}, {tags1_avg[len(rewards0_avg) - 1]}")
 
 def avg_vis_helper(paraset: ParameterSet):
-    TWENTY = 10 #TODO take a wild guess what the standard setting of this variable is (in integer)
+    TWENTY = 20 #TODO take a wild guess what the standard setting of this variable is (in integer)
     """Is called for every group of training runs using the same parameters to generate the visualizations of averages between the same parameters (e.g. 20 training runs into one plot)."""
     filename_suffix0 = paraset.create_name_without_index()
     ############################################################
@@ -403,7 +404,32 @@ if __name__ == "__main__":
 
     # avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, False, "math1test", "qtrainlog/batch 8/", 0, math2=False)) 
     # avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "math1test", "qtrainlog/batch 8/", 0, math2=False)) 
-    avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "math1test", "qtrainlog/batch 8/", 0, math2=False)) 
+    # avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "math1test", "qtrainlog/batch 8/", 0, math2=False)) 
+
+    filenames = []
+    filenames.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.9, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True).create_name())
+    filenames.append(ParameterSet("aggressive_tags_24", "hard", 0.2, 0.9, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True).create_name())
+    filenames.append(ParameterSet("caps_and_tags", "hard", 0.3, 0.9, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True).create_name())
+    filenames.append(ParameterSet("aggressive_tags_24", "hard", 0.3, 0.9, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True).create_name())
+    filenames.append(ParameterSet("caps_and_tags", "hard", 0.05, 0.9, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True).create_name())
+    filenames.append(ParameterSet("aggressive_tags_24", "hard", 0.05, 0.9, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True).create_name())
+    filenames.append(ParameterSet("caps_and_tags", "hard", 0.25, 0.9, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True).create_name())
+    filenames.append(ParameterSet("aggressive_tags_24", "hard", 0.25, 0.9, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True).create_name())
+    filenames.append(ParameterSet("caps_and_tags", "hard", 0.75, 0.9, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True).create_name())
+    filenames.append(ParameterSet("aggressive_tags_24", "hard", 0.75, 0.9, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True).create_name())
+    filenames.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.85, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True).create_name())
+    filenames.append(ParameterSet("aggressive_tags_24", "hard", 0.2, 0.85, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True).create_name())
+    filenames.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.85, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True).create_name())
+    filenames.append(ParameterSet("aggressive_tags_24", "hard", 0.1, 0.85, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True).create_name())
+    filenames.append(ParameterSet("caps_and_tags", "hard", 0.3, 0.85, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True).create_name())
+    filenames.append(ParameterSet("aggressive_tags_24", "hard", 0.3, 0.85, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True).create_name())
+    filenames.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.7, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True).create_name())
+    filenames.append(ParameterSet("aggressive_tags_24", "hard", 0.1, 0.7, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True).create_name())
+    filenames.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.8, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True).create_name())
+    filenames.append(ParameterSet("aggressive_tags_24", "hard", 0.2, 0.8, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True).create_name())
+    for e in filenames:
+        vis_helper(e)
+    #vis_helper("math2scatter_aggressive_tags_24_hard_lrate0.1_discount0.9_initq10.0_1000ep_no_pre_nr0")
 
     # """Finding out how dimensions are mapped onto qtable matrix heatmap:
     # (toggle comment below to generate markers for the dimension [currently dim. f])"""
