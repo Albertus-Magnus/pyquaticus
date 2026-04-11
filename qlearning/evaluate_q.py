@@ -201,7 +201,7 @@ def vis_helper(filename_suffix0):
     print(f"{filename_suffix0} 20th value - Tags: {tags0_avg[TWENTY - 1]}, {tags1_avg[TWENTY - 1]}")
 
 def avg_vis_helper(paraset: ParameterSet):
-    TWENTY = 20 #take a wild guess what the standard setting of this variable is (in integer)
+    TWENTY = 10 #take a wild guess what the standard setting of this variable is (in integer)
     """Is called for every group of training runs using the same parameters to generate the visualizations of averages between the same parameters (e.g. 20 training runs into one plot)."""
     filename_suffix0 = paraset.create_name_without_index()
     ############################################################
@@ -333,7 +333,7 @@ if __name__ == "__main__":
     
     # Batch 0
     # vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew") (example of non-avg)
-    avg_vis_helper(ParameterSet("aggressive_tags_26", "hard", 0.2, 0.95, 10.0, False, "rules26test0", "qtrainlog/batch 0/", 0, math2=False))
+    avg_vis_helper(ParameterSet("aggressive_tags_26", "hard", 0.2, 0.95, 10.0, False, "rules26test0", "qtrainlog/batch 0/", i, math2=False)) 
 
     # """Finding out how dimensions are mapped onto qtable matrix heatmap:
     # (toggle comment below to generate markers for the dimension [currently dim. f])"""
