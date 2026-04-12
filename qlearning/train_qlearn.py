@@ -265,31 +265,56 @@ if __name__ == "__main__":
         # parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.8, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
         # parametersets.append(ParameterSet("aggressive_tags_24", "hard", 0.2, 0.8, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
         # Second time scattershotting... #
-        # lrate 0.2:
-        parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.99, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
-        parametersets.append(ParameterSet("aggressive_tags_24", "hard", 0.2, 0.99, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
-        parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.95, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
-        parametersets.append(ParameterSet("aggressive_tags_24", "hard", 0.2, 0.95, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
-        # lrate 0.1:
-        parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.99, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
-        parametersets.append(ParameterSet("aggressive_tags_24", "hard", 0.1, 0.99, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
-        parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.95, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
-        parametersets.append(ParameterSet("aggressive_tags_24", "hard", 0.1, 0.95, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
-        # lrate 0.01:
-        parametersets.append(ParameterSet("caps_and_tags", "hard", 0.01, 0.99, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
-        parametersets.append(ParameterSet("aggressive_tags_24", "hard", 0.01, 0.99, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
-        parametersets.append(ParameterSet("caps_and_tags", "hard", 0.01, 0.95, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
-        parametersets.append(ParameterSet("aggressive_tags_24", "hard", 0.01, 0.95, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
-        # lrate 0.001:
-        parametersets.append(ParameterSet("caps_and_tags", "hard", 0.001, 0.99, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
-        parametersets.append(ParameterSet("aggressive_tags_24", "hard", 0.001, 0.99, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
-        parametersets.append(ParameterSet("caps_and_tags", "hard", 0.001, 0.95, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
-        parametersets.append(ParameterSet("aggressive_tags_24", "hard", 0.001, 0.95, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
-        # lrate 0.0001:
-        parametersets.append(ParameterSet("caps_and_tags", "hard", 0.0001, 0.99, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
-        parametersets.append(ParameterSet("aggressive_tags_24", "hard", 0.0001, 0.99, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
-        parametersets.append(ParameterSet("caps_and_tags", "hard", 0.0001, 0.95, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
-        parametersets.append(ParameterSet("aggressive_tags_24", "hard", 0.0001, 0.95, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        # # lrate 0.2:
+        # parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.99, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        # parametersets.append(ParameterSet("aggressive_tags_24", "hard", 0.2, 0.99, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        # parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.95, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        # parametersets.append(ParameterSet("aggressive_tags_24", "hard", 0.2, 0.95, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        # # lrate 0.1:
+        # parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.99, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        # parametersets.append(ParameterSet("aggressive_tags_24", "hard", 0.1, 0.99, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        # parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.95, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        # parametersets.append(ParameterSet("aggressive_tags_24", "hard", 0.1, 0.95, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        # # lrate 0.01:
+        # parametersets.append(ParameterSet("caps_and_tags", "hard", 0.01, 0.99, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        # parametersets.append(ParameterSet("aggressive_tags_24", "hard", 0.01, 0.99, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        # parametersets.append(ParameterSet("caps_and_tags", "hard", 0.01, 0.95, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        # parametersets.append(ParameterSet("aggressive_tags_24", "hard", 0.01, 0.95, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        # # lrate 0.001:
+        # parametersets.append(ParameterSet("caps_and_tags", "hard", 0.001, 0.99, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        # parametersets.append(ParameterSet("aggressive_tags_24", "hard", 0.001, 0.99, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        # parametersets.append(ParameterSet("caps_and_tags", "hard", 0.001, 0.95, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        # parametersets.append(ParameterSet("aggressive_tags_24", "hard", 0.001, 0.95, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        # # lrate 0.0001:
+        # parametersets.append(ParameterSet("caps_and_tags", "hard", 0.0001, 0.99, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        # parametersets.append(ParameterSet("aggressive_tags_24", "hard", 0.0001, 0.99, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        # parametersets.append(ParameterSet("caps_and_tags", "hard", 0.0001, 0.95, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        # parametersets.append(ParameterSet("aggressive_tags_24", "hard", 0.0001, 0.95, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        # Some last attempts at convergence (ready to ditch math2 soon...) #
+        # perhaps old reward without tags was better:
+        parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.01, 0.99, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        # perhaps oob punishment is too much to avoid: (also just decreased negative punishment generally in this variant reward)
+        parametersets.append(ParameterSet("caps_and_tags_oob", "hard", 0.01, 0.99, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        parametersets.append(ParameterSet("aggressive_oob_tags_24", "hard", 0.01, 0.99, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        parametersets.append(ParameterSet("caps_and_tags_oob", "hard", 0.5, 0.3, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        parametersets.append(ParameterSet("aggressive_oob_tags_24", "hard", 0.5, 0.3, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 0, math2=True))
+        # same again (in case it doesnt converge 100% but some of the time)
+        parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 1, math2=True))
+        parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.01, 0.99, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 1, math2=True))
+        parametersets.append(ParameterSet("caps_and_tags_oob", "hard", 0.01, 0.99, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 1, math2=True))
+        parametersets.append(ParameterSet("aggressive_oob_tags_24", "hard", 0.01, 0.99, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 1, math2=True))
+        parametersets.append(ParameterSet("caps_and_tags_oob", "hard", 0.5, 0.3, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 1, math2=True))
+        parametersets.append(ParameterSet("aggressive_oob_tags_24", "hard", 0.5, 0.3, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 1, math2=True))
+        # same again, again
+        parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 2, math2=True))
+        parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.01, 0.99, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 2, math2=True))
+        parametersets.append(ParameterSet("caps_and_tags_oob", "hard", 0.01, 0.99, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 2, math2=True))
+        parametersets.append(ParameterSet("aggressive_oob_tags_24", "hard", 0.01, 0.99, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 2, math2=True))
+        parametersets.append(ParameterSet("caps_and_tags_oob", "hard", 0.5, 0.3, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 2, math2=True))
+        parametersets.append(ParameterSet("aggressive_oob_tags_24", "hard", 0.5, 0.3, 10.0, False, "math2scatter", "qtrainlog/batch 9/", 2, math2=True))
+
+        
         #########################################
         #rewardchoice = "single_aggressive_rew"
         #rewardchoice = "double_aggressive_rew" (outdated)
@@ -314,7 +339,7 @@ if __name__ == "__main__":
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/example_folder/testrew2_caps_and_tags_hard_lrate0.1_discount0.9_initq10.0_1000ep_no_pre_nr0_q_table.npy")
 
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/example_folder/testmath_single_aggressive_rew_hard_lrate0.1_discount0.9_initq10.0_1000ep_no_pre_nr0_q_table_i499.npy")
-        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 8/math1test_single_aggressive_rew_hard_lrate0.2_discount0.95_initq10.0_1000ep_no_pre_nr0_q_table.npy")
+        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 9/math2scatter_aggressive_tags_24_hard_lrate0.01_discount0.99_initq10.0_1000ep_no_pre_nr0_q_table.npy")
 
         st = np.zeros((4, 4, 4, 2, 2), dtype=np.int32) #dangerous int8-hazard (int8 is insufficient here)
         train_qlearn(st, seed=0, difficulty="hard", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt)#TODO change to use parameterset i guess...
