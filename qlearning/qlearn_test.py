@@ -12,7 +12,7 @@ from pyquaticus.base_policies.multi_rhea_policy import MRHEA_Agent, MRHEA_Enviro
 from pyquaticus.base_policies.rhealg_policy2 import RHEA_Agent, RHEA_Environment
 from pyquaticus.base_policies.ultra_def_policy import UltraDefender
 from qtable import QlearnPolicy, QTable
-from pyquaticus.utils.rewards import caps_and_grabs, defensive_rew, double_aggressive_rew, single_aggressive_rew, caps_and_tags, aggr_rew_alt, aggressive_tags_24
+from pyquaticus.utils.rewards import caps_and_grabs, defensive_rew, double_aggressive_rew, single_aggressive_rew, caps_and_tags, aggr_rew_alt, aggressive_tags_24, aggressive_oob_tags_24, caps_and_tags_oob
 #from multiprocessing import Pool, Value, Lock #i don't need any parallel processing (is qlearn even compatible?), i just need to run 10 scripts in different terminals...
 
 """
@@ -53,6 +53,10 @@ def train_qlearn(
             reward_method = caps_and_tags
         case "aggr_rew_alt":
             reward_method = aggr_rew_alt
+        case "aggressive_oob_tags_24":
+            reward_method = aggressive_oob_tags_24
+        case "caps_and_tags_oob":
+            reward_method = caps_and_tags_oob
         case "aggressive_tags_24":
             reward_method = aggressive_tags_24
         case _:
