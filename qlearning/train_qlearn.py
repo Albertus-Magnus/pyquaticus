@@ -241,8 +241,8 @@ if __name__ == "__main__":
     num_jobs = len(parametersets)
     counter.value = 0
 
-    #num_workers = 15 #15 was best number for my PC in small tests... (cores is 12)
-    num_workers = max(1, os.cpu_count())#TODO test performance of +5 (12 cores, 17 processes now)
+    num_workers = 20 #15 was best number for my PC in small tests... (cores is 12)
+    #num_workers = max(1, os.cpu_count())#TODO test performance of +5 (12 cores, 17 processes now)
     print(f"Selecting {num_workers} as num_workers.")
 
     with Pool(processes=num_workers) as pool:
