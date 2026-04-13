@@ -10,10 +10,10 @@ import re
 from pyquaticus.base_policies.base_policy import BaseAgentPolicy
 from pyquaticus.config import config_dict_std, ACTION_MAP
 
-#########################
+##########################
 # Q-learning own implementation to work with pyquaticus. Requires some representation of the state space and action space, as well as a reward function (or compatibility with pyquaticus reward functions). This will for now be a very basic implementation, without any opponent agents or multi-agent considerations. Just to get a working example of Q-learning in a simple environment (hopefully avoiding state space explosion). 
 # Online-Training is the aim, the q-table can be print to file and deployed.
-#########################
+##########################
 
 # Build a q-table from a file of info and reward (etc?) logs and safe that table (is now a q-learn policy)
 class QPyquaBuilder:
