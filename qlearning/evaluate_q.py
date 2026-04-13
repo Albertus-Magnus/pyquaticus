@@ -1,16 +1,17 @@
+# import sys
+
 from matplotlib import pyplot as plt
-import matplotlib.ticker as ticker
+# import matplotlib.ticker as ticker
 import numpy as np
 from train_qlearn import ParameterSet
 
-FOLDER = "batch 5"
+FOLDER = "batch 9"#zb "batch 5"
 """
 To change batch, change FOLDER here, sometimes "vshard_"+ in vis_helper() beginning (now automated), and vis_helper("ddd")-calls in main (very bottom).
 """
 
 
 def visualize_reward_curve(data0, data1, name, bagsize=50, foldern=f"qtrainlog/{FOLDER}/"):
-    import matplotlib.pyplot as plt
     # reward_curve = np.load(reward_curve_file, allow_pickle=True)
     # rewards0 = [step[0] for step in reward_curve]
     # rewards1 = [step[1] for step in reward_curve]
@@ -58,107 +59,7 @@ def visualize_curve(data0, data1, ylabel="Score", name="Training Progress", bags
     plt.close #
 #End of visualize_curve()
 
-# def matrix_to_heatmap(matrix, title, filename, name):
-#     #print(np.shape(matrix)) #returns (4, 4, 4, 2, 2, 4)
-#     plt.figure(figsize=(10, 8))
 
-#     # Reshape multi-dimensional array to 2D for visualization
-#     matrix_2d = matrix.reshape(64, -1)
-#     #print(f"matrix_2d shape: {matrix_2d}") #TODO need to redo the reshaping and separate the qtable into (at least) four heatmaps (but shown in one figure?)
-
-#     plt.imshow(matrix_2d, cmap='viridis', aspect='auto')
-#     plt.colorbar(label=name)
-#     plt.title(name + "\n" + title)
-#     plt.xlabel('This achsis is separated into the booleans for own flag and enemy flag, as well as the four actions')
-#     plt.ylabel('This achsis is separated into the 4*4*4=64 positional informations') #TODO figure out how the order of the cells is related to the booleans and pos. inf.'s
-#     # Save figure to file:
-#     plt.savefig(filename, dpi=300, bbox_inches='tight')
-#     #plt.show()
-#     plt.close() #
-# Badly working attempt at heatmap 2x2:
-# def matrix_to_heatmap(matrix, title, filename, name):
-#     # Prepare the layout for four subplots
-#     fig, axes = plt.subplots(2, 2, figsize=(12, 10))  # 2x2 subplots
-#     axes = axes.flatten()  # Flatten for easier indexing
-
-#     # Generate labels for flags and actions
-#     action_labels = ['Action 1', 'Action 2']
-#     flag_labels = ['Own Flag', 'Enemy Flag']
-
-#     # Iterate through the two flags and two actions
-#     #for f in range(2):  # Loop through flags
-#     for a in range(4):  # Loop through actions
-#         # Create a heatmap for each combination of the first three dimensions and the selected flag and action
-#         matrix_section = matrix[:, :, :, :, :, a]  # Shape will be (4, 4, 4, 4)
-        
-#         # Averages all the last dimension or take a specific index if applicable
-#         heatmap_data = matrix_section.mean(axis=3)  # Average over the last dimension (states) to get a 3D plot
-        
-#         # Plot the heatmap in the respective subplot
-#         im = axes[a].imshow(heatmap_data[:, :, :], cmap='viridis', aspect='auto')  # Using the first position for display
-#         axes[a].set_title(f'Flag: {flag_labels[f]}, {action_labels[a]}')
-#         axes[a].set_xlabel('Position Index')
-#         axes[a].set_ylabel('Position Index')
-
-#         # Customize the ticks
-#         # axes[a].set_xticks(range(4))  # Assuming 4 positions from the first three dimensions
-#         # axes[a].set_yticks(range(4))
-#         # axes[a].set_xticklabels(range(1, 5))
-#         # axes[a].set_yticklabels(range(1, 5))
-
-#         # Add a color bar for reference
-#         fig.colorbar(im, ax=axes[f * 2 + a], fraction=0.046, pad=0.04)
-
-#     # Set the overall title for the figure
-#     plt.suptitle(f'{title} - {name}', fontsize=16)
-#     plt.tight_layout(rect=[0, 0, 1, 0.96])  # Adjust layout to not overlap titles 
-
-#     # Save the figure
-#     plt.savefig(filename, dpi=300, bbox_inches='tight')
-#     plt.close()
-# Better working 4-maps visualizer:
-# def matrix_to_heatmap(matrix, title, filename, name):
-#     import numpy as np
-#     import matplotlib.pyplot as plt
-
-#     # Move e dimension to front
-#     matrix_e = np.moveaxis(matrix, 5, 0)  # shape: (4, 4, 4, 4, 2, 2)
-#     print(np.shape(matrix_e))
-
-#     fig, axes = plt.subplots(1, matrix_e.shape[0], figsize=(14, 6))
-
-#     if matrix_e.shape[0] == 1:
-#         axes = [axes]
-
-#     # Labels
-#     row_labels = [f"{i},{j},{k}"
-#                   for i in range(4)
-#                   for j in range(4)
-#                   for k in range(4)]
-
-#     col_labels = [f"{i},{j}"
-#                   for i in range(2)
-#                   for j in range(4)]
-
-#     for idx, (ax, submatrix) in enumerate(zip(axes, matrix_e)):
-#         mat_2d = submatrix.reshape(32, -1)
-
-#         im = ax.imshow(mat_2d, cmap='viridis', aspect='auto')
-
-#         ax.set_title(f"e = {idx}")
-
-#         # Ticks
-#         ax.set_xticks(range(len(col_labels)))
-#         ax.set_xticklabels(col_labels, rotation=90)
-
-#         ax.set_yticks(range(0, 64, 8))  # reduce clutter
-#         ax.set_yticklabels(row_labels[::8])
-
-#     fig.colorbar(im, ax=axes, label=name)
-#     fig.suptitle(name + "\n" + title)
-
-#     plt.savefig(filename, dpi=300, bbox_inches='tight')
-#     plt.close()
 def matrix_to_heatmap(matrix, title, filename, name): 
     # Great visualization and labeling now (finally), TODO need to set it to render all heatmaps without further input. Also TODO probably rename this method and un-comment the original (most above) one...
     import numpy as np
@@ -204,9 +105,10 @@ def matrix_to_heatmap(matrix, title, filename, name):
 #End of matrix_to_heatmap()
 
 def vis_helper(filename_suffix0):
+    #TWENTY = 20
     """Used for batches 1-5 to create the visualizations. Has to be called for every training run (per filename-prefix)."""
     ############################################################
-    if FOLDER=="batch 2 hard": filename_suffix0 = "vshard_" + filename_suffix0
+    #if FOLDER=="batch 9": filename_suffix0 = "vshard_" + filename_suffix0 #this is wrong now, was just there to deal with batch 5(or 4?)
     filename_suffix = "qtrainlog/"+FOLDER+"/" + filename_suffix0
     ############################################################
 
@@ -290,15 +192,17 @@ def vis_helper(filename_suffix0):
     visualize_curve(scores0_avg, scores1_avg, ylabel=f"Score (avg per {bagsize} episodes)", name=filename_suffix0)
     visualize_curve(tags1_avg, tags0_avg, ylabel=f"Tags (avg per {bagsize} episodes)", name=filename_suffix0)
     matrix_to_heatmap(q_table, filename_suffix0, "qtrainlog/"+FOLDER+"/figures/"+filename_suffix0+"qheatmap.png", "Q-value (expected reward)")
-    matrix_to_heatmap(s_table, filename_suffix0, "qtrainlog/"+FOLDER+"/figures/"+filename_suffix0+"visitcount.png", "States visited (count per state)")
+    # matrix_to_heatmap(s_table, filename_suffix0, "qtrainlog/"+FOLDER+"/figures/"+filename_suffix0+"visitcount.png", "States visited (count per state)")
+    # TODO reactivate heatmap for statecount, but need to deal with different dimensionality (see resulting error...)
     visualize_curve(winrate0, winrate1, ylabel=f"Winrate (avg per {bagsize} episodes)", name=filename_suffix0)
     ####################################################################################################################################################
-    print(f"{filename_suffix0} 20th value - Rewards: {rewards0_avg[19]}, {rewards1_avg[19]}") # 9 for tenth step, 19 for 20th step (500 vs 1000 episodes)
-    print(f"{filename_suffix0} 20th value - Scores: {scores0_avg[19]}, {scores1_avg[19]}")
-    print(f"{filename_suffix0} 20th value - Winrate: {winrate0[19]}, {winrate1[19]}")
-    print(f"{filename_suffix0} 20th value - Tags: {tags0_avg[19]}, {tags1_avg[19]}")
+    print(f"{filename_suffix0} 20th value - Rewards: {rewards0_avg[len(rewards0_avg) - 1]}, {rewards1_avg[len(rewards0_avg) - 1]}") # 9 for tenth step, TWENTY - 1 for 20th step (500 vs 1000 episodes)
+    print(f"{filename_suffix0} 20th value - Scores: {scores0_avg[len(rewards0_avg) - 1]}, {scores1_avg[len(rewards0_avg) - 1]}")
+    print(f"{filename_suffix0} 20th value - Winrate: {winrate0[len(rewards0_avg) - 1]}, {winrate1[len(rewards0_avg) - 1]}")
+    print(f"{filename_suffix0} 20th value - Tags: {tags0_avg[len(rewards0_avg) - 1]}, {tags1_avg[len(rewards0_avg) - 1]}")
 
 def avg_vis_helper(paraset: ParameterSet):
+    TWENTY = 20 #TODO take a wild guess what the standard setting of this variable is (in integer)
     """Is called for every group of training runs using the same parameters to generate the visualizations of averages between the same parameters (e.g. 20 training runs into one plot)."""
     filename_suffix0 = paraset.create_name_without_index()
     ############################################################
@@ -307,14 +211,19 @@ def avg_vis_helper(paraset: ParameterSet):
     ############################################################
 
     # Load data for visualization #TODO testing with scores rn, need to reenable the others
-    q_table = np.load(f"{filename_suffix}_nr2_q_table.npy")
-    # s_table = np.load(f"{filename_suffix}_statecount.npy")            #TODO but the s-table and q-table? Do they need to be averaged? s-table perhaps, but q-table?? Implement this last.
-    # s_table = s_table.astype(np.int32)
-    rewardcurve = [np.load(f"{filename_suffix}_nr{i}_reward_curve.npy") for i in range(20)]
-    scorelist = [np.load(f"{filename_suffix}_nr{i}_scores.npy") for i in range(20)]
-    grabslist = [np.load(f"{filename_suffix}_nr{i}_grabslist.npy") for i in range(20)]
-    tagslist = [np.load(f"{filename_suffix}_nr{i}_tagslist.npy") for i in range(20)]
+    q_table = np.load(f"{filename_suffix}_nr0_q_table.npy")
+    
+    rewardcurve = [np.load(f"{filename_suffix}_nr{i}_reward_curve.npy") for i in range(TWENTY)]
+    scorelist = [np.load(f"{filename_suffix}_nr{i}_scores.npy") for i in range(TWENTY)]
+    grabslist = [np.load(f"{filename_suffix}_nr{i}_grabslist.npy") for i in range(TWENTY)]
+    tagslist = [np.load(f"{filename_suffix}_nr{i}_tagslist.npy") for i in range(TWENTY)]
     # All data loaded
+    # print the four above lists
+    # print(f"rewardcurve: {len(rewardcurve)}")
+    # print(f"scorelist: {scorelist}")
+    # print(f"length={len(scorelist)}")
+    # print(f"grabslist: {len(grabslist)}")
+    # print(f"tagslist: {len(tagslist)}")
 
     # Compute averages of (zB) 20 training runs and (for now) process like the previous non-averaged per-episode lists
     def avg_twoteamlist(list_of_twos):
@@ -381,6 +290,7 @@ def avg_vis_helper(paraset: ParameterSet):
     rewards1 = [step[1] for step in rewardcurve_avg]
     rewards0_avg = avgbags(rewards0, bagsize)
     rewards1_avg = avgbags(rewards1, bagsize)
+    # print(f"rewards0 length is {len(rewards0)}, rewards0avg length is {len(rewards0_avg)}")
     # score:
     #scores0 = [step[0] for step in scorelist]#below line is new this line
     scores0 = [step[0] for step in scorelist_avg]
@@ -400,26 +310,26 @@ def avg_vis_helper(paraset: ParameterSet):
 
     # Visualization
     ####################################################################################################################################################
-    visualize_reward_curve(rewards0_avg, rewards1_avg, filename_suffix0, foldern=paraset.foldername)
+    #visualize_reward_curve(rewards0_avg, rewards1_avg, filename_suffix0, foldern=paraset.foldername)
     visualize_reward_curve(rewards0, rewards1, filename_suffix0 + "NO_AVG", foldern=paraset.foldername, bagsize=1)
-    visualize_curve(scores0_avg, scores1_avg, ylabel=f"Score (avg per {bagsize} episodes)", name=filename_suffix0, foldern=paraset.foldername)
+    #visualize_curve(scores0_avg, scores1_avg, ylabel=f"Score (avg per {bagsize} episodes)", name=filename_suffix0, foldern=paraset.foldername)
     # the visualiztaion with bags is not necessary for the averaged score one? perhaps wrong, but I rather need some range and variance visualizations
     visualize_curve(scores0, scores1, ylabel=f"Score (NO AVG, scorelist_avg direct test)", name=filename_suffix0, foldern=paraset.foldername, bagsize=1) #bagsize 50 is standard, 1 has to be set here
-    visualize_curve(tags1_avg, tags0_avg, ylabel=f"Tags (avg per {bagsize} episodes)", name=filename_suffix0, foldern=paraset.foldername)
+    #visualize_curve(tags1_avg, tags0_avg, ylabel=f"Tags (avg per {bagsize} episodes)", name=filename_suffix0, foldern=paraset.foldername)
     visualize_curve(tags1, tags0, ylabel=f"Tags (NO AVG)", name=filename_suffix0, foldern=paraset.foldername, bagsize=1)
-    matrix_to_heatmap(q_table, filename_suffix0, paraset.foldername + "figures/" + filename_suffix0 + "qheatmap.png", "Q-value (expected reward)") #TODO TODO TODO this today, everything else tomorrow and after...
+    matrix_to_heatmap(q_table, filename_suffix0, paraset.foldername + "figures/" + filename_suffix0 + "qheatmap.png", "Q-value (expected reward)") 
     # matrix_to_heatmap(s_table, filename_suffix0, "qtrainlog/"+FOLDER+"/figures/"+filename_suffix0+"visitcount.png", "States visited (count per state)")
     visualize_curve(winrate0, winrate1, ylabel=f"Winrate (avg per {bagsize} episodes)", name=filename_suffix0, foldern=paraset.foldername)
-    visualize_curve(winrate0, winrate1, ylabel=f"Winrate (avg per {bagsize} episodes)", name=filename_suffix0, foldern=paraset.foldername)
     ####################################################################################################################################################
-    print(f"{filename_suffix0} 20th value - Rewards: {rewards0_avg[19]}, {rewards1_avg[19]}") #TODO is 10th step rn
-    print(f"{filename_suffix0} 20th value - Scores: {scores0_avg[19]}, {scores1_avg[19]}") # scores0_avg has length 20. 20 should not be the length here?!<-Yes it should be. It is just set to give episode500 value because of small batch5! Do I need to change the handling of the lists? thought it would be same list format but avg value instead of single value now...
-    print(f"{filename_suffix0} 20th value - Winrate: {winrate0[19]}, {winrate1[19]}")
-    print(f"{filename_suffix0} 20th value - Tags: {tags0_avg[19]}, {tags1_avg[19]}")
+    
+    print(f"{filename_suffix0} Last avg. value - Rewards: {rewards0_avg[len(rewards0_avg) - 1]}, {rewards1_avg[len(rewards1_avg) - 1]}")
+    print(f"{filename_suffix0} Last avg. value - Scores: {scores0_avg[len(scores0_avg) - 1]}, {scores1_avg[len(scores1_avg) - 1]}") # scores0_avg has length 20. 20 should not be the length here?!<-Yes it should be. It is just set to give episode500 value because of small batch5! Do I need to change the handling of the lists? thought it would be same list format but avg value instead of single value now...
+    print(f"{filename_suffix0} Last avg. value - Winrate: {winrate0[len(winrate0) - 1]}, {winrate1[len(winrate1) - 1]}")
+    print(f"{filename_suffix0} Last avg. value - Tags: {tags0_avg[len(tags0_avg) - 1]}, {tags1_avg[len(tags1_avg) - 1]}")
 
 
 if __name__ == "__main__":
-
+    
     #filename_suffix0 = "vshard_example_suffix01"
     #filename_suffix = "qtrainlog/vshard_"+filename_suffix
     
@@ -427,66 +337,33 @@ if __name__ == "__main__":
     print(f"Starting visualization of {FOLDER}.")
     #q_table = np.load("qtrainlog/vshard_example_suffix01_q_table.npy") #TODO visualize Q-Table
     #matrix_to_heatmap(q_table, "test_title", "qtrainlog/vshard_example_suffix01_q_table.png")
+
+    # avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.1, 0.95, 0.0, False, "ratehigh", "qtrainlog/batch 7/", 0)) #testing the init q value 0 for capsntags
+    # TODO add variance (see example qlearn paper)
+
+    # avg_vis_helper(ParameterSet("aggr_rew_alt", "hard", 0.1, 0.9, 10.0, False, "testrew2", "qtrainlog/batch 7/", 0))
+    # avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "testrew2", "qtrainlog/batch 7/", 0))
+
+    # avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, False, "math1test", "qtrainlog/batch 8/", 0, math2=False)) 
+    # avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "math1test", "qtrainlog/batch 8/", 0, math2=False)) 
+    # avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "math1test", "qtrainlog/batch 8/", 0, math2=False)) 
+
+    i = 0 # do not forget to set other index if multiple indexes exist (not necessary for avg_vis_helper)
+    filenames = []
+    # batch 10
+    #filenames.append(ParameterSet("aggressive_tags", "hard", 0.2, 0.95, 10.0, False, "testboolchange2", "qtrainlog/batch 10/", 0))
+    # filenames.append(ParameterSet("aggressive_tags", "hard", 0.2, 0.95, 10.0, False, "testrestored", "qtrainlog/batch 10/", i))
+    # filenames.append(ParameterSet("aggressive_tags", "hard", 0.1, 0.9, 10.0, False, "testboolchange2", "qtrainlog/batch 10/", i))
+    # filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "testboolchange2", "qtrainlog/batch 10/", i))
+    # latest hpc-data:
+    filenames.append(ParameterSet("aggressive_tags", "hard", 0.1, 0.9, 10.0, False, "testboolchange2", "qtrainlog/batch 10/", i))
+    filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "testboolchange2", "qtrainlog/batch 10/", i))
+    filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "testrestored2", "qtrainlog/batch 10/", i, boolchange=False)) #TODO compare boolchange with restored, and compare aggressive_tags with single_aggressive (not just score, also tags)
     
-    # Batch 1 and 2
-    # vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew")
-    # vis_helper("lrate0.1_discount0.9_initialq10.0_caps_and_grabs")
-    # vis_helper("lrate0.1_discount0.9_initialq10.0_caps_and_tags")
-    # vis_helper("lrate0.2_discount0.9_initialq10.0_single_aggressive_rew")
-    # vis_helper("lrate0.2_discount0.9_initialq10.0_caps_and_grabs")
-    # vis_helper("lrate0.2_discount0.9_initialq10.0_caps_and_tags")
-    # vis_helper("lrate0.1_discount0.95_initialq10.0_single_aggressive_rew")
-    # vis_helper("lrate0.1_discount0.95_initialq10.0_caps_and_grabs")
-    # vis_helper("lrate0.1_discount0.95_initialq10.0_caps_and_tags")
-    # vis_helper("lrate0.1_discount0.9_initialq0.0_single_aggressive_rew")
-    # vis_helper("lrate0.1_discount0.9_initialq0.0_caps_and_tags")
-
-    # Batch 3
-    # vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew")
-    # vis_helper("lrate0.1_discount0.95_initialq10.0_single_aggressive_rew")
-    # vis_helper("lrate0.1_discount0.85_initialq10.0_single_aggressive_rew")
-    # vis_helper("lrate0.05_discount0.9_initialq10.0_single_aggressive_rew")
-    # vis_helper("lrate0.1_discount0.9_initialq10.0_caps_and_tags")
-    # vis_helper("lrate0.2_discount0.9_initialq10.0_caps_and_tags")
-    # vis_helper("lrate0.2_discount0.95_initialq10.0_caps_and_tags")
-    # vis_helper("lrate0.2_discount0.85_initialq10.0_caps_and_tags")
-    # vis_helper("lrate0.15_discount0.9_initialq10.0_caps_and_tags")
-    # vis_helper("pretrained_pretrained_lrate0.1_discount0.9_initialq10.0_single_aggressive_rew") #TODO pretrained pretrained? sounds dumb
-    # vis_helper("pretrained_pretrained_lrate0.1_discount0.9_initialq10.0_caps_and_tags")
-
-    # Batch 4
-    # vis_helper("lrate0.1_discount0.95_initialq10.0_single_aggressive_rew")
-    # vis_helper("pretrained_lrate0.1_discount0.95_initialq10.0_single_aggressive_rew")
-    # vis_helper("lrate0.05_discount0.95_initialq10.0_single_aggressive_rew")
-    # vis_helper("pretrained_lrate0.05_discount0.95_initialq10.0_single_aggressive_rew")
-
-    # Batch 5
-    # vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck1")
-    # vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck2")
-    # vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck3")
-    # vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck4")
-    # vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck5")
-
-    # Batch 6 part 1
-    # avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, False, "avgtest1", "qtrainlog/batch 6 avg/", 0))
-    # avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "avgtest1", "qtrainlog/batch 6 avg/", 0))
-    # avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, True, "avgtest1", "qtrainlog/batch 6 avg/", 0))
-    # avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, True, "avgtest1", "qtrainlog/batch 6 avg/", 0))
-
-    # # Batch 6 part 2
-    # avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.9, 10.0, False, "avgtest2", "qtrainlog/batch 6 part two/", 0))
-    # avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.2, 0.9, 10.0, False, "avgtest2", "qtrainlog/batch 6 part two/", 0))
-    # avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.95, 10.0, False, "avgtest2", "qtrainlog/batch 6 part two/", 0))
-    # avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.1, 0.95, 10.0, False, "avgtest2", "qtrainlog/batch 6 part two/", 0))
-
-    # Batch 6 part 3
-    avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", 0))
-    # avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.2, 0.95, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", 0))
-    # avg_vis_helper(ParameterSet("single_aggeressive_rew", "hard", 0.15, 0.9, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", 0))
-    # avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.15, 0.9, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", 0))
-    # avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.85, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", 0))
-    # avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.2, 0.85, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", 0))
-
+    for e in filenames:
+        #vis_helper(e)
+        avg_vis_helper(e)
+    #vis_helper("math2scatter_aggressive_tags_24_hard_lrate0.1_discount0.9_initq10.0_1000ep_no_pre_nr0")
 
     # """Finding out how dimensions are mapped onto qtable matrix heatmap:
     # (toggle comment below to generate markers for the dimension [currently dim. f])"""

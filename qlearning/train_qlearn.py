@@ -35,7 +35,7 @@ thesis (March 2026).
 # this class is just there to select (and store for some time) the right parameters and generate filenames (to log the data reliably)
 class ParameterSet:
     #def __init__(self, rewardchoice: str, lrate: float, discount: float, initialq: float, pretrain: bool, name: str, fodler: str, index: int): #test first without type
-    def __init__(self, rewardchoice, dif, lrate, discount, initialq, pretrain, name, folder, index):
+    def __init__(self, rewardchoice, dif, lrate, discount, initialq, pretrain, name, folder, index, boolchange=True):
         self.rewardchoice = rewardchoice #zB "single_aggressive_rew"
         self.dif = dif
         self.foldername = folder # "lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck1"
@@ -43,6 +43,7 @@ class ParameterSet:
         self.pretrain = pretrain
         self.name = name
         self.index = index #Do we need to store the index here? (it is so if training different parametersets it will be per set and not an overarching index)
+        self.boolchange = boolchange
 
     # Create a string for file storage that contains all important info about parameters (as well as an index if parameters are used more than once).
     def create_name(self):
@@ -73,7 +74,7 @@ def doTraining(parameterset: ParameterSet, number_jobs):
     tablefromfile = False
     if tablefromfile:
         # print("Loading Q-Table from file")
-        qtableee = QTable(parameterset.LEARNING_RATE, parameterset.DISCOUNT_FACTOR, parameterset.INITIAL_Q_VALUE, parameterset.foldername+parameterset.create_name())
+        qtableee = QTable(parameterset.LEARNING_RATE, parameterset.DISCOUNT_FACTOR, parameterset.INITIAL_Q_VALUE, parameterset.foldername+parameterset.create_name(), boolchange=parameterset.boolchange)
     else:
         # print("Setting up Q-Table")
         qtableee = QTable(parameterset.LEARNING_RATE, parameterset.DISCOUNT_FACTOR, parameterset.INITIAL_Q_VALUE)
@@ -85,8 +86,8 @@ def doTraining(parameterset: ParameterSet, number_jobs):
     grabslist = []
     tagslist = []
     index = 0 
-    #for i in range(1000): #set batch 6
-    for i in range(500): #set batch 7
+    for i in range(1000): #set batch 6
+    #for i in range(500): #set batch 7
     #while datetime.now().hour < 11 or datetime.now().hour > 20: #train until 1 am, then save the q-table and reward curve
         # print("Beginning training run at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
         seeed = np.random.randint(0, 100000) #random seed while training, set of seeds when testing (TODO)
@@ -213,8 +214,18 @@ if __name__ == "__main__":
         #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.2, 0.85, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", i))
 
         # Post-reset (13.4.26, reset to state of 18.3.26 because math2 did not work out)
+        # for i in range(20):
+        #     parametersets.append(ParameterSet("aggressive_tags", "hard", 0.2, 0.95, 10.0, False, "testrestored", "qtrainlog/batch 10/", i))
+        # Changed the boolean b_flag to represent 'on_side'. Testing effect quickly:
+        # for i in range(10):
+        #     parametersets.append(ParameterSet("aggressive_tags", "hard", 0.2, 0.95, 10.0, False, "testboolchange", "qtrainlog/batch 10/", i))
+        # again, it is somewhat promising, but I want to see some wins:
         for i in range(20):
-            parametersets.append(ParameterSet("aggressive_tags", "hard", 0.2, 0.95, 10.0, False, "testrestored", "qtrainlog/batch 10/", i))
+            parametersets.append(ParameterSet("aggressive_tags", "hard", 0.1, 0.9, 10.0, False, "testboolchange2", "qtrainlog/batch 10/", i))
+        for i in range(20):
+            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "testboolchange2", "qtrainlog/batch 10/", i))
+        for i in range(20):
+            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "testrestored2", "qtrainlog/batch 10/", i, boolchange=False)) #should this be better documented in the filename? 
         #########################################
         #rewardchoice = "single_aggressive_rew"
         #rewardchoice = "double_aggressive_rew" (outdated)
@@ -241,7 +252,7 @@ if __name__ == "__main__":
     num_jobs = len(parametersets)
     counter.value = 0
 
-    num_workers = 20 #15 was best number for my PC in small tests... (cores is 12)
+    num_workers = 32#20 #15 was best number for my PC in small tests... (cores is 12)
     #num_workers = max(1, os.cpu_count())#TODO test performance of +5 (12 cores, 17 processes now)
     print(f"Selecting {num_workers} as num_workers.")
 

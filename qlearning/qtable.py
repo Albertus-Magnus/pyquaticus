@@ -20,10 +20,11 @@ from pyquaticus.config import config_dict_std, ACTION_MAP
 # opponents: agent_2 and agent_2
 
 class QTable:
-    def __init__(self, LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, filename=None):
+    def __init__(self, LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, filename=None, boolchange=True):
         self.LEARNING_RATE = LEARNING_RATE
         self.DISCOUNT_FACTOR = DISCOUNT_FACTOR
         self.INITIAL_Q_VALUE = INITIAL_Q_VALUE
+        self.boolchange = boolchange
         if not filename == None:
             self.qtable = np.load(filename)
             #print(self.qtable)
@@ -73,7 +74,10 @@ class QTable:
         # compute opp2
         opp2_bearing = headingToState(obs[agentID][('opponent_1', 'relative_heading')])
         # compute b_flag (bool whether opponent has grabbed the blue flag)
-        b_flag = int(obs[agentID][('opponent_0', 'has_flag')] or obs[agentID][('opponent_1', 'has_flag')]) #true if any opponent has your flag
+        if self.boolchange:
+            b_flag = int(obs[agentID]["on_side"]) #now b_flag represents if opponents are tag-able
+        else: 
+            b_flag = int(obs[agentID][('opponent_0', 'has_flag')] or obs[agentID][('opponent_1', 'has_flag')]) #true if any opponent has your flag Was changed to show on which side of the map we are.
         # compute r_flag
         r_flag = int(obs[agentID]['has_flag']) #is boolean, but integer (0-1) is better for array index
         #translate action from [4, 2, 0, 6] to [0, 1, 2, 3]
@@ -189,7 +193,10 @@ class QlearnPolicy(BaseAgentPolicy):
         # compute opp2
         opp2_bearing = headingToState(obs[self.id][('opponent_1', 'relative_heading')])
         # compute b_flag (bool whether opponent has grabbed the blue flag)
-        b_flag = int(obs[self.id][('opponent_0', 'has_flag')] or obs[self.id][('opponent_1', 'has_flag')]) #true if any opponent has your flag
+        if self.q_Table.boolchange:
+            b_flag = int(obs[self.id]["on_side"]) #now b_flag represents if opponents are tag-able
+        else:
+            b_flag = int(obs[self.id][('opponent_0', 'has_flag')] or obs[self.id][('opponent_1', 'has_flag')]) #true if any opponent has your flag
         # compute r_flag
         r_flag = int(obs[self.id]['has_flag']) #is boolean, but integer (0-1) is better for array index
         # loop through action (range is 0-3)
