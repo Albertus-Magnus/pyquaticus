@@ -214,7 +214,7 @@ if __name__ == "__main__":
 
         # Post-reset (13.4.26, reset to state of 18.3.26 because math2 did not work out)
         for i in range(20):
-            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "testrestored", "qtrainlog/batch 10/", i))
+            parametersets.append(ParameterSet("aggressive_tags", "hard", 0.2, 0.95, 10.0, False, "testrestored", "qtrainlog/batch 10/", i))
         #########################################
         #rewardchoice = "single_aggressive_rew"
         #rewardchoice = "double_aggressive_rew" (outdated)
