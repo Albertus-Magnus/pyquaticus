@@ -35,6 +35,31 @@ def visualize_reward_curve(data0, data1, name, bagsize=50, foldern=f"qtrainlog/{
     plt.close() #
 #End of visualize_reward_curve()
 
+def visualize_reward_curve(data0, data1, data2, name, bagsize=50, foldern=f"qtrainlog/{FOLDER}/"):
+    # reward_curve = np.load(reward_curve_file, allow_pickle=True)
+    # rewards0 = [step[0] for step in reward_curve]
+    # rewards1 = [step[1] for step in reward_curve]
+    plt.figure(figsize=(12, 6))
+    plt.plot(data0, label='Agent 0', color='blue')
+    plt.plot(data1, label='Agent 1', color='darkblue')
+    plt.plot(data2, label='Agent 2', color='lightblue')
+    plt.xlabel(f"Steps (binned by {bagsize} episodes)")
+    plt.ylabel(f"Reward (avg per {bagsize} episodes)")
+    plt.title(f"Rewards during Q-Learn Training (3v3)\n{name}")
+    plt.grid(True)
+    # Scale x-achsis labels times 50 (or times bagsize):
+    ticks = plt.gca().get_xticks()
+    ticks = ticks[1:(len(ticks)-1)]
+    #print("\nticks: ",ticks)
+    plt.gca().set_xticks(ticks)
+    plt.gca().set_xticklabels([f'{int(x*bagsize)}' for x in ticks])
+    plt.legend()
+    # Save figure to file:
+    plt.savefig(f"{foldern}figures/{name}_reward.png", dpi=300, bbox_inches='tight')
+    #plt.show()
+    plt.close() #
+#End of visualize_reward_curve()
+
 def visualize_curve(data0, data1, ylabel="Score", name="Training Progress", bagsize=50, foldern=f"qtrainlog/{FOLDER}/"):
     import matplotlib.pyplot as plt
     # reward_curve = np.load(reward_curve_file, allow_pickle=True)
@@ -202,7 +227,7 @@ def vis_helper(filename_suffix0):
     print(f"{filename_suffix0} 20th value - Tags: {tags0_avg[len(rewards0_avg) - 1]}, {tags1_avg[len(rewards0_avg) - 1]}")
 
 def avg_vis_helper(paraset: ParameterSet):
-    TWENTY = 20 #TODO take a wild guess what the standard setting of this variable is (in integer)
+    TWENTY = paraset.nrs #used to be 20
     """Is called for every group of training runs using the same parameters to generate the visualizations of averages between the same parameters (e.g. 20 training runs into one plot)."""
     filename_suffix0 = paraset.create_name_without_index()
     ############################################################
@@ -241,7 +266,31 @@ def avg_vis_helper(paraset: ParameterSet):
             list_avg.append([s0, s1])
         return list_avg
     
-    rewardcurve_avg = avg_twoteamlist(rewardcurve)
+    # Compute averages of (zB) 20 training runs and (for now) process like the previous non-averaged per-episode lists
+    # Variant for 3v3 (three agents)
+    def avg_threeteamlist(list_of_threes):
+        list_avg = []
+        # Presumes all 20 runs have the same length.
+        for i in range(len(list_of_threes[0])): 
+            s0 = 0.
+            s1 = 0.
+            s2 = 0.
+            for z in range(len(list_of_threes)):
+                s0 += list_of_threes[z][i][0]
+                s1 += list_of_threes[z][i][1]
+                s2 += list_of_threes[z][i][2]
+                # lenght expected to be 3 now
+            
+            s0 = s0 / len(list_of_threes)
+            s1 = s1 / len(list_of_threes)
+            s2 = s2 / len(list_of_threes)
+            list_avg.append([s0, s1, s2])
+        return list_avg
+    
+    if paraset.teamsize3:
+        rewardcurve_avg = avg_threeteamlist(rewardcurve)
+    else:
+        rewardcurve_avg = avg_twoteamlist(rewardcurve)
     scorelist_avg = avg_twoteamlist(scorelist)
     grabslist_avg = avg_twoteamlist(grabslist)
     tagslist_avg = avg_twoteamlist(tagslist)
@@ -288,6 +337,7 @@ def avg_vis_helper(paraset: ParameterSet):
     # rewardcurve:
     rewards0 = [step[0] for step in rewardcurve_avg]
     rewards1 = [step[1] for step in rewardcurve_avg]
+    rewards2 = [step[2] for step in rewardcurve_avg]
     rewards0_avg = avgbags(rewards0, bagsize)
     rewards1_avg = avgbags(rewards1, bagsize)
     # print(f"rewards0 length is {len(rewards0)}, rewards0avg length is {len(rewards0_avg)}")
@@ -311,7 +361,10 @@ def avg_vis_helper(paraset: ParameterSet):
     # Visualization
     ####################################################################################################################################################
     #visualize_reward_curve(rewards0_avg, rewards1_avg, filename_suffix0, foldern=paraset.foldername)
-    visualize_reward_curve(rewards0, rewards1, filename_suffix0 + "NO_AVG", foldern=paraset.foldername, bagsize=1)
+    if paraset.teamsize3:
+        visualize_reward_curve(rewards0, rewards1, rewards2, filename_suffix0 + "NO_AVG", foldern=paraset.foldername, bagsize=1)
+    else:
+        visualize_reward_curve(rewards0, rewards1, filename_suffix0 + "NO_AVG", foldern=paraset.foldername, bagsize=1)
     #visualize_curve(scores0_avg, scores1_avg, ylabel=f"Score (avg per {bagsize} episodes)", name=filename_suffix0, foldern=paraset.foldername)
     # the visualiztaion with bags is not necessary for the averaged score one? perhaps wrong, but I rather need some range and variance visualizations
     visualize_curve(scores0, scores1, ylabel=f"Score (NO AVG, scorelist_avg direct test)", name=filename_suffix0, foldern=paraset.foldername, bagsize=1) #bagsize 50 is standard, 1 has to be set here
@@ -364,10 +417,12 @@ if __name__ == "__main__":
     # filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "x30boolchange", "qtrainlog/batch 10/", i))
     # filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "x30restored", "qtrainlog/batch 10/", i, boolchange=False)) #TODO need better visualization before I commit to large test like this (serves no sufficient purpose rn)
     # batch 10d (fr tho, above lines were never run...)
-    filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "boolchange", "qtrainlog/batch 10/", i, boolchange=True, nrs=20, ep=1000)) #purpose is comparing oldbool ("restored") with newbool ("boolchange").
-    filenames.append(ParameterSet("aggressive_tags", "hard", 0.2, 0.95, 10.0, False, "boolchange", "qtrainlog/batch 10/", i, boolchange=True, nrs=20, ep=1000))
-    filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "restored", "qtrainlog/batch 10/", i, boolchange=False, nrs=20, ep=1000))
-    filenames.append(ParameterSet("aggressive_tags", "hard", 0.2, 0.95, 10.0, False, "restored", "qtrainlog/batch 10/", i, boolchange=False, nrs=20, ep=1000))
+    # filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "boolchange", "qtrainlog/batch 10/", i, boolchange=True, nrs=20, ep=1000)) #purpose is comparing oldbool ("restored") with newbool ("boolchange").
+    # filenames.append(ParameterSet("aggressive_tags", "hard", 0.2, 0.95, 10.0, False, "boolchange", "qtrainlog/batch 10/", i, boolchange=True, nrs=20, ep=1000))
+    # filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "restored", "qtrainlog/batch 10/", i, boolchange=False, nrs=20, ep=1000))
+    # filenames.append(ParameterSet("aggressive_tags", "hard", 0.2, 0.95, 10.0, False, "restored", "qtrainlog/batch 10/", i, boolchange=False, nrs=20, ep=1000))
+    # batch 11
+    filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "3v3test", "qtrainlog/batch 10/", i, boolchange=True, nrs=10, ep=1000, teamsize3=True)) #(wrong folder, ups)
 
     for e in filenames:
         #vis_helper(e)

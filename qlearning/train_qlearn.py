@@ -15,7 +15,7 @@ from pyquaticus.base_policies.rhealg_policy2 import RHEA_Agent, RHEA_Environment
 from pyquaticus.base_policies.ultra_def_policy import UltraDefender
 from qtable import QlearnPolicy, QTable
 from pyquaticus.utils.rewards import caps_and_grabs, defensive_rew, double_aggressive_rew, single_aggressive_rew, caps_and_tags, aggressive_tags
-from qlearn_test import train_qlearn, visualize_reward_curve
+from qlearn_test import train_qlearn
 from multiprocessing import Pool, Lock, Value #i don't need any parallel processing (is qlearn even compatible?), i just need to run 10 scripts in different terminals...
 
 lock = Lock()
@@ -35,7 +35,7 @@ thesis (March 2026).
 # this class is just there to select (and store for some time) the right parameters and generate filenames (to log the data reliably)
 class ParameterSet:
     #def __init__(self, rewardchoice: str, lrate: float, discount: float, initialq: float, pretrain: bool, name: str, fodler: str, index: int): #test first without type
-    def __init__(self, rewardchoice, dif, lrate, discount, initialq, pretrain, name, folder, index, boolchange=True, nrs=20, ep=1000):
+    def __init__(self, rewardchoice, dif, lrate, discount, initialq, pretrain, name, folder, index, boolchange=True, nrs=20, ep=1000, teamsize3 = False):
         self.rewardchoice = rewardchoice #zB "single_aggressive_rew"
         self.dif = dif
         self.foldername = folder # "lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck1"
@@ -46,6 +46,7 @@ class ParameterSet:
         self.boolchange = boolchange
         self.nrs = nrs
         self.ep = ep
+        self.teamsize3 = teamsize3
 
     # Create a string for file storage that contains all important info about parameters (as well as an index if parameters are used more than once).
     def create_name(self):
@@ -90,7 +91,7 @@ def doTraining(parameterset: ParameterSet, number_jobs):
     grabslist = []
     tagslist = []
     index = 0 
-    for i in range(parameterset.ep): #set batch 6
+    for i in range(parameterset.ep): #number of episodes is now set by ParameterSet
     #for i in range(500): #set batch 7
     #while datetime.now().hour < 11 or datetime.now().hour > 20: #train until 1 am, then save the q-table and reward curve
         # print("Beginning training run at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
@@ -99,6 +100,7 @@ def doTraining(parameterset: ParameterSet, number_jobs):
         timel = 600.
         if index < 500 and parameterset.pretrain: #pretraininng with easy opponents, for more exploration on opponent base  [pretraining"easy" disabled for now, all training against easy(now hard)]
             rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty="easy", reward_choice=parameterset.rewardchoice, render_mode=None, timelimit=timel, q_table=qtableee) #might make timelimit a parameterset choice too...
+            # TODO add teamsize3 parameter to input of train_qlearn (both times)
             qtableee.qtable = u_table.qtable
             # tags, rewardlist, captures, grabs are all for [0] and [1] (the two teams)
             # After each episode update the values of q-table. For this purpose updates are calculated during the episode into the u-table. Afterwards it gets switched with q-table.
@@ -109,11 +111,15 @@ def doTraining(parameterset: ParameterSet, number_jobs):
         # Some of the data we are tracking needs to be added to another list structure:
         #rewardcurve.append(rewardsteps)#wrong, need to sum it up exactly before that
         rewardsum = [0., 0.]
+        if parameterset.teamsize3:
+            rewardsum = [0., 0., 0.]
         #print("\n\n -##########- \grab_entry: ",grab_entry)
         for r in rewardsteps:
             # agent0 and agent1 are the ones where reward is interesting for us.
             rewardsum[0] += r['agent_0']
             rewardsum[1] += r['agent_1']
+            if parameterset.teamsize3:
+                rewardsum[2] += r['agent_2']
         rewardcurve.append(rewardsum) 
         # rewardcurve thus contains agents 0 & 1 as index [0] & [1].
         scorelist.append(capture_entry) #zB [ 0 21]
@@ -234,16 +240,19 @@ if __name__ == "__main__":
         # for i in range(50):       #TODO I need better visualization on old plots to gauge the performance (conversion rate!) of the so far standard setting. I need all single score curves in one plot or simmilar. Only then it makes sense to run a large test again(?).
         #     parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "x30restored", "qtrainlog/batch 10/", i, boolchange=False))
         # Testing the performance of boolchange to see if it works or not.
-        for i in range(20):
-            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "boolchange", "qtrainlog/batch 10/", i, boolchange=True, nrs=20, ep=1000)) #see if this improves "chasing" behaviour.
+        # for i in range(20):
+        #     parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "boolchange", "qtrainlog/batch 10/", i, boolchange=True, nrs=20, ep=1000)) #see if this improves "chasing" behaviour.
+        # for i in range(10):
+        #     parametersets.append(ParameterSet("aggressive_tags", "hard", 0.01, 0.95, 10.0, False, "boolchange", "qtrainlog/batch 10/", i, boolchange=True, nrs=10, ep=1000))
+        # for i in range(10):
+        #     parametersets.append(ParameterSet("aggressive_tags", "hard", 0.2, 0.99, 10.0, False, "boolchange", "qtrainlog/batch 10/", i, boolchange=True, nrs=10, ep=1000))
+        # for i in range(10):
+        #     parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.01, 0.99, 10.0, False, "boolchange", "qtrainlog/batch 10/", i, boolchange=True, nrs=10, ep=1000))
+        # for i in range(10):
+        #     parametersets.append(ParameterSet("aggressive_tags", "hard", 0.01, 0.99, 10.0, False, "boolchange", "qtrainlog/batch 10/", i, boolchange=True, nrs=10, ep=1000)) 
+        # batch 11: Testing if 3v3 works.
         for i in range(10):
-            parametersets.append(ParameterSet("aggressive_tags", "hard", 0.01, 0.95, 10.0, False, "boolchange", "qtrainlog/batch 10/", i, boolchange=True, nrs=10, ep=1000))
-        for i in range(10):
-            parametersets.append(ParameterSet("aggressive_tags", "hard", 0.2, 0.99, 10.0, False, "boolchange", "qtrainlog/batch 10/", i, boolchange=True, nrs=10, ep=1000))
-        for i in range(10):
-            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.01, 0.99, 10.0, False, "boolchange", "qtrainlog/batch 10/", i, boolchange=True, nrs=10, ep=1000))
-        for i in range(10):
-            parametersets.append(ParameterSet("aggressive_tags", "hard", 0.01, 0.99, 10.0, False, "boolchange", "qtrainlog/batch 10/", i, boolchange=True, nrs=10, ep=1000)) 
+            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "3v3test", "qtrainlog/batch 10/", i, boolchange=True, nrs=10, ep=1000, teamsize3=True))
         #########################################
         #rewardchoice = "single_aggressive_rew"
         #rewardchoice = "double_aggressive_rew" (outdated)
@@ -270,7 +279,7 @@ if __name__ == "__main__":
     num_jobs = len(parametersets)
     counter.value = 0
 
-    num_workers = 32#20 #15 was best number for my PC in small tests... (cores is 12)
+    num_workers = 10#20 #15 was best number for my PC in small tests... (cores is 12)
     #num_workers = max(1, os.cpu_count())#TODO test performance of +5 (12 cores, 17 processes now)
     print(f"Selecting {num_workers} as num_workers.")
 

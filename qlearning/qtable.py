@@ -70,14 +70,35 @@ class QTable:
             #print("own_home_bearing =", obs[agentID]['own_home_bearing'])#output of this is "own_home_bearing = 117.06809126991149"
             ownpos = headingToState(obs[agentID]['opponent_home_bearing'])
         # compute opp1 (angle (0-3) between own heading and bearing towards opponent 1)
-        opp1_bearing = headingToState(obs[agentID][('opponent_0', 'relative_heading')]) 
-        # compute opp2
-        opp2_bearing = headingToState(obs[agentID][('opponent_1', 'relative_heading')])
+        if len(obs) >= 5: #3v3 #TODO check if this works
+            #closest two, not just any two opponents
+            if obs[agentID][('opponent_0', 'distance')] < obs[agentID][('opponent_1', 'distance')]:
+                #opp0 is one of two closest opp. agents (out of three)
+                opp1_bearing = headingToState(obs[agentID][('opponent_0', 'relative_heading')]) 
+            else:
+                #opp1 is one of two closest opp. agents
+                opp1_bearing = headingToState(obs[agentID][('opponent_1', 'relative_heading')]) 
+            if obs[agentID][('opponent_1', 'distance')] < obs[agentID][('opponent_2', 'distance')]:
+                #opp1 is also one of two closest opp. agents
+                opp2_bearing = headingToState(obs[agentID][('opponent_1', 'relative_heading')])
+            else:
+                #opp2 is also one of two closest opp. agents
+                opp2_bearing = headingToState(obs[agentID][('opponent_2', 'relative_heading')])
+            # (All closest agents should be sorted out now with the minimal number of comparisons.)
+        else: #2v2
+            # compute opp1 (angle (0-3) between own heading and bearing towards opponent 1)
+            opp1_bearing = headingToState(obs[agentID][('opponent_0', 'relative_heading')])
+            # compute opp2
+            opp2_bearing = headingToState(obs[agentID][('opponent_1', 'relative_heading')])
         # compute b_flag (bool whether opponent has grabbed the blue flag)
         if self.boolchange:
             b_flag = int(obs[agentID]["on_side"]) #now b_flag represents if opponents are tag-able
         else: 
-            b_flag = int(obs[agentID][('opponent_0', 'has_flag')] or obs[agentID][('opponent_1', 'has_flag')]) #true if any opponent has your flag Was changed to show on which side of the map we are.
+            if len(obs) >= 5: #TODO check if this works
+            #if 3 opponents exist
+                b_flag = int(obs[agentID][('opponent_0', 'has_flag')] or obs[agentID][('opponent_1', 'has_flag')] or obs[agentID][('opponent_2', 'has_flag')]) #true if any opponent has your flag Was changed to show on which side of the map we are (as parameter, but so far does not look better).
+            else:
+                b_flag = int(obs[agentID][('opponent_0', 'has_flag')] or obs[agentID][('opponent_1', 'has_flag')]) #true if any opponent has your flag Was changed to show on which side of the map we are.
         # compute r_flag
         r_flag = int(obs[agentID]['has_flag']) #is boolean, but integer (0-1) is better for array index
         #translate action from [4, 2, 0, 6] to [0, 1, 2, 3]
@@ -188,15 +209,36 @@ class QlearnPolicy(BaseAgentPolicy):
             #print("own_home_bearing =",obs[self.id]['own_home_bearing'])#output of this is "own_home_bearing = 117.06809126991149"
             ownpos = headingToState(obs[self.id]['opponent_home_bearing'])
             #print above returns 117.06809126991149 wth?!?
-        # compute opp1 (angle (0-3) between own heading and bearing towards opponent 1)
-        opp1_bearing = headingToState(obs[self.id][('opponent_0', 'relative_heading')]) 
-        # compute opp2
-        opp2_bearing = headingToState(obs[self.id][('opponent_1', 'relative_heading')])
+        if len(obs) >= 5: #3v3 detection
+            #not just any two opponents, we need the closest two opponents in 3v3:
+            # use obs[self.id][('opponent_1', 'distance')] for comparison :-)
+            if obs[self.id][('opponent_0', 'distance')] < obs[self.id][('opponent_1', 'distance')]:
+                #opp0 is one of two closest opp. agents (out of three)
+                opp1_bearing = headingToState(obs[self.id][('opponent_0', 'relative_heading')]) 
+            else:
+                #opp1 is one of two closest opp. agents
+                opp1_bearing = headingToState(obs[self.id][('opponent_1', 'relative_heading')]) 
+            if obs[self.id][('opponent_1', 'distance')] < obs[self.id][('opponent_2', 'distance')]:
+                #opp1 is also one of two closest opp. agents
+                opp2_bearing = headingToState(obs[self.id][('opponent_1', 'relative_heading')])
+            else:
+                #opp2 is also one of two closest opp. agents
+                opp2_bearing = headingToState(obs[self.id][('opponent_2', 'relative_heading')])
+            # (All closest agents should be sorted out now with the minimal number of comparisons.)
+        else:
+            # compute opp1 (angle (0-3) between own heading and bearing towards opponent 1)
+            opp1_bearing = headingToState(obs[self.id][('opponent_0', 'relative_heading')]) 
+            # compute opp2
+            opp2_bearing = headingToState(obs[self.id][('opponent_1', 'relative_heading')])
         # compute b_flag (bool whether opponent has grabbed the blue flag)
         if self.q_Table.boolchange:
             b_flag = int(obs[self.id]["on_side"]) #now b_flag represents if opponents are tag-able
         else:
-            b_flag = int(obs[self.id][('opponent_0', 'has_flag')] or obs[self.id][('opponent_1', 'has_flag')]) #true if any opponent has your flag
+            if len(obs) >= 5: #TODO check if this works
+            #if 3 opponents exist
+                b_flag = int(obs[self.id][('opponent_0', 'has_flag')] or obs[self.id][('opponent_1', 'has_flag')] or obs[self.id][('opponent_2', 'has_flag')]) #true if any opponent has your flag Was changed to show on which side of the map we are (as parameter, but so far does not look better).
+            else:
+                b_flag = int(obs[self.id][('opponent_0', 'has_flag')] or obs[self.id][('opponent_1', 'has_flag')]) #true if any opponent has your flag
         # compute r_flag
         r_flag = int(obs[self.id]['has_flag']) #is boolean, but integer (0-1) is better for array index
         # loop through action (range is 0-3)
