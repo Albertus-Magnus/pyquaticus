@@ -355,11 +355,20 @@ if __name__ == "__main__":
     # filenames.append(ParameterSet("aggressive_tags", "hard", 0.2, 0.95, 10.0, False, "testrestored", "qtrainlog/batch 10/", i))
     # filenames.append(ParameterSet("aggressive_tags", "hard", 0.1, 0.9, 10.0, False, "testboolchange2", "qtrainlog/batch 10/", i))
     # filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "testboolchange2", "qtrainlog/batch 10/", i))
-    # latest hpc-data:
-    filenames.append(ParameterSet("aggressive_tags", "hard", 0.1, 0.9, 10.0, False, "testboolchange2", "qtrainlog/batch 10/", i))
-    filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "testboolchange2", "qtrainlog/batch 10/", i))
-    filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "testrestored2", "qtrainlog/batch 10/", i, boolchange=False)) #TODO compare boolchange with restored, and compare aggressive_tags with single_aggressive (not just score, also tags)
-    
+    # latest hpc-data (13.4.):
+    # filenames.append(ParameterSet("aggressive_tags", "hard", 0.1, 0.9, 10.0, False, "testboolchange2", "qtrainlog/batch 10/", i))
+    # filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "testboolchange2", "qtrainlog/batch 10/", i))
+    # filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "testrestored2", "qtrainlog/batch 10/", i, boolchange=False)) #TODO compare boolchange with restored, and compare aggressive_tags with single_aggressive (not just score, also tags)
+    # FROM HERE THE NEW NAME SCHEME IS USED IN TESTS
+    # batch 10d (a lot of runs to gather solid statistics on chances of the training working) #NOTE currently not being run, not sure if I should proceed. Actually I must know what the success-rate of "normal" 0.2 0.95 oldbool single_aggr. is. Run this ~50 times.
+    # filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "x30boolchange", "qtrainlog/batch 10/", i))
+    # filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "x30restored", "qtrainlog/batch 10/", i, boolchange=False)) #TODO need better visualization before I commit to large test like this (serves no sufficient purpose rn)
+    # batch 10d (fr tho, above lines were never run...)
+    filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "boolchange", "qtrainlog/batch 10/", i, boolchange=True, nrs=20, ep=1000)) #purpose is comparing oldbool ("restored") with newbool ("boolchange").
+    filenames.append(ParameterSet("aggressive_tags", "hard", 0.2, 0.95, 10.0, False, "boolchange", "qtrainlog/batch 10/", i, boolchange=True, nrs=20, ep=1000))
+    filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "restored", "qtrainlog/batch 10/", i, boolchange=False, nrs=20, ep=1000))
+    filenames.append(ParameterSet("aggressive_tags", "hard", 0.2, 0.95, 10.0, False, "restored", "qtrainlog/batch 10/", i, boolchange=False, nrs=20, ep=1000))
+
     for e in filenames:
         #vis_helper(e)
         avg_vis_helper(e)
