@@ -253,6 +253,8 @@ if __name__ == "__main__":
         # batch 11: Testing if 3v3 works.
         for i in range(10):
             parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "3v3test", "qtrainlog/batch 10/", i, boolchange=True, nrs=10, ep=1000, teamsize3=True))
+        for i in range(10):
+            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "3v3test", "qtrainlog/batch 11/", i, boolchange=True, nrs=10, ep=1000, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
         #########################################
         #rewardchoice = "single_aggressive_rew"
         #rewardchoice = "double_aggressive_rew" (outdated)

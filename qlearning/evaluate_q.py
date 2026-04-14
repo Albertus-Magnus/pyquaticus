@@ -422,7 +422,7 @@ if __name__ == "__main__":
     # filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "restored", "qtrainlog/batch 10/", i, boolchange=False, nrs=20, ep=1000))
     # filenames.append(ParameterSet("aggressive_tags", "hard", 0.2, 0.95, 10.0, False, "restored", "qtrainlog/batch 10/", i, boolchange=False, nrs=20, ep=1000))
     # batch 11
-    filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "3v3test", "qtrainlog/batch 10/", i, boolchange=True, nrs=10, ep=1000, teamsize3=True)) #(wrong folder, ups)
+    # filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "3v3test", "qtrainlog/batch 10/", i, boolchange=True, nrs=10, ep=1000, teamsize3=True)) #(wrong folder, ups)
 
     for e in filenames:
         #vis_helper(e)
