@@ -97,7 +97,7 @@ class CompPyquaticusEnv(PyQuaticusEnv):
         # Set Competition Specific Variables
 
         # Set Base Pyquaticus Variables
-        super().__init__(team_size=2, #TODO this MUST be changed back to 3
+        super().__init__(team_size=3, #NOTE this must be changed (temporarily!) to 2 to run 2v2
                         action_space=action_space,
                         reward_config=reward_config,
                         config_dict=config_dict,

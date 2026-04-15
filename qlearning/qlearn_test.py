@@ -6,15 +6,16 @@ import sys
 #import pyquaticus
 import numpy as np
 from numpy.typing import NDArray
-# from pyquaticus import pyquaticus_v0
-from pyquaticus.envs.competition_pyquaticus import CompPyquaticusEnv
+from pyquaticus import pyquaticus_v0
+from pyquaticus.envs.competition_pyquaticus import CompPyquaticusEnv #2026 mctf environment
 from pyquaticus.base_policies.base_combined import Heuristic_CTF_Agent
 # from pyquaticus.base_policies.multi_rhea_policy import MRHEA_Agent, MRHEA_Environment
 # from pyquaticus.base_policies.rhealg_policy2 import RHEA_Agent, RHEA_Environment
 # from pyquaticus.base_policies.ultra_def_policy import UltraDefender
 from qtable import QlearnPolicy, QTable
-from pyquaticus.utils.rewards import single_aggressive_rew, caps_and_tags, aggressive_tags_26
+from pyquaticus.utils.rewards import caps_and_grabs, single_aggressive_rew, caps_and_tags, aggressive_tags_26
 from pyquaticus.mctf26_config import config_dict_std as mctf_config
+#from multiprocessing import Pool, Value, Lock #i don't need any parallel processing (is qlearn even compatible?), i just need to run 10 scripts in different terminals...
 
 """
 This was copied from magnus_test.py and modified to 
@@ -23,6 +24,7 @@ create a test of 2x qlearn policy agents versus
 """
 
 # To run the training this is called as a function, with MODE and reward function as parameters.
+
 def train_qlearn(
     #rewardcurve,
     #scores,
@@ -32,18 +34,18 @@ def train_qlearn(
     # seed for "random" starts
     difficulty: str = "hard",
     # difficulty is the MODE of the example agents, can be "hard", "medium" or "easy"
-    reward_choice: str = "adjustmepls", 
-    render_mode: str = None, # or 'human'
+    reward_choice: str = "adjustmepls", #maybe could be string, but cleaner so?
+    render_mode: str = None,#'human'
     timelimit: float = 600.,
-    logname: str = "match.log",
+    #logname: str = "match.log",
     q_table: QTable = None, #str = None #Not a string?! Is already a QTable!
-    math2: bool = False
+    teamsize3: bool = False
 ):
     
     # Set score function to the selected reward (match statement syntax might require python version 3.10 or newer)
     match reward_choice:
-        # case "caps_and_grabs":
-        #     reward_method = caps_and_grabs
+        case "caps_and_grabs":
+            reward_method = caps_and_grabs
         # case "double_aggressive_rew":
         #     reward_method = double_aggressive_rew
         case "single_aggressive_rew":
@@ -52,22 +54,24 @@ def train_qlearn(
         #     reward_method = defensive_rew
         case "caps_and_tags":
             reward_method = caps_and_tags
+        # case "aggressive_tags":
+        #     reward_method = aggressive_tags
         case "aggressive_tags_26":
             reward_method = aggressive_tags_26
         case _:
             print("Error: Invalid reward choice. Please select a valid reward function.")
             return
 
-    # config_dict = {}
-    # config_dict["max_time"] = timelimit#600.0
-    # config_dict["max_score"] = 100
-    # config_dict["render_agent_ids"] = True
-    # config_dict["dynamics"] = ["si", "si", "si", "si"
-    #                            ]
-    # config_dict["sim_speedup_factor"] = 3
-    # config_dict["default_init"] = False #random starting positions (uses seed)
-    # config_dict = mctf_config
-    # config_dict[""]
+    config_dict = {}
+    config_dict["max_time"] = timelimit#600.0
+    config_dict["max_score"] = 100
+    config_dict["render_agent_ids"] = True
+    if teamsize3: #3v3 mode is now introduced as parameter, if selected we prepare teamsize3 mode and training. #TODO qtable has to be ready-ed for this, too.
+        config_dict["dynamics"] = ["si", "si", "si", "si", "si", "si"]
+    else:
+        config_dict["dynamics"] = ["si", "si", "si", "si"]
+    config_dict["sim_speedup_factor"] = 3
+    config_dict["default_init"] = False #random starting positions (uses seed)
 
     #-Logging utility-
     # logging.basicConfig(
@@ -77,10 +81,14 @@ def train_qlearn(
     #    format="%(asctime)s %(message)s",
     #    force=True
     # )
-
-    #env = pyquaticus_v0.PyQuaticusEnv(team_size=2, action_space="discrete", config_dict=config_dict, reward_config={'agent_0': reward_method, 'agent_1': reward_method, 'agent_2': reward_method, 'agent_3': reward_method},
-    env = CompPyquaticusEnv(action_space="discrete", config_dict=mctf_config, reward_config={'agent_0': reward_method, 'agent_1': reward_method, 'agent_2': reward_method, 'agent_3': reward_method}, render_mode=render_mode) #'human')  #None)#'human')
-    term_g = {'agent_0':False,'agent_1':False,'agent_2':False}
+    if teamsize3: #3v3
+        #env = pyquaticus_v0.PyQuaticusEnv(team_size=3, action_space="discrete", config_dict=config_dict, reward_config={'agent_0': reward_method, 'agent_1': reward_method, 'agent_2': reward_method, 'agent_3': reward_method, 'agent_4': reward_method, 'agent_5': reward_method},render_mode=render_mode)
+        env = CompPyquaticusEnv(action_space="discrete", config_dict=mctf_config, reward_config={'agent_0': reward_method, 'agent_1': reward_method, 'agent_2': reward_method, 'agent_3': reward_method, 'agent_4': reward_method, 'agent_5': reward_method}, render_mode=render_mode)
+    else: #2v2 (not really possible in 26 environment!)
+        print("Warning! Team size is not consistent with competition setting, despite launching the competition setting. This might not work properly with less than 3v3.")
+        #env = pyquaticus_v0.PyQuaticusEnv(team_size=2, action_space="discrete", config_dict=config_dict, reward_config={'agent_0': reward_method, 'agent_1': reward_method, 'agent_2': reward_method, 'agent_3': reward_method, 'agent_4': reward_method, 'agent_5': reward_method}, render_mode=render_mode)
+        env = CompPyquaticusEnv(action_space="discrete", config_dict=mctf_config, reward_config={'agent_0': reward_method, 'agent_1': reward_method, 'agent_2': reward_method, 'agent_3': reward_method}, render_mode=render_mode)
+    term_g = {'agent_0':False,'agent_1':False,'agent_2':False} #this was already set for 3v3, apparently this works with 2v2? (Perhaps there is an alternative win condition to timelimit that we never hit?)
     truncated_g = {'agent_0':False,'agent_1':False,'agent_2':False}
     term = term_g
     trunc = truncated_g
@@ -92,74 +100,97 @@ def train_qlearn(
     # temp_grabs = env.state["grabs"]
     # temp_tags = env.state["tags"]
     
-
-    # Base_combine agents
-    H_one = Heuristic_CTF_Agent('agent_2', env, mode=difficulty, continuous=False)#TODO try if False works (seems more fair)
-    H_two = Heuristic_CTF_Agent('agent_3', env, mode=difficulty, continuous=False)
-    
-    # print("Setting up q-learn agents")
-    if q_table == None: print("Error: q-table not set up before agents are created.")
-    if math2:
-        u_table = None
-    else:
+    if teamsize3: #3v3
+        # Base_combine agents
+        H_one = Heuristic_CTF_Agent('agent_3', env, mode=difficulty, continuous=False)
+        H_two = Heuristic_CTF_Agent('agent_4', env, mode=difficulty, continuous=False)
+        H_three = Heuristic_CTF_Agent('agent_5', env, mode=difficulty, continuous=False)
+        
+        # print("Setting up q-learn agents")
+        if q_table == None: print("Error: q-table not set up before agents are created.")
         u_table = QTable(q_table.LEARNING_RATE, q_table.DISCOUNT_FACTOR, q_table.INITIAL_Q_VALUE)
         u_table.qtable = np.copy(q_table.qtable)
-    R_one = QlearnPolicy('agent_0', env, q_table)
-    R_two = QlearnPolicy('agent_1', env, q_table)
+        # q-learn agents
+        R_one = QlearnPolicy('agent_0', env, q_table, u_table)
+        R_two = QlearnPolicy('agent_1', env, q_table, u_table)
+        R_three = QlearnPolicy('agent_2', env, q_table, u_table)
+    else: #2v2
+        # Base_combine agents
+        H_one = Heuristic_CTF_Agent('agent_2', env, mode=difficulty, continuous=False)#TODO try if False works (seems more fair)
+        H_two = Heuristic_CTF_Agent('agent_3', env, mode=difficulty, continuous=False)
+        
+        # print("Setting up q-learn agents")
+        if q_table == None: print("Error: q-table not set up before agents are created.")
+        u_table = QTable(q_table.LEARNING_RATE, q_table.DISCOUNT_FACTOR, q_table.INITIAL_Q_VALUE)
+        u_table.qtable = np.copy(q_table.qtable)
+        # q-learn agents
+        R_one = QlearnPolicy('agent_0', env, q_table, u_table)
+        R_two = QlearnPolicy('agent_1', env, q_table, u_table)
 
     step = 0
-    rewardsteps = []   #actually, this is easier (still 2 dim but turned "90°") [[], []] #two-dimensional list to track both agents of this team #TODO check if rewardcurve is meaningless now
+    rewardsteps = []   #actually, this is easier (still 2 dim but turned "90°") [[], []] #two-dimensional list to track both agents of this team
     while True:
-        # Base_combine agents
-        two = H_one.compute_action(obs, info)
-        three = H_two.compute_action(obs, info)
-        
-        zero = R_one.compute_action(obs, info)
-        one = R_two.compute_action(obs, info)
+        if teamsize3:
+            # Base_combine agents
+            three = H_one.compute_action(obs, info)
+            four = H_two.compute_action(obs, info)
+            five = H_three.compute_action(obs, info)
+            
+            zero = R_one.compute_action(obs, info)
+            one = R_two.compute_action(obs, info)
+            two = R_three.compute_action(obs, info)
 
-        # For both agents necessary data for q-value update is saved:
-        a0_qstep = R_one.q_Table.prepareUpdate(obs, 'agent_0', zero)
-        a1_qstep = R_two.q_Table.prepareUpdate(obs, 'agent_1', one)
-        #(ownpos, opp1_bearing, opp2_bearing, b_flag, r_flag, action)
-        
-        # 2v2 step
-        obs, reward, term, trunc, info = env.step({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three})
-        #print("\n\nReward:",reward)#Reward: {'agent_0': 0.2734431070341813, 'agent_1': 0.2208806900959132, 'agent_2': -0.12809429110777018, 'agent_3': 0.0, 'agent_4': 0.0, 'agent_5': 0.0}
-        
-        # Update Q-Table for both agents (same table, two updates) NOTE the qtable is only updated after the game (batch). But necessary information is saved here
-        a0_step2 = R_one.q_Table.prepareUpdate(obs, 'agent_0', 4) #action 4 is not being used, but 4 so there is no "error" printed.
-        a1_step2 = R_two.q_Table.prepareUpdate(obs, 'agent_1', 4)
-        #print("\nActions: zero",zero,"; one",one)
+            # For all three agents necessary data for q-value update is saved:
+            a0_qstep = R_one.q_Table.prepareUpdate(obs, 'agent_0', zero)
+            a1_qstep = R_two.q_Table.prepareUpdate(obs, 'agent_1', one)
+            a2_qstep = R_three.q_Table.prepareUpdate(obs, 'agent_2', two)
+            #(ownpos, opp1_bearing, opp2_bearing, b_flag, r_flag, action)
+            
+            # 3v3 step
+            obs, reward, term, trunc, info = env.step({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three, 'agent_4':four, 'agent_5':five})
+            #print("\n\nReward:",reward)#Reward: {'agent_0': 0.2734431070341813, 'agent_1': 0.2208806900959132, 'agent_2': -0.12809429110777018, 'agent_3': 0.0, 'agent_4': 0.0, 'agent_5': 0.0}
+            
+            # Update Q-Table for both agents (same table, two updates)
+            #print("\nActions: zero",zero,"; one",one)
+            R_one.set_q_value(a0_qstep[0], a0_qstep[1], a0_qstep[2], a0_qstep[3], a0_qstep[4], a0_qstep[5], reward['agent_0'])
+            s_table[a0_qstep[0]][a0_qstep[1]][a0_qstep[2]][a0_qstep[3]][a0_qstep[4]] += 1
+            R_two.set_q_value(a1_qstep[0], a1_qstep[1], a1_qstep[2], a1_qstep[3], a1_qstep[4], a1_qstep[5], reward['agent_1'])
+            s_table[a1_qstep[0]][a1_qstep[1]][a1_qstep[2]][a1_qstep[3]][a1_qstep[4]] += 1
+            R_three.set_q_value(a2_qstep[0], a2_qstep[1], a2_qstep[2], a2_qstep[3], a2_qstep[4], a2_qstep[5], reward['agent_2'])
+            s_table[a2_qstep[0]][a2_qstep[1]][a2_qstep[2]][a2_qstep[3]][a2_qstep[4]] += 1
+            rewardsteps.append({'agent_0': reward['agent_0'], 'agent_1': reward['agent_1'], 'agent_2': reward['agent_2']})    #TODO do I append third agent?
+        if not teamsize3:
+            # Base_combine agents
+            two = H_one.compute_action(obs, info)
+            three = H_two.compute_action(obs, info)
+            
+            zero = R_one.compute_action(obs, info)
+            one = R_two.compute_action(obs, info)
 
-        R_one.set_q_value(a0_step2[0], a0_step2[1], a0_step2[2], a0_step2[3], a0_step2[4], a0_qstep[5], reward['agent_0']) #only action is used from previous frame/timestep
-        s_table[a0_qstep[0]][a0_qstep[1]][a0_qstep[2]][a0_qstep[3]][a0_qstep[4]] += 1
-        R_two.set_q_value(a1_step2[0], a1_step2[1], a1_step2[2], a1_step2[3], a1_step2[4], a1_qstep[5], reward['agent_1']) #only action is used from previous frame/timestep
-        s_table[a1_qstep[0]][a1_qstep[1]][a1_qstep[2]][a1_qstep[3]][a1_qstep[4]] += 1
-        
-        # Keep track of reward
-        rewardsteps.append({'agent_0': reward['agent_0'], 'agent_1': reward['agent_1']})
-        # print("REWARD:", {'agent_0': reward['agent_0'], 'agent_1': reward['agent_1']})
-        # -Logging utility- (disabled for training, too much memory)
-        # Writes the gamestate info into pyquaticus/match.log #this seems like it is doubled? 
-        #logging.info("obs: %s", obs) 
-        #logging.info("reward: %s", reward)
-        #logging.info("info: %s", info)
+            # For both agents necessary data for q-value update is saved:
+            a0_qstep = R_one.q_Table.prepareUpdate(obs, 'agent_0', zero)
+            a1_qstep = R_two.q_Table.prepareUpdate(obs, 'agent_1', one)
+            #(ownpos, opp1_bearing, opp2_bearing, b_flag, r_flag, action)
+            
+            # 2v2 step
+            obs, reward, term, trunc, info = env.step({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three})
+            #print("\n\nReward:",reward)#Reward: {'agent_0': 0.2734431070341813, 'agent_1': 0.2208806900959132, 'agent_2': -0.12809429110777018, 'agent_3': 0.0, 'agent_4': 0.0, 'agent_5': 0.0}
+            
+            # Update Q-Table for both agents (same table, two updates)
+            #print("\nActions: zero",zero,"; one",one)
+            R_one.set_q_value(a0_qstep[0], a0_qstep[1], a0_qstep[2], a0_qstep[3], a0_qstep[4], a0_qstep[5], reward['agent_0'])
+            s_table[a0_qstep[0]][a0_qstep[1]][a0_qstep[2]][a0_qstep[3]][a0_qstep[4]] += 1
+            R_two.set_q_value(a1_qstep[0], a1_qstep[1], a1_qstep[2], a1_qstep[3], a1_qstep[4], a1_qstep[5], reward['agent_1'])
+            s_table[a1_qstep[0]][a1_qstep[1]][a1_qstep[2]][a1_qstep[3]][a1_qstep[4]] += 1
+            rewardsteps.append({'agent_0': reward['agent_0'], 'agent_1': reward['agent_1']})
+        # (end of 3v3 vs 2v2 if-block)
 
         k =  list(term.keys()) #Gameover check.
 
         step += 1
         if term[k[0]] == True or trunc[k[0]]==True:
             # Game over
-            #scores.append(env.state['captures']) #scores for both teams at the end of each episode, for all episodes TODO not for all episodes, perhaps a avg for a number of episodes because memory
-            #grabslist.append(env.state['grabs']) #grabs too #is done outside of train now
             break
-    # These are some statistics we are exporting: Actually, these lines of code seem not necessary
-    # for i in range(len(env.state["captures"])):
-    #     temp_captures[i] += env.state["captures"][i]
-    # for i in range(len(env.state["grabs"])):
-    #     temp_grabs[i] += env.state["grabs"][i]
-    # for i in range(len(env.state["tags"])):
-    #     temp_tags[i] += env.state["tags"][i]
 
     # print("\n~~~Run Concluded~~~")
     # formatted_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
@@ -168,39 +199,27 @@ def train_qlearn(
     # print("SCORE: ",env.state['captures'])
     # print("grabs: ",env.state['grabs'])
     env.close()
-    # t1 = 0.
-    # t2 = 0.
-    # for e in rewardsteps:
-    #     t1 += e['agent_0']
-    #     t2 += e['agent_1']
-    # print(f"t1: {t1}   t2: {t2}")
     return rewardsteps, env.state['captures'], env.state['grabs'], env.state['tags'], u_table 
 #End of train_qlearn()
 
-def visualize_reward_curve(reward_curve_file):
-    import matplotlib.pyplot as plt
-    reward_curve = np.load(reward_curve_file, allow_pickle=True)
-    agent_0_rewards = [step['agent_0'] for step in reward_curve]
-    agent_1_rewards = [step['agent_1'] for step in reward_curve]
-    plt.figure(figsize=(12, 6))
-    plt.plot(agent_0_rewards, label='Agent 0 Rewards')
-    plt.plot(agent_1_rewards, label='Agent 1 Rewards')
-    plt.xlabel("Step")
-    plt.ylabel("Reward")
-    plt.title("Reward Curve")
-    plt.grid(True)
-    plt.legend()
-    plt.show()
+# def visualize_reward_curve(reward_curve_file):
+#     import matplotlib.pyplot as plt
+#     reward_curve = np.load(reward_curve_file, allow_pickle=True)
+#     agent_0_rewards = [step['agent_0'] for step in reward_curve]
+#     agent_1_rewards = [step['agent_1'] for step in reward_curve]
+#     plt.figure(figsize=(12, 6))
+#     plt.plot(agent_0_rewards, label='Agent 0 Rewards')
+#     plt.plot(agent_1_rewards, label='Agent 1 Rewards')
+#     plt.xlabel("Step")
+#     plt.ylabel("Reward")
+#     plt.title("Reward Curve")
+#     plt.grid(True)
+#     plt.legend()
+#     plt.show()
 #End of visualize_reward_curve()
 
-if __name__ == "__main__":
-    # scores = np.load("qtrainlog/lrate0.1_discount0.9_initialq0.0_caps_and_tags_scores.npy", allow_pickle=True)
-    # print(scores)
-    # print(f"Scores shape: {scores.shape}")
-    # print(f"Scores ndim: {scores.ndim}")
-    # sys.exit(0)
-    
-    # Prepared experiments are made easier to launch (editor performance is affected once some of these are launched, and they are made to be processed simultaneously)
+if __name__ == "__main__":      #main method should not be called that much anymore... TODO put train_qlearn() into train_qlearn.py (those names are confusing now...)
+    # Prepared experiments to launch (better method in train_qlearn.py)
     if len(sys.argv) > 1:
         #if argument 1 set rewardchoice, etc to x
         if sys.argv[1] == "1": #Set to batch 5
@@ -259,7 +278,7 @@ if __name__ == "__main__":
             print("Manually testing qtable policy with rendering enabled.")
             qt = QTable(LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, ("qtrainlog/" + filename_suffix + "_q_table.npy"))
             st = np.zeros((4, 4, 4, 2, 2), dtype=np.int32)
-            train_qlearn(st, seed=0, difficulty="easy", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt)
+            train_qlearn(st, seed=0, difficulty="easy", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt, teamsize3=True)
             sys.exit(0)
         else:
             print("!Wrong rewardchoice argument!")
@@ -269,7 +288,7 @@ if __name__ == "__main__":
             print("Manually testing qtable policy with rendering enabled.")
             qt = QTable(LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, ("qtrainlog/" + filename_suffix + "_q_table.npy"))
             st = np.zeros((4, 4, 4, 2, 2), dtype=np.int32)
-            train_qlearn(st, seed=0, difficulty="easy", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt)
+            train_qlearn(st, seed=0, difficulty="easy", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt, teamsize3=True)
             sys.exit(0)
     else:
         print("No rewardchoice given")
@@ -279,7 +298,7 @@ if __name__ == "__main__":
         print("Manually testing qtable policy with rendering enabled.")
         qt = QTable(LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, ("qtrainlog/" + filename_suffix + "_q_table.npy"))
         st = np.zeros((4, 4, 4, 2, 2), dtype=np.int32)
-        train_qlearn(st, seed=0, difficulty="hard", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt)
+        train_qlearn(st, seed=0, difficulty="hard", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt, teamsize3=True)
         sys.exit(0)
     #rewardchoice = "single_aggressive_rew"
     #rewardchoice = "double_aggressive_rew"
@@ -291,7 +310,7 @@ if __name__ == "__main__":
     #filename_suffix = f"{rewardchoice}_neutral" 
     #filename_suffix = ""
     "--------------------------------------------"
-    filename_suffix = "qtrainlog/batch 5/"+filename_suffix 
+    filename_suffix = "qtrainlog/batch -1/"+filename_suffix 
     
     # Create qtrainlog directory if it doesn't exist
     #os.makedirs("qtrainlog", exist_ok=True) #should exist, except if started from wrong folder...
@@ -320,15 +339,13 @@ if __name__ == "__main__":
         seeed = np.random.randint(0, 100000) #random seed while training, set of seeds when testing (TODO)
         #logstructure = []
         if index < 500 or True: #pretraininng with easy opponents, for more exploration on opponent base  [pretraining"easy" disabled for now, all training against easy(now hard)]
-            rewardsteps, capture_entry, grab_entry, tag_entry = train_qlearn(s_table, seed=seeed, difficulty="hard", reward_choice=rewardchoice, render_mode=None, timelimit=600., q_table=qtableee)
+            rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty="hard", reward_choice=rewardchoice, render_mode=None, timelimit=600., q_table=qtableee, teamsize3=True)
             # tags, rewardlist, captures, grabs are all for [0] and [1] (the two teams)
             # After each episode update the values of q-table. For this purpose updates are calculated during the episode into the u-table. Now it gets switched with q-table:
-            #qtableee.qtable = u_table.qtable
-            qtableee.avgQUpdate()
+            qtableee.qtable = u_table.qtable
         else:
-            rewardsteps, capture_entry, grab_entry, tag_entry = train_qlearn(s_table, seed=seeed, difficulty="hard", reward_choice=rewardchoice, render_mode=None, timelimit=600., q_table=qtableee)
-            #qtableee.qtable = u_table.qtable
-            qtableee.avgQUpdate()
+            rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty="hard", reward_choice=rewardchoice, render_mode=None, timelimit=600., q_table=qtableee)
+            qtableee.qtable = u_table.qtable
 
         # Some of the data we are tracking needs to be added to another list structure:
         #rewardcurve.append(rewardsteps)#wrong, need to sum it up exactly before that

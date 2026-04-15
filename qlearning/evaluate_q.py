@@ -5,22 +5,48 @@ from matplotlib import pyplot as plt
 import numpy as np
 from train_qlearn import ParameterSet
 
-FOLDER = "wrong folder"#zb "batch 5"
+FOLDER = "batch 9"#zb "batch 5"
 """
 To change batch, change FOLDER here, sometimes "vshard_"+ in vis_helper() beginning (now automated), and vis_helper("ddd")-calls in main (very bottom).
 """
 
 
-def visualize_reward_curve(data0, data1, name, bagsize=50, foldern=f"qtrainlog/{FOLDER}/"):
+# def visualize_reward_curve(data0, data1, name, bagsize=50, foldern=f"qtrainlog/{FOLDER}/"):
+#     # reward_curve = np.load(reward_curve_file, allow_pickle=True)
+#     # rewards0 = [step[0] for step in reward_curve]
+#     # rewards1 = [step[1] for step in reward_curve]
+#     plt.figure(figsize=(12, 6))
+#     plt.plot(data0, label='Agent 0', color='blue')
+#     plt.plot(data1, label='Agent 1', color='darkblue')
+#     plt.xlabel(f"Steps (binned by {bagsize} episodes)")
+#     plt.ylabel(f"Reward (avg per {bagsize} episodes)")
+#     plt.title(f"Rewards during Q-Learn Training\n{name}")
+#     plt.grid(True)
+#     # Scale x-achsis labels times 50 (or times bagsize):
+#     ticks = plt.gca().get_xticks()
+#     ticks = ticks[1:(len(ticks)-1)]
+#     #print("\nticks: ",ticks)
+#     plt.gca().set_xticks(ticks)
+#     plt.gca().set_xticklabels([f'{int(x*bagsize)}' for x in ticks])
+#     plt.legend()
+#     # Save figure to file:
+#     plt.savefig(f"{foldern}figures/{name}_reward.png", dpi=300, bbox_inches='tight')
+#     #plt.show()
+#     plt.close() #
+# #End of visualize_reward_curve()
+
+def visualize_reward_curve(data0, data1, name, bagsize=50, foldern=f"qtrainlog/{FOLDER}/", data2=None):
     # reward_curve = np.load(reward_curve_file, allow_pickle=True)
     # rewards0 = [step[0] for step in reward_curve]
     # rewards1 = [step[1] for step in reward_curve]
     plt.figure(figsize=(12, 6))
     plt.plot(data0, label='Agent 0', color='blue')
     plt.plot(data1, label='Agent 1', color='darkblue')
+    if data2 is not None:
+        plt.plot(data2, label='Agent 2', color='lightblue')
     plt.xlabel(f"Steps (binned by {bagsize} episodes)")
     plt.ylabel(f"Reward (avg per {bagsize} episodes)")
-    plt.title(f"Rewards during Q-Learn Training\n{name}")
+    plt.title(f"Rewards during Q-Learn Training (3v3)\n{name}")
     plt.grid(True)
     # Scale x-achsis labels times 50 (or times bagsize):
     ticks = plt.gca().get_xticks()
@@ -105,10 +131,10 @@ def matrix_to_heatmap(matrix, title, filename, name):
 #End of matrix_to_heatmap()
 
 def vis_helper(filename_suffix0):
-    TWENTY = 20
+    #TWENTY = 20
     """Used for batches 1-5 to create the visualizations. Has to be called for every training run (per filename-prefix)."""
     ############################################################
-    if FOLDER=="batch 2 hard": filename_suffix0 = "vshard_" + filename_suffix0
+    #if FOLDER=="batch 9": filename_suffix0 = "vshard_" + filename_suffix0 #this is wrong now, was just there to deal with batch 5(or 4?)
     filename_suffix = "qtrainlog/"+FOLDER+"/" + filename_suffix0
     ############################################################
 
@@ -192,16 +218,17 @@ def vis_helper(filename_suffix0):
     visualize_curve(scores0_avg, scores1_avg, ylabel=f"Score (avg per {bagsize} episodes)", name=filename_suffix0)
     visualize_curve(tags1_avg, tags0_avg, ylabel=f"Tags (avg per {bagsize} episodes)", name=filename_suffix0)
     matrix_to_heatmap(q_table, filename_suffix0, "qtrainlog/"+FOLDER+"/figures/"+filename_suffix0+"qheatmap.png", "Q-value (expected reward)")
-    matrix_to_heatmap(s_table, filename_suffix0, "qtrainlog/"+FOLDER+"/figures/"+filename_suffix0+"visitcount.png", "States visited (count per state)")
+    # matrix_to_heatmap(s_table, filename_suffix0, "qtrainlog/"+FOLDER+"/figures/"+filename_suffix0+"visitcount.png", "States visited (count per state)")
+    # TODO reactivate heatmap for statecount, but need to deal with different dimensionality (see resulting error...)
     visualize_curve(winrate0, winrate1, ylabel=f"Winrate (avg per {bagsize} episodes)", name=filename_suffix0)
     ####################################################################################################################################################
-    print(f"{filename_suffix0} 20th value - Rewards: {rewards0_avg[TWENTY - 1]}, {rewards1_avg[TWENTY - 1]}") # 9 for tenth step, TWENTY - 1 for 20th step (500 vs 1000 episodes)
-    print(f"{filename_suffix0} 20th value - Scores: {scores0_avg[TWENTY - 1]}, {scores1_avg[TWENTY - 1]}")
-    print(f"{filename_suffix0} 20th value - Winrate: {winrate0[TWENTY - 1]}, {winrate1[TWENTY - 1]}")
-    print(f"{filename_suffix0} 20th value - Tags: {tags0_avg[TWENTY - 1]}, {tags1_avg[TWENTY - 1]}")
+    print(f"{filename_suffix0} 20th value - Rewards: {rewards0_avg[len(rewards0_avg) - 1]}, {rewards1_avg[len(rewards0_avg) - 1]}") # 9 for tenth step, TWENTY - 1 for 20th step (500 vs 1000 episodes)
+    print(f"{filename_suffix0} 20th value - Scores: {scores0_avg[len(rewards0_avg) - 1]}, {scores1_avg[len(rewards0_avg) - 1]}")
+    print(f"{filename_suffix0} 20th value - Winrate: {winrate0[len(rewards0_avg) - 1]}, {winrate1[len(rewards0_avg) - 1]}")
+    print(f"{filename_suffix0} 20th value - Tags: {tags0_avg[len(rewards0_avg) - 1]}, {tags1_avg[len(rewards0_avg) - 1]}")
 
 def avg_vis_helper(paraset: ParameterSet):
-    TWENTY = 10 #take a wild guess what the standard setting of this variable is (in integer)
+    TWENTY = paraset.nrs #used to be 20
     """Is called for every group of training runs using the same parameters to generate the visualizations of averages between the same parameters (e.g. 20 training runs into one plot)."""
     filename_suffix0 = paraset.create_name_without_index()
     ############################################################
@@ -217,6 +244,12 @@ def avg_vis_helper(paraset: ParameterSet):
     grabslist = [np.load(f"{filename_suffix}_nr{i}_grabslist.npy") for i in range(TWENTY)]
     tagslist = [np.load(f"{filename_suffix}_nr{i}_tagslist.npy") for i in range(TWENTY)]
     # All data loaded
+    # print the four above lists
+    # print(f"rewardcurve: {len(rewardcurve)}")
+    # print(f"scorelist: {scorelist}")
+    # print(f"length={len(scorelist)}")
+    # print(f"grabslist: {len(grabslist)}")
+    # print(f"tagslist: {len(tagslist)}")
 
     # Compute averages of (zB) 20 training runs and (for now) process like the previous non-averaged per-episode lists
     def avg_twoteamlist(list_of_twos):
@@ -234,7 +267,31 @@ def avg_vis_helper(paraset: ParameterSet):
             list_avg.append([s0, s1])
         return list_avg
     
-    rewardcurve_avg = avg_twoteamlist(rewardcurve)
+    # Compute averages of (zB) 20 training runs and (for now) process like the previous non-averaged per-episode lists
+    # Variant for 3v3 (three agents)
+    def avg_threeteamlist(list_of_threes):
+        list_avg = []
+        # Presumes all 20 runs have the same length.
+        for i in range(len(list_of_threes[0])): 
+            s0 = 0.
+            s1 = 0.
+            s2 = 0.
+            for z in range(len(list_of_threes)):
+                s0 += list_of_threes[z][i][0]
+                s1 += list_of_threes[z][i][1]
+                s2 += list_of_threes[z][i][2]
+                # lenght expected to be 3 now
+            
+            s0 = s0 / len(list_of_threes)
+            s1 = s1 / len(list_of_threes)
+            s2 = s2 / len(list_of_threes)
+            list_avg.append([s0, s1, s2])
+        return list_avg
+    
+    if paraset.teamsize3:
+        rewardcurve_avg = avg_threeteamlist(rewardcurve)
+    else:
+        rewardcurve_avg = avg_twoteamlist(rewardcurve)
     scorelist_avg = avg_twoteamlist(scorelist)
     grabslist_avg = avg_twoteamlist(grabslist)
     tagslist_avg = avg_twoteamlist(tagslist)
@@ -281,8 +338,11 @@ def avg_vis_helper(paraset: ParameterSet):
     # rewardcurve:
     rewards0 = [step[0] for step in rewardcurve_avg]
     rewards1 = [step[1] for step in rewardcurve_avg]
+    if paraset.teamsize3:
+        rewards2 = [step[2] for step in rewardcurve_avg]
     rewards0_avg = avgbags(rewards0, bagsize)
     rewards1_avg = avgbags(rewards1, bagsize)
+    # print(f"rewards0 length is {len(rewards0)}, rewards0avg length is {len(rewards0_avg)}")
     # score:
     #scores0 = [step[0] for step in scorelist]#below line is new this line
     scores0 = [step[0] for step in scorelist_avg]
@@ -302,38 +362,80 @@ def avg_vis_helper(paraset: ParameterSet):
 
     # Visualization
     ####################################################################################################################################################
-    visualize_reward_curve(rewards0_avg, rewards1_avg, filename_suffix0, foldern=paraset.foldername)
-    visualize_reward_curve(rewards0, rewards1, filename_suffix0 + "NO_AVG", foldern=paraset.foldername, bagsize=1)
-    visualize_curve(scores0_avg, scores1_avg, ylabel=f"Score (avg per {bagsize} episodes)", name=filename_suffix0, foldern=paraset.foldername)
+    #visualize_reward_curve(rewards0_avg, rewards1_avg, filename_suffix0, foldern=paraset.foldername)
+    if paraset.teamsize3:
+        visualize_reward_curve(rewards0, rewards1, filename_suffix0 + "NO_AVG", foldern=paraset.foldername, bagsize=1, rewards2=rewards2)
+    else:
+        visualize_reward_curve(rewards0, rewards1, filename_suffix0 + "NO_AVG", foldern=paraset.foldername, bagsize=1)
+    #visualize_curve(scores0_avg, scores1_avg, ylabel=f"Score (avg per {bagsize} episodes)", name=filename_suffix0, foldern=paraset.foldername)
     # the visualiztaion with bags is not necessary for the averaged score one? perhaps wrong, but I rather need some range and variance visualizations
     visualize_curve(scores0, scores1, ylabel=f"Score (NO AVG, scorelist_avg direct test)", name=filename_suffix0, foldern=paraset.foldername, bagsize=1) #bagsize 50 is standard, 1 has to be set here
-    visualize_curve(tags1_avg, tags0_avg, ylabel=f"Tags (avg per {bagsize} episodes)", name=filename_suffix0, foldern=paraset.foldername)
+    #visualize_curve(tags1_avg, tags0_avg, ylabel=f"Tags (avg per {bagsize} episodes)", name=filename_suffix0, foldern=paraset.foldername)
     visualize_curve(tags1, tags0, ylabel=f"Tags (NO AVG)", name=filename_suffix0, foldern=paraset.foldername, bagsize=1)
     matrix_to_heatmap(q_table, filename_suffix0, paraset.foldername + "figures/" + filename_suffix0 + "qheatmap.png", "Q-value (expected reward)") 
     # matrix_to_heatmap(s_table, filename_suffix0, "qtrainlog/"+FOLDER+"/figures/"+filename_suffix0+"visitcount.png", "States visited (count per state)")
     visualize_curve(winrate0, winrate1, ylabel=f"Winrate (avg per {bagsize} episodes)", name=filename_suffix0, foldern=paraset.foldername)
-    visualize_curve(winrate0, winrate1, ylabel=f"Winrate (avg per {bagsize} episodes)", name=filename_suffix0, foldern=paraset.foldername)
     ####################################################################################################################################################
-    print(f"{filename_suffix0} 20th value - Rewards: {rewards0_avg[TWENTY-1]}, {rewards1_avg[TWENTY - 1]}")
-    print(f"{filename_suffix0} 20th value - Scores: {scores0_avg[TWENTY - 1]}, {scores1_avg[TWENTY - 1]}") # scores0_avg has length 20. 20 should not be the length here?!<-Yes it should be. It is just set to give episode500 value because of small batch5! Do I need to change the handling of the lists? thought it would be same list format but avg value instead of single value now...
-    print(f"{filename_suffix0} 20th value - Winrate: {winrate0[TWENTY - 1]}, {winrate1[TWENTY - 1]}")
-    print(f"{filename_suffix0} 20th value - Tags: {tags0_avg[TWENTY - 1]}, {tags1_avg[TWENTY - 1]}")
+    
+    print(f"{filename_suffix0} Last avg. value - Rewards: {rewards0_avg[len(rewards0_avg) - 1]}, {rewards1_avg[len(rewards1_avg) - 1]}")
+    print(f"{filename_suffix0} Last avg. value - Scores: {scores0_avg[len(scores0_avg) - 1]}, {scores1_avg[len(scores1_avg) - 1]}") # scores0_avg has length 20. 20 should not be the length here?!<-Yes it should be. It is just set to give episode500 value because of small batch5! Do I need to change the handling of the lists? thought it would be same list format but avg value instead of single value now...
+    print(f"{filename_suffix0} Last avg. value - Winrate: {winrate0[len(winrate0) - 1]}, {winrate1[len(winrate1) - 1]}")
+    print(f"{filename_suffix0} Last avg. value - Tags: {tags0_avg[len(tags0_avg) - 1]}, {tags1_avg[len(tags1_avg) - 1]}")
 
 
 if __name__ == "__main__":
     
     #filename_suffix0 = "vshard_example_suffix01"
     #filename_suffix = "qtrainlog/vshard_"+filename_suffix
-    i = 0
     
     #vis_helper(filename_suffix0)
     print(f"Starting visualization of {FOLDER}.")
     #q_table = np.load("qtrainlog/vshard_example_suffix01_q_table.npy") #TODO visualize Q-Table
     #matrix_to_heatmap(q_table, "test_title", "qtrainlog/vshard_example_suffix01_q_table.png")
-    
-    # Batch 0
-    # vis_helper("lrate0.1_discount0.9_initialq10.0_single_aggressive_rew") (example of non-avg)
-    avg_vis_helper(ParameterSet("aggressive_tags_26", "hard", 0.2, 0.95, 10.0, False, "rules26test0", "qtrainlog/batch 0/", i, math2=False)) 
+
+    # avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.1, 0.95, 0.0, False, "ratehigh", "qtrainlog/batch 7/", 0)) #testing the init q value 0 for capsntags
+    # TODO add variance (see example qlearn paper)
+
+    # avg_vis_helper(ParameterSet("aggr_rew_alt", "hard", 0.1, 0.9, 10.0, False, "testrew2", "qtrainlog/batch 7/", 0))
+    # avg_vis_helper(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "testrew2", "qtrainlog/batch 7/", 0))
+
+    # avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, False, "math1test", "qtrainlog/batch 8/", 0, math2=False)) 
+    # avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "math1test", "qtrainlog/batch 8/", 0, math2=False)) 
+    # avg_vis_helper(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "math1test", "qtrainlog/batch 8/", 0, math2=False)) 
+
+    i = 0 # do not forget to set other index if multiple indexes exist (not necessary for avg_vis_helper)
+    filenames = []
+    # batch 10
+    #filenames.append(ParameterSet("aggressive_tags", "hard", 0.2, 0.95, 10.0, False, "testboolchange2", "qtrainlog/batch 10/", 0))
+    # filenames.append(ParameterSet("aggressive_tags", "hard", 0.2, 0.95, 10.0, False, "testrestored", "qtrainlog/batch 10/", i))
+    # filenames.append(ParameterSet("aggressive_tags", "hard", 0.1, 0.9, 10.0, False, "testboolchange2", "qtrainlog/batch 10/", i))
+    # filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "testboolchange2", "qtrainlog/batch 10/", i))
+    # latest hpc-data (13.4.):
+    # filenames.append(ParameterSet("aggressive_tags", "hard", 0.1, 0.9, 10.0, False, "testboolchange2", "qtrainlog/batch 10/", i))
+    # filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "testboolchange2", "qtrainlog/batch 10/", i))
+    # filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "testrestored2", "qtrainlog/batch 10/", i, boolchange=False)) #TODO compare boolchange with restored, and compare aggressive_tags with single_aggressive (not just score, also tags)
+    # FROM HERE THE NEW NAME SCHEME IS USED IN TESTS
+    # batch 10d (a lot of runs to gather solid statistics on chances of the training working) #NOTE currently not being run, not sure if I should proceed. Actually I must know what the success-rate of "normal" 0.2 0.95 oldbool single_aggr. is. Run this ~50 times.
+    # filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "x30boolchange", "qtrainlog/batch 10/", i))
+    # filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "x30restored", "qtrainlog/batch 10/", i, boolchange=False)) #TODO need better visualization before I commit to large test like this (serves no sufficient purpose rn)
+    # batch 10d (fr tho, above lines were never run...)
+    # filenames.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "boolchange", "qtrainlog/batch 10/", i, boolchange=True, nrs=20, ep=1000)) #see if this improves "chasing" behaviour.
+    # filenames.append(ParameterSet("aggressive_tags", "hard", 0.01, 0.95, 10.0, False, "boolchange", "qtrainlog/batch 10/", i, boolchange=True, nrs=10, ep=1000))
+    # filenames.append(ParameterSet("aggressive_tags", "hard", 0.2, 0.99, 10.0, False, "boolchange", "qtrainlog/batch 10/", i, boolchange=True, nrs=10, ep=1000))
+    # filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.01, 0.99, 10.0, False, "boolchange", "qtrainlog/batch 10/", i, boolchange=True, nrs=10, ep=1000))
+    # filenames.append(ParameterSet("aggressive_tags", "hard", 0.01, 0.99, 10.0, False, "boolchange", "qtrainlog/batch 10/", i, boolchange=True, nrs=10, ep=1000)) 
+    # batch 11
+    # filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "3v3test", "qtrainlog/batch 10/", i, boolchange=True, nrs=10, ep=1000, teamsize3=True)) #(wrong folder, ups)
+
+    #batch 1
+    filenames.append(ParameterSet("aggressive_tags_26", "hard", 0.1, 0.99, 10.0, False, "3v3test_newbool", "qtrainlog/batch 1/", i, boolchange=True, nrs=20, ep=1000, teamsize3=True)) 
+    filenames.append(ParameterSet("aggressive_tags_26", "hard", 0.01, 0.95, 10.0, False, "3v3test_newbool", "qtrainlog/batch 1/", i, boolchange=True, nrs=20, ep=1000, teamsize3=True))
+    filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "3v3test_oldbool", "qtrainlog/batch 1/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True)) 
+
+    for e in filenames:
+        #vis_helper(e)
+        avg_vis_helper(e)
+    #vis_helper("math2scatter_aggressive_tags_24_hard_lrate0.1_discount0.9_initq10.0_1000ep_no_pre_nr0")
 
     # """Finding out how dimensions are mapped onto qtable matrix heatmap:
     # (toggle comment below to generate markers for the dimension [currently dim. f])"""
