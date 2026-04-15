@@ -122,7 +122,7 @@ class QTable:
         np.save(filename, self.qtable)
 #End of QTable()
 
-def angle180(self, deg):
+def angle180(deg):
     """Rotates an angle to be between -180 and +180 degrees."""
     while deg > 180:
         deg -= 360
@@ -130,7 +130,7 @@ def angle180(self, deg):
         deg += 360
     return deg
 
-def vec_to_heading(self, vec):
+def vec_to_heading(vec):
     """Converts a vector to a magnitude and heading (deg)."""
     import math
     angle = math.degrees(math.atan2(vec[1], vec[0]))
