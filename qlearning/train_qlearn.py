@@ -252,11 +252,12 @@ if __name__ == "__main__":
         #     parametersets.append(ParameterSet("aggressive_tags", "hard", 0.01, 0.99, 10.0, False, "boolchange", "qtrainlog/batch 10/", i, boolchange=True, nrs=10, ep=1000)) 
         # batch 1: Testing if 3v3 works in 2026 mctf env. and how promising results are.
         for i in range(10):
-            parametersets.append(ParameterSet("aggressive_tags_26", "hard", 0.1, 0.99, 10.0, False, "3v3test_newbool", "qtrainlog/batch 1/", i, boolchange=True, nrs=10, ep=600, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
+            #                           mode changed from "hard" to "nothing" for now, because 26env doesnt seem to work with 24-base-policy. Training against ultra-defensive to verify training process...
+            parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.1, 0.99, 10.0, False, "3v3test_newbool", "qtrainlog/batch 1/", i, boolchange=True, nrs=10, ep=600, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
         for i in range(10):
-            parametersets.append(ParameterSet("aggressive_tags_26", "hard", 0.01, 0.95, 10.0, False, "3v3test_newbool", "qtrainlog/batch 1/", i, boolchange=True, nrs=10, ep=600, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
+            parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.95, 10.0, False, "3v3test_newbool", "qtrainlog/batch 1/", i, boolchange=True, nrs=10, ep=600, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
         for i in range(10):
-            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "3v3test_oldbool", "qtrainlog/batch 1/", i, boolchange=False, nrs=10, ep=600, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
+            parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.2, 0.95, 10.0, False, "3v3test_oldbool", "qtrainlog/batch 1/", i, boolchange=False, nrs=10, ep=600, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
         # for i in range(20):
         #     parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "3v3test_newbool", "qtrainlog/batch 1/", i, boolchange=True, nrs=20, ep=1000, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
         #########################################
@@ -276,7 +277,12 @@ if __name__ == "__main__":
         #filename_suffix = "/vshard_lrate0.1_discount0.95_initialq10.0_single_aggressive_rew"
         print("Manually testing qtable policy with rendering enabled.")
         #qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, (setup.foldername + setup.create_name() + "_q_table.npy"))
-        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 10/3v3test_single_aggressive_rew_hard_lrate0.2_discount0.95_initq10.0_10nrs_1000ep_no_pre_nr0_q_table.npy")
+        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 0/24ver_successful_q_table.npy")
+        # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 1/3v3test_newbool_aggressive_tags_26_hard_lrate0.01_discount0.95_initq10.0_10nrs_600ep_no_pre_nr0_q_table.npy")
+        # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 1/3v3test_newbool_aggressive_tags_26_hard_lrate0.1_discount0.99_initq10.0_10nrs_600ep_no_pre_nr0_q_table.npy")
+        # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 1/3v3test_oldbool_single_aggressive_rew_hard_lrate0.2_discount0.95_initq10.0_10nrs_600ep_no_pre_nr0_q_table.npy")
+        # Muster:
+        # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 1/3v3test_newbool_aggressive_tags_26_hard_lrate0.01_discount0.95_initq10.0_10nrs_600ep_no_pre_nr0_q_table.npy")
         st = np.zeros((4, 4, 4, 2, 2), dtype=np.int32) #dangerous int8-hazard (int8 is insufficient here)
         train_qlearn(st, seed=0, difficulty="hard", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt, teamsize3=True)#TODO change to use parameterset i guess...
         sys.exit(0)

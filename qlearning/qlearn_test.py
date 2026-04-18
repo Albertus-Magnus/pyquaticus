@@ -62,16 +62,20 @@ def train_qlearn(
             print("Error: Invalid reward choice. Please select a valid reward function.")
             return
 
-    config_dict = {}
-    config_dict["max_time"] = timelimit#600.0
-    config_dict["max_score"] = 100
-    config_dict["render_agent_ids"] = True
-    if teamsize3: #3v3 mode is now introduced as parameter, if selected we prepare teamsize3 mode and training. #TODO qtable has to be ready-ed for this, too.
-        config_dict["dynamics"] = ["si", "si", "si", "si", "si", "si"]
-    else:
-        config_dict["dynamics"] = ["si", "si", "si", "si"]
-    config_dict["sim_speedup_factor"] = 3
-    config_dict["default_init"] = False #random starting positions (uses seed)
+    # config_dict = {} #NOTE config_dict is not really used here, since we apply mctf_config.
+    # config_dict["max_time"] = timelimit#600.0
+    # config_dict["max_score"] = 100
+    # config_dict["render_agent_ids"] = True
+    # if teamsize3: #3v3 mode is now introduced as parameter, if selected we prepare teamsize3 mode and training.
+    #     config_dict["dynamics"] = ["si", "si", "si", "si", "si", "si"]
+    # else:
+    #     config_dict["dynamics"] = ["si", "si", "si", "si"]
+    # config_dict["sim_speedup_factor"] = 3
+    # config_dict["default_init"] = False #random starting positions (uses seed)
+
+    # TODO change back, Just to render a visual test match faster:
+    # mctf_config["sim_speedup_factor"] = 20
+    # mctf_config["max_time"] = 6000.
 
     #-Logging utility-
     # logging.basicConfig(

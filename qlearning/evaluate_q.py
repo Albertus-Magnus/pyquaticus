@@ -364,7 +364,7 @@ def avg_vis_helper(paraset: ParameterSet):
     ####################################################################################################################################################
     #visualize_reward_curve(rewards0_avg, rewards1_avg, filename_suffix0, foldern=paraset.foldername)
     if paraset.teamsize3:
-        visualize_reward_curve(rewards0, rewards1, filename_suffix0 + "NO_AVG", foldern=paraset.foldername, bagsize=1, rewards2=rewards2)
+        visualize_reward_curve(rewards0, rewards1, filename_suffix0 + "NO_AVG", foldern=paraset.foldername, bagsize=1, data2=rewards2)
     else:
         visualize_reward_curve(rewards0, rewards1, filename_suffix0 + "NO_AVG", foldern=paraset.foldername, bagsize=1)
     #visualize_curve(scores0_avg, scores1_avg, ylabel=f"Score (avg per {bagsize} episodes)", name=filename_suffix0, foldern=paraset.foldername)
@@ -428,9 +428,12 @@ if __name__ == "__main__":
     # filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "3v3test", "qtrainlog/batch 10/", i, boolchange=True, nrs=10, ep=1000, teamsize3=True)) #(wrong folder, ups)
 
     #batch 1
-    filenames.append(ParameterSet("aggressive_tags_26", "hard", 0.1, 0.99, 10.0, False, "3v3test_newbool", "qtrainlog/batch 1/", i, boolchange=True, nrs=20, ep=1000, teamsize3=True)) 
-    filenames.append(ParameterSet("aggressive_tags_26", "hard", 0.01, 0.95, 10.0, False, "3v3test_newbool", "qtrainlog/batch 1/", i, boolchange=True, nrs=20, ep=1000, teamsize3=True))
-    filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "3v3test_oldbool", "qtrainlog/batch 1/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True)) 
+    # invalid filenames.append(ParameterSet("aggressive_tags_26", "hard", 0.1, 0.99, 10.0, False, "3v3test_newbool", "qtrainlog/batch 1/", i, boolchange=True, nrs=20, ep=1000, teamsize3=True)) 
+    #invalid filenames.append(ParameterSet("aggressive_tags_26", "hard", 0.01, 0.95, 10.0, False, "3v3test_newbool", "qtrainlog/batch 1/", i, boolchange=True, nrs=20, ep=1000, teamsize3=True))
+    #invalid filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "3v3test_oldbool", "qtrainlog/batch 1/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True)) 
+    filenames.append(ParameterSet("aggressive_tags_26", "hard", 0.1, 0.99, 10.0, False, "3v3test_newbool", "qtrainlog/batch 1/", i, boolchange=True, nrs=10, ep=600, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
+    filenames.append(ParameterSet("aggressive_tags_26", "hard", 0.01, 0.95, 10.0, False, "3v3test_newbool", "qtrainlog/batch 1/", i, boolchange=True, nrs=10, ep=600, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
+    filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "3v3test_oldbool", "qtrainlog/batch 1/", i, boolchange=False, nrs=10, ep=600, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
 
     for e in filenames:
         #vis_helper(e)
