@@ -61,13 +61,17 @@ class QTable:
     Moved set_q_value to QlearnPolicy(), because updates now require both qtables stored in the agent policy.
     """
 
-    def prepareUpdate(self, obs, agentID, action):
+    def prepareUpdate(self, obs, info, agentID, action):
         if obs[agentID]['has_flag']:
             # heading towards objective (positional awareness variable) is towards enemy base normally...
             #ownpos = headingToState(obs[agentID]['own_home_bearing']) 
             #ownpos = headingToState(np.array([5.0, 75.0])) #adjusted for 2026 twobase rules
             #ownpos = headingToState(obs[agentID]['wall_0_bearing']) #TODO TODO this needs to be improved, currently quick and ugly fix!
-            ownpos = headingToState(vec_to_heading(np.array([5., 75.]))) #TODO test this (then add to prepareUpdate()...)
+            #ownpos = headingToState(vec_to_heading(np.array([5., 75.]))) #TODO test this (then add to prepareUpdate()...)
+            vec_from_agent = np.array([5. - info['agent_0']['global_state'][(agentID, 'pos')][0] , 75. - info['agent_0']['global_state'][(agentID, 'pos')][1] ])
+            agent_heading = info['agent_0']['global_state'][(agentID, "heading")]
+            #ownpos = headingToState(vec_to_heading(np.array([5., 75.]))) #TODO test this (then add to prepareUpdate()...)
+            ownpos = headingToState(angle180(vec_to_heading(vec_from_agent) - agent_heading)) #TODO test this (then add to prepareUpdate()...)
         else:
             # ...and towards own base (or map half) if agent has grabbed the enemy flag
             #print("own_home_bearing =", obs[agentID]['own_home_bearing'])#output of this is "own_home_bearing = 117.06809126991149"
@@ -218,18 +222,24 @@ class QlearnPolicy(BaseAgentPolicy):
         '''
         # To figure out the best reward we need ownpos, opp1, opp2, b_flag, r_flag, action
         # compute ownpos:
-        if obs[self.id]['has_flag']:
+        if obs[self.id]['has_flag']: #the if-case works     #TODO TODO find the bug that makes agent move in circle here
             # heading towards objective (positional awareness variable) is towards enemy base normally...
-            ownpos = headingToState(obs[self.id]['own_home_bearing']) 
-            #ownpos = headingToState(np.array([5.0, 75.0])) #adjusted for 26 twobase rules      #TODO TODO reinstate this line, but change [x,y] to bearing towards x,y (perhaps change headingToState to do that?)
-            ownpos = headingToState(vec_to_heading(np.array([5., 75.]))) #TODO test this (then add to prepareUpdate()...)
+            # ownpos = headingToState(obs[self.id]['own_home_bearing']) 
+            # print(info)
+            # print(f"Agent Position: {info['agent_0']['global_state'][(self.id, 'pos')]}") #position works as thought.
+            #ownpos = headingToState(np.array([5.0, 75.0])) #adjusted for 26 twobase rules      #TODO reinstate this line, but change [x,y] to bearing towards x,y (perhaps change headingToState to do that?)
+            vec_from_agent = np.array([5. - info['agent_0']['global_state'][(self.id, 'pos')][0] , 75. - info['agent_0']['global_state'][(self.id, 'pos')][1] ])
+            agent_heading = info['agent_0']['global_state'][(self.id, "heading")]
+            #ownpos = headingToState(vec_to_heading(np.array([5., 75.]))) #TODO test this (then add to prepareUpdate()...)
+            ownpos = headingToState(angle180(vec_to_heading(vec_from_agent) - agent_heading)) #TODO test this (then add to prepareUpdate()...)
+            # print(f"vector to goal: {vec_from_agent}, heading: {angle180(vec_to_heading(vec_from_agent) - agent_heading)}") #vec_to_heading doesn not appear to work! need other way to use headingToState after capture
             #ownpos = headingToState(obs[self.id]['wall_0_bearing'])
         else:
             # ...and towards own base (or map half) if agent has grabbed the enemy flag
             #print("own_home_bearing =",obs[self.id]['own_home_bearing'])#output of this is "own_home_bearing = 117.06809126991149"
             ownpos = headingToState(obs[self.id]['opponent_home_bearing'])
             #print above returns 117.06809126991149 wth?!?
-        if len(obs) >= 5: #3v3 detection
+        if len(obs) >= 5: #3v3 detection (works)
             #not just any two opponents, we need the closest two opponents in 3v3:
             # use obs[self.id][('opponent_1', 'distance')] for comparison :-)
             if obs[self.id][('opponent_0', 'distance')] < obs[self.id][('opponent_1', 'distance')]:

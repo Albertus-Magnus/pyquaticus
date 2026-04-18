@@ -9,6 +9,7 @@ from numpy.typing import NDArray
 from pyquaticus import pyquaticus_v0
 from pyquaticus.envs.competition_pyquaticus import CompPyquaticusEnv #2026 mctf environment
 from pyquaticus.base_policies.base_combined import Heuristic_CTF_Agent
+from pyquaticus.base_policies.base_attack import BaseAttacker
 # from pyquaticus.base_policies.multi_rhea_policy import MRHEA_Agent, MRHEA_Environment
 # from pyquaticus.base_policies.rhealg_policy2 import RHEA_Agent, RHEA_Environment
 # from pyquaticus.base_policies.ultra_def_policy import UltraDefender
@@ -106,9 +107,12 @@ def train_qlearn(
     
     if teamsize3: #3v3
         # Base_combine agents
-        H_one = Heuristic_CTF_Agent('agent_3', env, mode=difficulty, continuous=False)
-        H_two = Heuristic_CTF_Agent('agent_4', env, mode=difficulty, continuous=False)
-        H_three = Heuristic_CTF_Agent('agent_5', env, mode=difficulty, continuous=False)
+        # H_one = Heuristic_CTF_Agent('agent_3', env, mode=difficulty, continuous=False)
+        # H_two = Heuristic_CTF_Agent('agent_4', env, mode=difficulty, continuous=False)
+        # H_three = Heuristic_CTF_Agent('agent_5', env, mode=difficulty, continuous=False)
+        H_one = BaseAttacker('agent_3', env, mode=difficulty, continuous=False)
+        H_two = BaseAttacker('agent_4', env, mode=difficulty, continuous=False)
+        H_three = BaseAttacker('agent_5', env, mode=difficulty, continuous=False)
         
         # print("Setting up q-learn agents")
         if q_table == None: print("Error: q-table not set up before agents are created.")
@@ -145,9 +149,9 @@ def train_qlearn(
             two = R_three.compute_action(obs, info)
 
             # For all three agents necessary data for q-value update is saved:
-            a0_qstep = R_one.q_Table.prepareUpdate(obs, 'agent_0', zero)
-            a1_qstep = R_two.q_Table.prepareUpdate(obs, 'agent_1', one)
-            a2_qstep = R_three.q_Table.prepareUpdate(obs, 'agent_2', two)
+            a0_qstep = R_one.q_Table.prepareUpdate(obs, info, 'agent_0', zero)
+            a1_qstep = R_two.q_Table.prepareUpdate(obs, info, 'agent_1', one)
+            a2_qstep = R_three.q_Table.prepareUpdate(obs, info, 'agent_2', two)
             #(ownpos, opp1_bearing, opp2_bearing, b_flag, r_flag, action)
             
             # 3v3 step
@@ -172,8 +176,8 @@ def train_qlearn(
             one = R_two.compute_action(obs, info)
 
             # For both agents necessary data for q-value update is saved:
-            a0_qstep = R_one.q_Table.prepareUpdate(obs, 'agent_0', zero)
-            a1_qstep = R_two.q_Table.prepareUpdate(obs, 'agent_1', one)
+            a0_qstep = R_one.q_Table.prepareUpdate(obs, info, 'agent_0', zero)
+            a1_qstep = R_two.q_Table.prepareUpdate(obs, info, 'agent_1', one)
             #(ownpos, opp1_bearing, opp2_bearing, b_flag, r_flag, action)
             
             # 2v2 step
