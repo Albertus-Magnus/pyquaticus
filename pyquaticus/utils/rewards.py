@@ -336,7 +336,7 @@ def single_aggressive_rew(
     num_caps = state['captures'][t]
     prev_num_grabs = prev_state['grabs'][t]
     prev_num_caps = prev_state['captures'][t]
-    reward += 30 * (num_caps - prev_num_caps) + 30 * (num_grabs - prev_num_grabs)
+    reward += 300 * (num_caps - prev_num_caps) + 300 * (num_grabs - prev_num_grabs)
     return reward
 
 
@@ -408,7 +408,7 @@ def aggressive_tags_26(
     num_caps = state['captures'][t]
     prev_num_grabs = prev_state['grabs'][t]
     prev_num_caps = prev_state['captures'][t]
-    reward += 30 * (num_caps - prev_num_caps) + 30 * (num_grabs - prev_num_grabs)
+    reward += 300 * (num_caps - prev_num_caps) + 300 * (num_grabs - prev_num_grabs)
 
     # awards points for tagging opponents (+) and being tagged (-)
     prev_num_tags = prev_state['tags'][team.value]

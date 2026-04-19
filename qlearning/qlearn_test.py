@@ -37,7 +37,7 @@ def train_qlearn(
     # difficulty is the MODE of the example agents, can be "hard", "medium" or "easy"
     reward_choice: str = "adjustmepls", #maybe could be string, but cleaner so?
     render_mode: str = None,#'human'
-    timelimit: float = 600.,
+    timelimit: float = mctf_config["max_time"], #600.,
     #logname: str = "match.log",
     q_table: QTable = None, #str = None #Not a string?! Is already a QTable!
     teamsize3: bool = False
@@ -75,8 +75,13 @@ def train_qlearn(
     # config_dict["default_init"] = False #random starting positions (uses seed)
 
     # TODO change back, Just to render a visual test match faster:
-    # mctf_config["sim_speedup_factor"] = 20
-    # mctf_config["max_time"] = 6000.
+    # mctf_config["sim_speedup_factor"] = 20 #for faster visual test rendering
+    
+    # timelimit is changed if something was specified (else mctf_config value)
+    mctf_config["max_time"] = timelimit #6000.
+    mctf_config["default_init"] = False #random starting positions (uses seed)
+    #TODO check if this is smart. Likely we want to use 10 (value from mctf_config) for training because this is used in the competition. Right now to see if training improves with this:
+    mctf_config["sim_speedup_factor"] = 3
 
     #-Logging utility-
     # logging.basicConfig(
@@ -157,6 +162,7 @@ def train_qlearn(
             # 3v3 step
             obs, reward, term, trunc, info = env.step({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three, 'agent_4':four, 'agent_5':five})
             #print("\n\nReward:",reward)#Reward: {'agent_0': 0.2734431070341813, 'agent_1': 0.2208806900959132, 'agent_2': -0.12809429110777018, 'agent_3': 0.0, 'agent_4': 0.0, 'agent_5': 0.0}
+            # print(reward["agent_0"],reward["agent_1"],reward["agent_2"])
             
             # Update Q-Table for both agents (same table, two updates)
             #print("\nActions: zero",zero,"; one",one)

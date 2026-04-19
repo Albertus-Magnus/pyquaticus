@@ -222,7 +222,7 @@ class QlearnPolicy(BaseAgentPolicy):
         '''
         # To figure out the best reward we need ownpos, opp1, opp2, b_flag, r_flag, action
         # compute ownpos:
-        if obs[self.id]['has_flag']: #the if-case works     #TODO TODO find the bug that makes agent move in circle here
+        if obs[self.id]['has_flag']: #the if-case works     #TODO TODO find the bug that makes agent move in circle here (also pull and visualize new try against nothing)
             # heading towards objective (positional awareness variable) is towards enemy base normally...
             # ownpos = headingToState(obs[self.id]['own_home_bearing']) 
             # print(info)

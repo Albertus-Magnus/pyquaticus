@@ -100,7 +100,6 @@ def doTraining(parameterset: ParameterSet, number_jobs):
         timel = 600.
         if index < 500 and parameterset.pretrain: #pretraininng with easy opponents, for more exploration on opponent base  [pretraining"easy" disabled for now, all training against easy(now hard)]
             rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty="easy", reward_choice=parameterset.rewardchoice, render_mode=None, timelimit=timel, q_table=qtableee, teamsize3=True) #might make timelimit a parameterset choice too...
-            # TODO add teamsize3 parameter to input of train_qlearn (both times)
             qtableee.qtable = u_table.qtable
             # tags, rewardlist, captures, grabs are all for [0] and [1] (the two teams)
             # After each episode update the values of q-table. For this purpose updates are calculated during the episode into the u-table. Afterwards it gets switched with q-table.
@@ -252,15 +251,18 @@ if __name__ == "__main__":
         #     parametersets.append(ParameterSet("aggressive_tags", "hard", 0.01, 0.99, 10.0, False, "boolchange", "qtrainlog/batch 10/", i, boolchange=True, nrs=10, ep=1000)) 
         # batch 1: Testing if 3v3 works in 2026 mctf env. and how promising results are.
         # batch 2: testing against nothing opponent since ultra-defensive is very difficult
-        for i in range(10): #redoing these after bugfix with headings...
-            parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.1, 0.99, 10.0, False, "3v3test_newbool", "qtrainlog/batch 2/", i, boolchange=True, nrs=10, ep=1000, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
-            #                           mode changed from "hard" to "nothing" for now, because 26env doesnt seem to work with 24-base-policy. Training against ultra-defensive to verify training process...
+        # for i in range(10): #redoing these after bugfix with headings...
+        #     parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.1, 0.99, 10.0, False, "3v3test_newbool", "qtrainlog/batch 2/", i, boolchange=True, nrs=10, ep=1000, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
+        #     #                           mode changed from "hard" to "nothing" for now, because 26env doesnt seem to work with 24-base-policy. Training against ultra-defensive to verify training process...
+        # for i in range(10):
+        #     parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.95, 10.0, False, "3v3test_newbool", "qtrainlog/batch 2/", i, boolchange=True, nrs=10, ep=1000, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
+        # for i in range(10):
+        #     parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.2, 0.95, 10.0, False, "3v3test_oldbool", "qtrainlog/batch 2/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
         for i in range(10):
-            parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.95, 10.0, False, "3v3test_newbool", "qtrainlog/batch 2/", i, boolchange=True, nrs=10, ep=1000, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
+            #we have changed these things before this test: reward for caps/grabs 30 to 300, random starting positions, sim_speedup set from 10 to 3.
+            parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.2, 0.95, 10.0, False, "speeduptest", "qtrainlog/batch 2/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
         for i in range(10):
-            parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.2, 0.95, 10.0, False, "3v3test_oldbool", "qtrainlog/batch 2/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
-        # for i in range(20):
-        #     parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "3v3test_newbool", "qtrainlog/batch 1/", i, boolchange=True, nrs=20, ep=1000, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
+            parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.95, 10.0, False, "speeduptest", "qtrainlog/batch 2/", i, boolchange=True, nrs=10, ep=1000, teamsize3=True))
         #########################################
         #rewardchoice = "single_aggressive_rew"
         #rewardchoice = "double_aggressive_rew" (outdated)
@@ -283,11 +285,14 @@ if __name__ == "__main__":
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 1/3v3test_newbool_aggressive_tags_26_hard_lrate0.1_discount0.99_initq10.0_10nrs_600ep_no_pre_nr0_q_table.npy")
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 1/3v3test_oldbool_single_aggressive_rew_hard_lrate0.2_discount0.95_initq10.0_10nrs_600ep_no_pre_nr0_q_table.npy")
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 2/3v3test_oldbool_single_aggressive_rew_nothing_lrate0.2_discount0.95_initq10.0_10nrs_1000ep_no_pre_nr0_q_table.npy")
+        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 2/3v3test_newbool_aggressive_tags_26_nothing_lrate0.1_discount0.99_initq10.0_10nrs_1000ep_no_pre_nr0_q_table.npy")
         # Muster:
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 1/3v3test_newbool_aggressive_tags_26_hard_lrate0.01_discount0.95_initq10.0_10nrs_600ep_no_pre_nr0_q_table.npy")
         st = np.zeros((4, 4, 4, 2, 2), dtype=np.int32) #dangerous int8-hazard (int8 is insufficient here)
         train_qlearn(st, seed=0, difficulty="nothing", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt, teamsize3=True)#TODO change to use parameterset i guess...
         #                                   even competition-medium is not suitable for 26env :/
+        timestamp = datetime.now()
+        print("Ending experiment at ",timestamp.now().strftime("%d-%m-%Y %H:%M:%S"))
         sys.exit(0)
 
     # Run all scheduled parameters in parallel
