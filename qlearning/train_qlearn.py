@@ -235,7 +235,7 @@ if __name__ == "__main__":
         #     parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "testboolchange2", "qtrainlog/batch 10/", i))
         # for i in range(20):
         #     parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "testrestored2", "qtrainlog/batch 10/", i, boolchange=False)) #should this be better documented in the filename? 
-        '''Only one run has gotten major winrate so far (standard 0.2 0.95 oldbool math1 that was best before too). I need an extensive test on its conversion rate and need to test newbool thorougly too.'''
+        #'''Only one run has gotten major winrate so far (standard 0.2 0.95 oldbool math1 that was best before too). I need an extensive test on its conversion rate and need to test newbool thorougly too.'''
         # for i in range(50):       #TODO I need better visualization on old plots to gauge the performance (conversion rate!) of the so far standard setting. I need all single score curves in one plot or simmilar. Only then it makes sense to run a large test again(?).
         #     parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "x30restored", "qtrainlog/batch 10/", i, boolchange=False))
         # Testing the performance of boolchange to see if it works or not.
@@ -258,11 +258,26 @@ if __name__ == "__main__":
         #     parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.95, 10.0, False, "3v3test_newbool", "qtrainlog/batch 2/", i, boolchange=True, nrs=10, ep=1000, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
         # for i in range(10):
         #     parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.2, 0.95, 10.0, False, "3v3test_oldbool", "qtrainlog/batch 2/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
-        for i in range(10):
-            #we have changed these things before this test: reward for caps/grabs 30 to 300, random starting positions, sim_speedup set from 10 to 3.
-            parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.2, 0.95, 10.0, False, "speeduptest", "qtrainlog/batch 2/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
-        for i in range(10):
-            parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.95, 10.0, False, "speeduptest", "qtrainlog/batch 2/", i, boolchange=True, nrs=10, ep=1000, teamsize3=True))
+        # for i in range(5):
+        #     #we have changed these things before this test: reward for caps/grabs 30 to 300, random starting positions, sim_speedup set from 10 to 3.
+        #     parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.2, 0.95, 10.0, False, "speeduptest", "qtrainlog/batch 2/", i, boolchange=False, nrs=5, ep=1000, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
+        # for i in range(5): #(changed ep to 5 because hpc is not working?)
+        #     parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.95, 10.0, False, "speeduptest", "qtrainlog/batch 2/", i, boolchange=True, nrs=5, ep=1000, teamsize3=True))
+        for i in range(5): # this long ep test is using 6000. as max_time. hard agents now work in 26 (only base_attacker so far)
+            parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.1, 0.99, 10.0, False, "longeptest", "qtrainlog/batch 2/", i, boolchange=True, nrs=5, ep=1000, teamsize3=True)) 
+        for i in range(5): 
+            parametersets.append(ParameterSet("aggressive_tags_26", "hard", 0.1, 0.99, 10.0, False, "longeptest", "qtrainlog/batch 2/", i, boolchange=True, nrs=5, ep=1000, teamsize3=True)) 
+        for i in range(2):
+            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.85, 10.0, False, "longeptest", "qtrainlog/batch 2/", i, boolchange=False, nrs=2, ep=1000, teamsize3=True)) 
+        for i in range(2):
+            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, False, "longeptest", "qtrainlog/batch 2/", i, boolchange=False, nrs=2, ep=1000, teamsize3=True)) 
+        for i in range(2):
+            parametersets.append(ParameterSet("aggressive_tags_26", "hard", 0.1, 0.9, 10.0, False, "longeptest", "qtrainlog/batch 2/", i, boolchange=False, nrs=2, ep=1000, teamsize3=True)) 
+        for i in range(2):
+            parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.2, 0.85, 10.0, False, "longeptest", "qtrainlog/batch 2/", i, boolchange=False, nrs=2, ep=1000, teamsize3=True)) 
+        for i in range(2):
+            parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.1, 0.9, 10.0, False, "longeptest", "qtrainlog/batch 2/", i, boolchange=False, nrs=2, ep=1000, teamsize3=True)) 
+        #perhaps run a veryy long test? parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.1, 0.99, 10.0, False, "looongtest", "qtrainlog/batch 2/", i, boolchange=True, nrs=5, ep=2000, teamsize3=True)) 
         #########################################
         #rewardchoice = "single_aggressive_rew"
         #rewardchoice = "double_aggressive_rew" (outdated)
@@ -286,8 +301,9 @@ if __name__ == "__main__":
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 1/3v3test_oldbool_single_aggressive_rew_hard_lrate0.2_discount0.95_initq10.0_10nrs_600ep_no_pre_nr0_q_table.npy")
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 2/3v3test_oldbool_single_aggressive_rew_nothing_lrate0.2_discount0.95_initq10.0_10nrs_1000ep_no_pre_nr0_q_table.npy")
         qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 2/3v3test_newbool_aggressive_tags_26_nothing_lrate0.1_discount0.99_initq10.0_10nrs_1000ep_no_pre_nr0_q_table.npy")
+        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 2/speeduptest_single_aggressive_rew_nothing_lrate0.2_discount0.95_initq10.0_5nrs_1000ep_no_pre_nr0_q_table.npy")
         # Muster:
-        # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 1/3v3test_newbool_aggressive_tags_26_hard_lrate0.01_discount0.95_initq10.0_10nrs_600ep_no_pre_nr0_q_table.npy")
+        #qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 2/_nr0_q_table.npy")
         st = np.zeros((4, 4, 4, 2, 2), dtype=np.int32) #dangerous int8-hazard (int8 is insufficient here)
         train_qlearn(st, seed=0, difficulty="nothing", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt, teamsize3=True)#TODO change to use parameterset i guess...
         #                                   even competition-medium is not suitable for 26env :/

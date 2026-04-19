@@ -9,7 +9,7 @@ from numpy.typing import NDArray
 from pyquaticus import pyquaticus_v0
 from pyquaticus.envs.competition_pyquaticus import CompPyquaticusEnv #2026 mctf environment
 from pyquaticus.base_policies.base_combined import Heuristic_CTF_Agent
-from pyquaticus.base_policies.base_attack import BaseAttacker
+from pyquaticus.base_policies.base_attack26 import BaseAttacker
 # from pyquaticus.base_policies.multi_rhea_policy import MRHEA_Agent, MRHEA_Environment
 # from pyquaticus.base_policies.rhealg_policy2 import RHEA_Agent, RHEA_Environment
 # from pyquaticus.base_policies.ultra_def_policy import UltraDefender
@@ -78,10 +78,12 @@ def train_qlearn(
     # mctf_config["sim_speedup_factor"] = 20 #for faster visual test rendering
     
     # timelimit is changed if something was specified (else mctf_config value)
-    mctf_config["max_time"] = timelimit #6000.
+    mctf_config["max_time"] = 6000.#timelimit #6000.
     mctf_config["default_init"] = False #random starting positions (uses seed)
     #TODO check if this is smart. Likely we want to use 10 (value from mctf_config) for training because this is used in the competition. Right now to see if training improves with this:
-    mctf_config["sim_speedup_factor"] = 3
+    #mctf_config["sim_speedup_factor"] = is standard 10 #3 #this appears to be wayyyyyy too slow. Yet the timelimit seems too short. In visual rendering - holdup, visually there should be no difference caused by this?
+    # is the speed of the agents just because they alternate between actions, not accelerating as much? TODO find out about movement, max_time and step-number TODO also find out why reward doesnt increase. Are agents learning at all?!
+    #NOTE the speedup factor was observed to change the rendering of the agents. Thus it does affect rendered speed (probably every frame computed is rendered?, perhaps this explains why a "10-minute game" is rendered in ~4min...)
 
     #-Logging utility-
     # logging.basicConfig(
@@ -172,7 +174,7 @@ def train_qlearn(
             s_table[a1_qstep[0]][a1_qstep[1]][a1_qstep[2]][a1_qstep[3]][a1_qstep[4]] += 1
             R_three.set_q_value(a2_qstep[0], a2_qstep[1], a2_qstep[2], a2_qstep[3], a2_qstep[4], a2_qstep[5], reward['agent_2'])
             s_table[a2_qstep[0]][a2_qstep[1]][a2_qstep[2]][a2_qstep[3]][a2_qstep[4]] += 1
-            rewardsteps.append({'agent_0': reward['agent_0'], 'agent_1': reward['agent_1'], 'agent_2': reward['agent_2']})    #TODO do I append third agent?
+            rewardsteps.append({'agent_0': reward['agent_0'], 'agent_1': reward['agent_1'], 'agent_2': reward['agent_2']})
         if not teamsize3:
             # Base_combine agents
             two = H_one.compute_action(obs, info)
