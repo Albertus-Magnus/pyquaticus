@@ -19,6 +19,10 @@ from pyquaticus.config import config_dict_std, ACTION_MAP
 # self: agent_0 or agent_1
 # opponents: agent_2 and agent_2
 
+FLAG_DELIVERY_POS = np.array([10., 70.]) # (upper left corner)
+# FLAG_DELIVERY_POS = np.array([150., 70.]) # (upper right corner)
+# the flag in the 26env has to be delivered to one of the two bases in the corners of the own side, not just to the own side anymore.
+
 class QTable:
     def __init__(self, LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, filename=None, boolchange=True):
         self.LEARNING_RATE = LEARNING_RATE
@@ -62,16 +66,28 @@ class QTable:
     """
 
     def prepareUpdate(self, obs, info, agentID, action):
-        if obs[agentID]['has_flag']:
+        #delete below (test)
+        # if agentID == 'agent_0' and False:
+        #     vec_from_agent = np.array([5. - info['agent_0']['global_state'][(agentID, 'pos')][0] , 75. - info['agent_0']['global_state'][(agentID, 'pos')][1] ])
+        #     agent_heading = info['agent_0']['global_state'][(agentID, "heading")]
+        #     ownpos = headingToState(angle180(vec_to_heading(vec_from_agent) - agent_heading))
+        #     print(f"ownpos: {ownpos} heading: {angle180(vec_to_heading(vec_from_agent) - agent_heading)}")
+        #####remove above
+        if obs[agentID]['has_flag']:            
             # heading towards objective (positional awareness variable) is towards enemy base normally...
             #ownpos = headingToState(obs[agentID]['own_home_bearing']) 
             #ownpos = headingToState(np.array([5.0, 75.0])) #adjusted for 2026 twobase rules
-            #ownpos = headingToState(obs[agentID]['wall_0_bearing']) #TODO TODO this needs to be improved, currently quick and ugly fix!
-            #ownpos = headingToState(vec_to_heading(np.array([5., 75.]))) #TODO test this (then add to prepareUpdate()...)
-            vec_from_agent = np.array([5. - info['agent_0']['global_state'][(agentID, 'pos')][0] , 75. - info['agent_0']['global_state'][(agentID, 'pos')][1] ])
+            #ownpos = headingToState(obs[agentID]['wall_0_bearing'])
+            #ownpos = headingToState(vec_to_heading(np.array([5., 75.]))) 
+            # vec_from_agent = np.array([5. - info['agent_0']['global_state'][(agentID, 'pos')][0] , 75. - info['agent_0']['global_state'][(agentID, 'pos')][1] ])
             agent_heading = info['agent_0']['global_state'][(agentID, "heading")]
+            agent_position = info[agentID]['global_state'][(agentID, 'pos')]
+
+            ownpos = headingToState( bearing_from_coord(FLAG_DELIVERY_POS, agent_position, agent_heading) )
+
             #ownpos = headingToState(vec_to_heading(np.array([5., 75.]))) #TODO test this (then add to prepareUpdate()...)
-            ownpos = headingToState(angle180(vec_to_heading(vec_from_agent) - agent_heading)) #TODO test this (then add to prepareUpdate()...)
+            # ownpos = headingToState(angle180(vec_to_heading(vec_from_agent) - agent_heading)) #TODO test this (then add to prepareUpdate()...)
+            # print(f"ownpos: {ownpos} heading: {angle180(vec_to_heading(vec_from_agent) - agent_heading)}")
         else:
             # ...and towards own base (or map half) if agent has grabbed the enemy flag
             #print("own_home_bearing =", obs[agentID]['own_home_bearing'])#output of this is "own_home_bearing = 117.06809126991149"
@@ -134,11 +150,20 @@ def angle180(deg):
         deg += 360
     return deg
 
+from pyquaticus.utils.utils import heading_angle_conversion
 def vec_to_heading(vec):
     """Converts a vector to a magnitude and heading (deg)."""
     import math
     angle = math.degrees(math.atan2(vec[1], vec[0]))
-    return angle180(angle)
+    return angle180(heading_angle_conversion(angle))
+
+def bearing_from_coord(goal_pos, agent_pos, agent_heading):
+    """Computes the relative bearing for a given agent towards a global position/coordinate.
+    agent_heading is the current direction (global) the agent is directed/headed/turned 
+    towards, in degrees between -180 and 180.
+    for example: info['agent_0']['global_state'][(agentID, "heading")] """
+    vec_from_agent = np.array([goal_pos[0] - agent_pos[0] , goal_pos[1] - agent_pos[1]])
+    return angle180(vec_to_heading(vec_from_agent) - agent_heading)
 
 class QlearnPolicy(BaseAgentPolicy):
     """Implements a BaseAgentPolicy from pyquaticus, especially the compute_action() method."""
@@ -228,12 +253,18 @@ class QlearnPolicy(BaseAgentPolicy):
             # print(info)
             # print(f"Agent Position: {info['agent_0']['global_state'][(self.id, 'pos')]}") #position works as thought.
             #ownpos = headingToState(np.array([5.0, 75.0])) #adjusted for 26 twobase rules      #TODO reinstate this line, but change [x,y] to bearing towards x,y (perhaps change headingToState to do that?)
-            vec_from_agent = np.array([5. - info['agent_0']['global_state'][(self.id, 'pos')][0] , 75. - info['agent_0']['global_state'][(self.id, 'pos')][1] ])
-            agent_heading = info['agent_0']['global_state'][(self.id, "heading")]
+            # vec_from_agent = np.array([10. - info['agent_0']['global_state'][(self.id, 'pos')][0] , 70. - info['agent_0']['global_state'][(self.id, 'pos')][1] ])
+            # agent_heading = info['agent_0']['global_state'][(self.id, "heading")]
             #ownpos = headingToState(vec_to_heading(np.array([5., 75.]))) #TODO test this (then add to prepareUpdate()...)
-            ownpos = headingToState(angle180(vec_to_heading(vec_from_agent) - agent_heading)) #TODO test this (then add to prepareUpdate()...)
+            # ownpos = headingToState(angle180(vec_to_heading(vec_from_agent) - agent_heading)) #TODO test this (then add to prepareUpdate()...)
             # print(f"vector to goal: {vec_from_agent}, heading: {angle180(vec_to_heading(vec_from_agent) - agent_heading)}") #vec_to_heading doesn not appear to work! need other way to use headingToState after capture
             #ownpos = headingToState(obs[self.id]['wall_0_bearing'])
+
+            agent_heading = info[self.id]['global_state'][(self.id, "heading")]
+            agent_position = info[self.id]['global_state'][(self.id, 'pos')]
+
+            ownpos = headingToState( bearing_from_coord(FLAG_DELIVERY_POS, agent_position, agent_heading) )
+
         else:
             # ...and towards own base (or map half) if agent has grabbed the enemy flag
             #print("own_home_bearing =",obs[self.id]['own_home_bearing'])#output of this is "own_home_bearing = 117.06809126991149"

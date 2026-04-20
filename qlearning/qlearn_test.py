@@ -78,7 +78,7 @@ def train_qlearn(
     # mctf_config["sim_speedup_factor"] = 20 #for faster visual test rendering
     
     # timelimit is changed if something was specified (else mctf_config value)
-    mctf_config["max_time"] = 6000.#timelimit #6000.
+    mctf_config["max_time"] = timelimit #6000.#timelimit #6000.
     mctf_config["default_init"] = False #random starting positions (uses seed)
     #TODO check if this is smart. Likely we want to use 10 (value from mctf_config) for training because this is used in the competition. Right now to see if training improves with this:
     #mctf_config["sim_speedup_factor"] = is standard 10 #3 #this appears to be wayyyyyy too slow. Yet the timelimit seems too short. In visual rendering - holdup, visually there should be no difference caused by this?
@@ -163,11 +163,12 @@ def train_qlearn(
             
             # 3v3 step
             obs, reward, term, trunc, info = env.step({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three, 'agent_4':four, 'agent_5':five})
-            #print("\n\nReward:",reward)#Reward: {'agent_0': 0.2734431070341813, 'agent_1': 0.2208806900959132, 'agent_2': -0.12809429110777018, 'agent_3': 0.0, 'agent_4': 0.0, 'agent_5': 0.0}
+            # print("heading global or not?: ",info['agent_0']['global_state'][('agent_0', "heading")])
+            # print("Reward:",reward)#Reward: {'agent_0': 0.2734431070341813, 'agent_1': 0.2208806900959132, 'agent_2': -0.12809429110777018, 'agent_3': 0.0, 'agent_4': 0.0, 'agent_5': 0.0}
             # print(reward["agent_0"],reward["agent_1"],reward["agent_2"])
             
             # Update Q-Table for both agents (same table, two updates)
-            #print("\nActions: zero",zero,"; one",one)
+            # print("\nActions: zero",zero,"; one",one)
             R_one.set_q_value(a0_qstep[0], a0_qstep[1], a0_qstep[2], a0_qstep[3], a0_qstep[4], a0_qstep[5], reward['agent_0'])
             s_table[a0_qstep[0]][a0_qstep[1]][a0_qstep[2]][a0_qstep[3]][a0_qstep[4]] += 1
             R_two.set_q_value(a1_qstep[0], a1_qstep[1], a1_qstep[2], a1_qstep[3], a1_qstep[4], a1_qstep[5], reward['agent_1'])
