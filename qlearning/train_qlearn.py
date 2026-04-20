@@ -114,7 +114,7 @@ def doTraining(parameterset: ParameterSet, number_jobs):
         if parameterset.teamsize3:
             rewardsum = [0., 0., 0.]
         #print("\n\n -##########- \grab_entry: ",grab_entry)
-        print(f"Length of episode: 600sec, {len(rewardsteps)} steps (3x updates to qtable...)")
+        # print(f"Length of episode: 2000sec, {len(rewardsteps)} steps (3x updates to qtable...)")
         for r in rewardsteps:
             # agent0 and agent1 are the ones where reward is interesting for us.
             rewardsum[0] += r['agent_0']
@@ -280,9 +280,16 @@ if __name__ == "__main__":
         # for i in range(2):
         #     parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.1, 0.9, 10.0, False, "longeptest", "qtrainlog/batch 2/", i, boolchange=False, nrs=2, ep=1000, teamsize3=True)) 
         # batch 2d
-        parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.1, 0.99, 10.0, False, "runtime-test", "qtrainlog/batch 2/", 0, boolchange=True, nrs=1, ep=10, teamsize3=True)) 
-        # batch 
-        #parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.1, 0.9, 10.0, False, "longeptest", "qtrainlog/batch 2/", i, boolchange=False, nrs=2, ep=1000, teamsize3=True)) 
+        # parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.1, 0.99, 10.0, False, "local-runtime-test", "qtrainlog/batch 2/", 0, boolchange=True, nrs=1, ep=10, teamsize3=True)) 
+        # batch 3
+        for i in range(3): #testing if a successful policy results in 2000 sec maxtime (thus 2000 steps and q-updates per episode)
+            parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.2, 0.95, 10.0, False, "stepstest", "qtrainlog/batch 3/", i, boolchange=False, nrs=3, ep=1000, teamsize3=True)) 
+        parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.1, 0.9, 10.0, False, "stepstest", "qtrainlog/batch 3/", i, boolchange=False, nrs=3, ep=1000, teamsize3=True)) 
+        parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.1, 0.99, 10.0, False, "stepstest", "qtrainlog/batch 3/", i, boolchange=False, nrs=3, ep=1000, teamsize3=True)) 
+        for i in range(3): #FOLDER NOT FORGET! TODO
+            parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.1, 0.99, 10.0, False, "stepstest", "qtrainlog/batch 3/", i, boolchange=True, nrs=3, ep=1000, teamsize3=True)) 
+        parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.95, 10.0, False, "stepstest", "qtrainlog/batch 3/", i, boolchange=False, nrs=3, ep=1000, teamsize3=True)) 
+        parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.9, 10.0, False, "stepstest", "qtrainlog/batch 3/", i, boolchange=False, nrs=3, ep=1000, teamsize3=True)) 
         #########################################
         #rewardchoice = "single_aggressive_rew"
         #rewardchoice = "double_aggressive_rew" (outdated)
@@ -349,6 +356,3 @@ if __name__ == "__main__":
     end_time = datetime.now()
     elapsed_time = end_time - timestamp
     print(f"Total execution time: {elapsed_time} (h:min:sec) for {len(parametersets)} policy trainings.")
-    timestamp = datetime.now()#TODO remove after runtime-test
-    print("Ending experiments at ",timestamp.now().strftime("%d-%m-%Y %H:%M:%S"))
-    # beware, this line is useless if the terminal is closed without reading the final print. Perhaps print statistics including these to a small textfile?
