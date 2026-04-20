@@ -283,13 +283,13 @@ if __name__ == "__main__":
         # parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.1, 0.99, 10.0, False, "local-runtime-test", "qtrainlog/batch 2/", 0, boolchange=True, nrs=1, ep=10, teamsize3=True)) 
         # batch 3
         for i in range(3): #testing if a successful policy results in 2000 sec maxtime (thus 2000 steps and q-updates per episode)
-            parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.2, 0.95, 10.0, False, "stepstest", "qtrainlog/batch 3/", i, boolchange=False, nrs=3, ep=1000, teamsize3=True)) 
-        parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.1, 0.9, 10.0, False, "stepstest", "qtrainlog/batch 3/", i, boolchange=False, nrs=3, ep=1000, teamsize3=True)) 
-        parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.1, 0.99, 10.0, False, "stepstest", "qtrainlog/batch 3/", i, boolchange=False, nrs=3, ep=1000, teamsize3=True)) 
-        for i in range(3): #FOLDER NOT FORGET! TODO
-            parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.1, 0.99, 10.0, False, "stepstest", "qtrainlog/batch 3/", i, boolchange=True, nrs=3, ep=1000, teamsize3=True)) 
-        parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.95, 10.0, False, "stepstest", "qtrainlog/batch 3/", i, boolchange=False, nrs=3, ep=1000, teamsize3=True)) 
-        parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.9, 10.0, False, "stepstest", "qtrainlog/batch 3/", i, boolchange=False, nrs=3, ep=1000, teamsize3=True)) 
+            parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.2, 0.95, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=False, nrs=3, ep=600, teamsize3=True)) 
+        parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.1, 0.9, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=600, teamsize3=True)) 
+        parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.1, 0.99, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=600, teamsize3=True)) 
+        for i in range(3): #stepstest1 did not complete in 8h, now I try stepstest2 and give it a bit of time, as well as 600 (was 1000) episodes.
+            parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.1, 0.99, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=True, nrs=3, ep=600, teamsize3=True)) 
+        parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.95, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=600, teamsize3=True)) 
+        parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.9, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=600, teamsize3=True)) 
         #########################################
         #rewardchoice = "single_aggressive_rew"
         #rewardchoice = "double_aggressive_rew" (outdated)
