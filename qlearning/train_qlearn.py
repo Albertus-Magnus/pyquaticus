@@ -97,7 +97,8 @@ def doTraining(parameterset: ParameterSet, number_jobs):
         # print("Beginning training run at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
         seeed = np.random.randint(0, 100000) #random seed while training, set of seeds when testing (TODO)
         #logstructure = []
-        timel = 600.
+        timel = 2000. #600.
+        # timelimit was computed to be 2000 seconds for 2000 q-updates (and steps), which is the number of updates 24env policies needed to train for
         if index < 500 and parameterset.pretrain: #pretraininng with easy opponents, for more exploration on opponent base  [pretraining"easy" disabled for now, all training against easy(now hard)]
             rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty="easy", reward_choice=parameterset.rewardchoice, render_mode=None, timelimit=timel, q_table=qtableee, teamsize3=True) #might make timelimit a parameterset choice too...
             qtableee.qtable = u_table.qtable
@@ -278,9 +279,10 @@ if __name__ == "__main__":
         #     parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.2, 0.85, 10.0, False, "longeptest", "qtrainlog/batch 2/", i, boolchange=False, nrs=2, ep=1000, teamsize3=True)) 
         # for i in range(2):
         #     parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.1, 0.9, 10.0, False, "longeptest", "qtrainlog/batch 2/", i, boolchange=False, nrs=2, ep=1000, teamsize3=True)) 
-        #perhaps run a veryy long test? parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.1, 0.99, 10.0, False, "looongtest", "qtrainlog/batch 2/", i, boolchange=True, nrs=5, ep=2000, teamsize3=True)) 
-
-        parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.1, 0.99, 10.0, False, "headingfixtest", "qtrainlog/batch 2/", 0, boolchange=True, nrs=1, ep=2, teamsize3=True)) 
+        # batch 2d
+        parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.1, 0.99, 10.0, False, "runtime-test", "qtrainlog/batch 2/", 0, boolchange=True, nrs=1, ep=10, teamsize3=True)) 
+        # batch 
+        #parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.1, 0.9, 10.0, False, "longeptest", "qtrainlog/batch 2/", i, boolchange=False, nrs=2, ep=1000, teamsize3=True)) 
         #########################################
         #rewardchoice = "single_aggressive_rew"
         #rewardchoice = "double_aggressive_rew" (outdated)
@@ -347,4 +349,6 @@ if __name__ == "__main__":
     end_time = datetime.now()
     elapsed_time = end_time - timestamp
     print(f"Total execution time: {elapsed_time} (h:min:sec) for {len(parametersets)} policy trainings.")
+    timestamp = datetime.now()#TODO remove after runtime-test
+    print("Ending experiments at ",timestamp.now().strftime("%d-%m-%Y %H:%M:%S"))
     # beware, this line is useless if the terminal is closed without reading the final print. Perhaps print statistics including these to a small textfile?
