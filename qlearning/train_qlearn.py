@@ -99,7 +99,7 @@ def doTraining(parameterset: ParameterSet, number_jobs):
         # print("Beginning training run at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
         seeed = np.random.randint(0, 100000) #random seed while training, set of seeds when testing (TODO)
         #logstructure = []
-        timel = 6000.#2000. #600. #TODO think about how much timelimit we should use (right now less because training is longer else)
+        timel = 600.#2000. #600. #TODO think about how much timelimit we should use (right now less because training is longer else)
         # timelimit was computed to be 2000 seconds for 2000 q-updates (and steps), which is the number of updates 24env policies needed to train for
         if index < 500 and parameterset.pretrain: #pretraininng with easy opponents, for more exploration on opponent base  [pretraining"easy" disabled for now, all training against easy(now hard)]
             rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty="easy", reward_choice=parameterset.rewardchoice, render_mode=None, timelimit=timel, q_table=qtableee, teamsize3=True) #might make timelimit a parameterset choice too...
@@ -186,6 +186,7 @@ if __name__ == "__main__":
     # Selecting preset of training parameters ("train" to make sure the files are not overwritten by mistake)
     parametersets = []
     if len(sys.argv) > 1 and sys.argv[1] == "train":
+        print("Selecting large batch training.")
         # Do large batch training here.
         #########################################
         #vanilla parameters WITHOUT pretrain #batch 6 part one:
@@ -312,7 +313,8 @@ if __name__ == "__main__":
         # basically to fix the bug that was present in the grab-return logic of the reward used in this q-policy    #NOTE the first 1000ep are already trained, now 300ep shorter time (600 instead of 2000sec)
         #parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrab", "qtrainlog/batch 3/", 0, boolchange=False, nrs=1, ep=300, teamsize3=True)) 
         #once more with 100min episodes
-        parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrab", "qtrainlog/batch 3/", 0, boolchange=False, nrs=1, ep=300, teamsize3=True)) 
+        # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong", "qtrainlog/batch 3/", 0, boolchange=False, nrs=1, ep=300, teamsize3=True)) 
+        
         
         #########################################
         #rewardchoice = "single_aggressive_rew"
