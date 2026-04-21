@@ -1,4 +1,5 @@
 # import sys
+import os
 
 from matplotlib import pyplot as plt
 # import matplotlib.ticker as ticker
@@ -238,7 +239,7 @@ def avg_vis_helper(paraset: ParameterSet):
 
     # Load data for visualization #TODO testing with scores rn, need to reenable the others
     q_table = np.load(f"{filename_suffix}_nr0_q_table.npy")
-    
+
     rewardcurve = [np.load(f"{filename_suffix}_nr{i}_reward_curve.npy") for i in range(TWENTY)]
     scorelist = [np.load(f"{filename_suffix}_nr{i}_scores.npy") for i in range(TWENTY)]
     grabslist = [np.load(f"{filename_suffix}_nr{i}_grabslist.npy") for i in range(TWENTY)]
@@ -405,6 +406,7 @@ if __name__ == "__main__":
 
     i = 0 # do not forget to set other index if multiple indexes exist (not necessary for avg_vis_helper)
     filenames = []
+    parametersets = []
     # batch 10
     #filenames.append(ParameterSet("aggressive_tags", "hard", 0.2, 0.95, 10.0, False, "testboolchange2", "qtrainlog/batch 10/", 0))
     # filenames.append(ParameterSet("aggressive_tags", "hard", 0.2, 0.95, 10.0, False, "testrestored", "qtrainlog/batch 10/", i))
@@ -432,22 +434,48 @@ if __name__ == "__main__":
     # filenames.append(ParameterSet("aggressive_tags_26", "hard", 0.01, 0.95, 10.0, False, "3v3test_newbool", "qtrainlog/batch 1/", i, boolchange=True, nrs=10, ep=600, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
     # filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "3v3test_oldbool", "qtrainlog/batch 1/", i, boolchange=False, nrs=10, ep=600, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
     # batch 2
-    filenames.append(ParameterSet("aggressive_tags_26", "nothing", 0.1, 0.99, 10.0, False, "3v3test_newbool", "qtrainlog/batch 2/", i, boolchange=True, nrs=10, ep=1000, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
-            #                           mode changed from "hard" to "nothing" for now, because 26env doesnt seem to work with 24-base-policy. Training against ultra-defensive to verify training process...
-    filenames.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.95, 10.0, False, "3v3test_newbool", "qtrainlog/batch 2/", i, boolchange=True, nrs=10, ep=1000, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
-    filenames.append(ParameterSet("single_aggressive_rew", "nothing", 0.2, 0.95, 10.0, False, "3v3test_oldbool", "qtrainlog/batch 2/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True))
-    # batch 2b
-    filenames.append(ParameterSet("single_aggressive_rew", "nothing", 0.2, 0.95, 10.0, False, "speeduptest", "qtrainlog/batch 2/", i, boolchange=False, nrs=5, ep=1000, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
-    filenames.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.95, 10.0, False, "speeduptest", "qtrainlog/batch 2/", i, boolchange=True, nrs=5, ep=1000, teamsize3=True))
+    # filenames.append(ParameterSet("aggressive_tags_26", "nothing", 0.1, 0.99, 10.0, False, "3v3test_newbool", "qtrainlog/batch 2/", i, boolchange=True, nrs=10, ep=1000, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
+    #         #                           mode changed from "hard" to "nothing" for now, because 26env doesnt seem to work with 24-base-policy. Training against ultra-defensive to verify training process...
+    # filenames.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.95, 10.0, False, "3v3test_newbool", "qtrainlog/batch 2/", i, boolchange=True, nrs=10, ep=1000, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
+    # filenames.append(ParameterSet("single_aggressive_rew", "nothing", 0.2, 0.95, 10.0, False, "3v3test_oldbool", "qtrainlog/batch 2/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True))
+    # # batch 2b
+    # filenames.append(ParameterSet("single_aggressive_rew", "nothing", 0.2, 0.95, 10.0, False, "speeduptest", "qtrainlog/batch 2/", i, boolchange=False, nrs=5, ep=1000, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
+    # filenames.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.95, 10.0, False, "speeduptest", "qtrainlog/batch 2/", i, boolchange=True, nrs=5, ep=1000, teamsize3=True))
     # batch 2c
     # filenames.append(ParameterSet("aggressive_tags_26", "nothing", 0.1, 0.99, 10.0, False, "longeptest", "qtrainlog/batch 2/", i, boolchange=True, nrs=5, ep=1000, teamsize3=True)) 
     # filenames.append(ParameterSet("aggressive_tags_26", "hard", 0.1, 0.99, 10.0, False, "longeptest", "qtrainlog/batch 2/", i, boolchange=True, nrs=2, ep=1000, teamsize3=True)) 
     # filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.85, 10.0, False, "longeptest", "qtrainlog/batch 2/", i, boolchange=False, nrs=2, ep=1000, teamsize3=True)) 
     # filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, False, "longeptest", "qtrainlog/batch 2/", i, boolchange=False, nrs=2, ep=1000, teamsize3=True)) 
     # filenames.append(ParameterSet("aggressive_tags_26", "hard", 0.1, 0.9, 10.0, False, "longeptest", "qtrainlog/batch 2/", i, boolchange=False, nrs=2, ep=1000, teamsize3=True)) 
+    # batch 3a1
+    parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.2, 0.95, 10.0, False, "stepstest", "qtrainlog/batch 3/", i, boolchange=False, nrs=3, ep=1000, teamsize3=True)) 
+    parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.1, 0.9, 10.0, False, "stepstest", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=1000, teamsize3=True)) 
+    parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.1, 0.99, 10.0, False, "stepstest", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=1000, teamsize3=True)) 
+    parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.1, 0.99, 10.0, False, "stepstest", "qtrainlog/batch 3/", i, boolchange=True, nrs=3, ep=1000, teamsize3=True)) 
+    parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.95, 10.0, False, "stepstest", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=1000, teamsize3=True)) 
+    parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.9, 10.0, False, "stepstest", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=1000, teamsize3=True)) 
+    # batch 3a2
+    # parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.2, 0.95, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=False, nrs=3, ep=600, teamsize3=True)) 
+    # parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.1, 0.9, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=600, teamsize3=True)) 
+    # parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.1, 0.99, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=600, teamsize3=True)) 
+    # parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.1, 0.99, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=True, nrs=3, ep=600, teamsize3=True)) 
+    # parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.95, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=600, teamsize3=True)) 
+    # parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.9, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=600, teamsize3=True)) 
 
     for e in filenames:
+        # check if folder is already created
+        if not os.path.isdir(e.foldername+"figures/"):
+            print("Creating folder "+e.foldername+"figures/")
+            os.makedirs(e.foldername+"figures/")
+
         #vis_helper(e)
+        avg_vis_helper(e)
+    for e in parametersets:
+        # check if folder is already created
+        if not os.path.isdir(e.foldername+"figures/"):
+            print("Creating folder "+e.foldername+"figures/")
+            os.makedirs(e.foldername+"figures/")
+
         avg_vis_helper(e)
     #vis_helper("math2scatter_aggressive_tags_24_hard_lrate0.1_discount0.9_initq10.0_1000ep_no_pre_nr0")
 

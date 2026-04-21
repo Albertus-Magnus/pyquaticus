@@ -75,10 +75,10 @@ def train_qlearn(
     # config_dict["default_init"] = False #random starting positions (uses seed)
 
     # TODO change back, Just to render a visual test match faster:
-    # mctf_config["sim_speedup_factor"] = 20 #for faster visual test rendering
+    mctf_config["sim_speedup_factor"] = 20 #for faster visual test rendering
     
     # timelimit is changed if something was specified (else mctf_config value)
-    mctf_config["max_time"] = timelimit #6000.#timelimit #6000.
+    mctf_config["max_time"] = 6000.#timelimit #6000.
     mctf_config["default_init"] = False #random starting positions (uses seed)
     #TODO check if this is smart. Likely we want to use 10 (value from mctf_config) for training because this is used in the competition. Right now to see if training improves with this:
     #mctf_config["sim_speedup_factor"] = is standard 10 #3 #this appears to be wayyyyyy too slow. Yet the timelimit seems too short. In visual rendering - holdup, visually there should be no difference caused by this?

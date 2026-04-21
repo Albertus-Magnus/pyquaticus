@@ -282,14 +282,17 @@ if __name__ == "__main__":
         # batch 2d
         # parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.1, 0.99, 10.0, False, "local-runtime-test", "qtrainlog/batch 2/", 0, boolchange=True, nrs=1, ep=10, teamsize3=True)) 
         # batch 3
-        for i in range(3): #testing if a successful policy results in 2000 sec maxtime (thus 2000 steps and q-updates per episode)
-            parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.2, 0.95, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=False, nrs=3, ep=600, teamsize3=True)) 
-        parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.1, 0.9, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=600, teamsize3=True)) 
-        parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.1, 0.99, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=600, teamsize3=True)) 
-        for i in range(3): #stepstest1 did not complete in 8h, now I try stepstest2 and give it a bit of time, as well as 600 (was 1000) episodes.
-            parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.1, 0.99, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=True, nrs=3, ep=600, teamsize3=True)) 
-        parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.95, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=600, teamsize3=True)) 
-        parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.9, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=600, teamsize3=True)) 
+        # for i in range(3): #testing if a successful policy results in 2000 sec maxtime (thus 2000 steps and q-updates per episode)
+        #     parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.2, 0.95, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=False, nrs=3, ep=600, teamsize3=True)) 
+        # parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.1, 0.9, 10.0, False, "stepstest2", "qtrainlog/batch 3/", 0, boolchange=False, nrs=1, ep=600, teamsize3=True)) 
+        # parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.1, 0.99, 10.0, False, "stepstest2", "qtrainlog/batch 3/", 0, boolchange=False, nrs=1, ep=600, teamsize3=True)) 
+        # for i in range(3): #stepstest1 did not complete in 8h, now I try stepstest2 and give it a bit of time, as well as 600 (was 1000) episodes.
+        #     parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.1, 0.99, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=True, nrs=3, ep=600, teamsize3=True)) 
+        # i = 0 #if using i instead of 0 outside of ranges this is necessary. Recommend to just use 0 for clarity
+        # parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.95, 10.0, False, "stepstest2", "qtrainlog/batch 3/", 0, boolchange=False, nrs=1, ep=600, teamsize3=True)) 
+        # parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.9, 10.0, False, "stepstest2", "qtrainlog/batch 3/", 0, boolchange=False, nrs=1, ep=600, teamsize3=True)) 
+        # batch 3b
+        # this is promising? parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.1, 0.99, 10.0, False, "stepstest2", "qtrainlog/batch 3/", 0, boolchange=False, nrs=1, ep=600, teamsize3=True)) 
         #########################################
         #rewardchoice = "single_aggressive_rew"
         #rewardchoice = "double_aggressive_rew" (outdated)
@@ -315,10 +318,11 @@ if __name__ == "__main__":
         qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 2/3v3test_newbool_aggressive_tags_26_nothing_lrate0.1_discount0.99_initq10.0_10nrs_1000ep_no_pre_nr0_q_table.npy")
         qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 2/speeduptest_single_aggressive_rew_nothing_lrate0.2_discount0.95_initq10.0_5nrs_1000ep_no_pre_nr0_q_table.npy")
         qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 2/speeduptest_aggressive_tags_26_nothing_lrate0.01_discount0.95_initq10.0_5nrs_1000ep_no_pre_nr0_q_table.npy")
+        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 3/stepstest2_single_aggressive_rew_nothing_lrate0.1_discount0.9_initq10.0_1nrs_600ep_no_pre_nr0_q_table.npy")
         # Muster:
         #qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 2/_nr0_q_table.npy")
         st = np.zeros((4, 4, 4, 2, 2), dtype=np.int32) #dangerous int8-hazard (int8 is insufficient here)
-        train_qlearn(st, seed=0, difficulty="nothing", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt, teamsize3=True)#TODO change to use parameterset i guess...
+        train_qlearn(st, seed=0, difficulty="hard", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt, teamsize3=True)#TODO change to use parameterset i guess...
         #                                   even competition-medium is not suitable for 26env :/
         timestamp = datetime.now()
         print("Ending experiment at ",timestamp.now().strftime("%d-%m-%Y %H:%M:%S"))
