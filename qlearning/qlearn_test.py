@@ -14,7 +14,7 @@ from pyquaticus.base_policies.base_attack26 import BaseAttacker
 # from pyquaticus.base_policies.rhealg_policy2 import RHEA_Agent, RHEA_Environment
 # from pyquaticus.base_policies.ultra_def_policy import UltraDefender
 from qtable import QlearnPolicy, QTable
-from pyquaticus.utils.rewards import caps_and_grabs, single_aggressive_rew, caps_and_tags, aggressive_tags_26
+from pyquaticus.utils.rewards import caps_and_grabs, single_aggressive_rew, caps_and_tags, aggressive_tags_26, single_aggressive26
 from pyquaticus.mctf26_config import config_dict_std as mctf_config
 #from multiprocessing import Pool, Value, Lock #i don't need any parallel processing (is qlearn even compatible?), i just need to run 10 scripts in different terminals...
 
@@ -55,8 +55,8 @@ def train_qlearn(
         #     reward_method = defensive_rew
         case "caps_and_tags":
             reward_method = caps_and_tags
-        # case "aggressive_tags":
-        #     reward_method = aggressive_tags
+        case "single_aggressive26":
+            reward_method = single_aggressive26
         case "aggressive_tags_26":
             reward_method = aggressive_tags_26
         case _:
@@ -75,10 +75,10 @@ def train_qlearn(
     # config_dict["default_init"] = False #random starting positions (uses seed)
 
     # TODO change back, Just to render a visual test match faster:
-    mctf_config["sim_speedup_factor"] = 20 #for faster visual test rendering
+    # mctf_config["sim_speedup_factor"] = 20 #for faster visual test rendering
     
     # timelimit is changed if something was specified (else mctf_config value)
-    mctf_config["max_time"] = 6000.#timelimit #6000.
+    mctf_config["max_time"] = timelimit #6000.#timelimit #6000.
     mctf_config["default_init"] = False #random starting positions (uses seed)
     #TODO check if this is smart. Likely we want to use 10 (value from mctf_config) for training because this is used in the competition. Right now to see if training improves with this:
     #mctf_config["sim_speedup_factor"] = is standard 10 #3 #this appears to be wayyyyyy too slow. Yet the timelimit seems too short. In visual rendering - holdup, visually there should be no difference caused by this?

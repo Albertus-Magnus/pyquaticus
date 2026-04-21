@@ -97,7 +97,7 @@ def doTraining(parameterset: ParameterSet, number_jobs):
         # print("Beginning training run at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
         seeed = np.random.randint(0, 100000) #random seed while training, set of seeds when testing (TODO)
         #logstructure = []
-        timel = 2000. #600.
+        timel = 600.#2000. #600. #TODO think about how much timelimit we should use (right now less because training is longer else)
         # timelimit was computed to be 2000 seconds for 2000 q-updates (and steps), which is the number of updates 24env policies needed to train for
         if index < 500 and parameterset.pretrain: #pretraininng with easy opponents, for more exploration on opponent base  [pretraining"easy" disabled for now, all training against easy(now hard)]
             rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty="easy", reward_choice=parameterset.rewardchoice, render_mode=None, timelimit=timel, q_table=qtableee, teamsize3=True) #might make timelimit a parameterset choice too...
@@ -293,6 +293,16 @@ if __name__ == "__main__":
         # parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.9, 10.0, False, "stepstest2", "qtrainlog/batch 3/", 0, boolchange=False, nrs=1, ep=600, teamsize3=True)) 
         # batch 3b
         # this is promising? parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.1, 0.99, 10.0, False, "stepstest2", "qtrainlog/batch 3/", 0, boolchange=False, nrs=1, ep=600, teamsize3=True)) 
+        nbrs = 10
+        for i in range(nbrs): #Training against moving opponents to avoid circle-deadlocks (that did probably cost us a lot of training time when vs nothing) running a long test to get more robust data on training
+            parametersets.append(ParameterSet("aggressive_tags_26", "hard", 0.2, 0.95, 10.0, False, "single26test", "qtrainlog/batch 3/", i, boolchange=False, nrs=nbrs, ep=700, teamsize3=True)) 
+        nbrs = 10
+        for i in range(nbrs): #Training against moving opponents to avoid circle-deadlocks (that did probably cost us a lot of training time when vs nothing) running a long test to get more robust data on training
+            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "single26test", "qtrainlog/batch 3/", i, boolchange=False, nrs=nbrs, ep=700, teamsize3=True)) 
+        nbrs = 10
+        for i in range(nbrs): #Training against moving opponents to avoid circle-deadlocks (that did probably cost us a lot of training time when vs nothing) running a long test to get more robust data on training
+            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.99, 10.0, False, "single26test", "qtrainlog/batch 3/", i, boolchange=True, nrs=nbrs, ep=700, teamsize3=True)) 
+            #TODO if training good reward curve but too short, run further with the qtables from this training run...
         #########################################
         #rewardchoice = "single_aggressive_rew"
         #rewardchoice = "double_aggressive_rew" (outdated)
