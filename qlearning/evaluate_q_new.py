@@ -470,7 +470,7 @@ if __name__ == "__main__":
     # filenames.append(ParameterSet("aggressive_tags_26", "hard", 0.01, 0.95, 10.0, False, "3v3test_newbool", "qtrainlog/batch 1/", i, boolchange=True, nrs=10, ep=600, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
     # filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "3v3test_oldbool", "qtrainlog/batch 1/", i, boolchange=False, nrs=10, ep=600, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
     # batch 2
-    filenames.append(ParameterSet("aggressive_tags_26", "nothing", 0.1, 0.99, 10.0, False, "3v3test_newbool", "qtrainlog/batch 2/", i, boolchange=True, nrs=10, ep=1000, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
+    # filenames.append(ParameterSet("aggressive_tags_26", "nothing", 0.1, 0.99, 10.0, False, "3v3test_newbool", "qtrainlog/batch 2/", i, boolchange=True, nrs=10, ep=1000, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
             #                           mode changed from "hard" to "nothing" for now, because 26env doesnt seem to work with 24-base-policy. Training against ultra-defensive to verify training process...
     # filenames.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.95, 10.0, False, "3v3test_newbool", "qtrainlog/batch 2/", i, boolchange=True, nrs=10, ep=1000, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
     # filenames.append(ParameterSet("single_aggressive_rew", "nothing", 0.2, 0.95, 10.0, False, "3v3test_oldbool", "qtrainlog/batch 2/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True))
@@ -483,6 +483,17 @@ if __name__ == "__main__":
     # filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.85, 10.0, False, "longeptest", "qtrainlog/batch 2/", i, boolchange=False, nrs=2, ep=1000, teamsize3=True)) 
     # filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, False, "longeptest", "qtrainlog/batch 2/", i, boolchange=False, nrs=2, ep=1000, teamsize3=True)) 
     # filenames.append(ParameterSet("aggressive_tags_26", "hard", 0.1, 0.9, 10.0, False, "longeptest", "qtrainlog/batch 2/", i, boolchange=False, nrs=2, ep=1000, teamsize3=True)) 
+    # batch 2d?
+    
+    # batch 3a
+
+    # batch 3b
+
+    #batch 3c
+    nbrs = 20
+    filenames.append(ParameterSet("aggressive_tags_26", "hard", 0.2, 0.95, 10.0, False, "single26test", "qtrainlog/batch 3/", i, boolchange=False, nrs=nbrs, ep=700, teamsize3=True)) 
+    filenames.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "single26test", "qtrainlog/batch 3/", i, boolchange=False, nrs=nbrs, ep=700, teamsize3=True)) 
+    filenames.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.99, 10.0, False, "single26test", "qtrainlog/batch 3/", i, boolchange=True, nrs=nbrs, ep=700, teamsize3=True)) 
 
     for e in filenames:
         # vis_helper(e)

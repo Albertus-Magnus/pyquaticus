@@ -449,7 +449,7 @@ def aggressive_tags_26(
         t = team.value 
     else:
         t = 0 if str(team).lower() == 'blue_team' else 1
-    team_home = np.array([5.0, 75.0])#.env_size[1] - 5.])    #flag_homes[t]                               #TODO Ugly quick fix, this needs to be adjusted to a better location to steer for. but currently this works reasonably well.
+    team_home = np.array([10.0, 70.0]) #deliver flag here
     opp_home = flag_homes[(t + 1) % 2]
     # Determine which flag to aim for
     has_flag1 = bool(state['agent_has_flag'][idx1])
