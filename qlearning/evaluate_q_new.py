@@ -3,6 +3,8 @@ from matplotlib import pyplot as plt
 import numpy as np
 from train_qlearn import ParameterSet
 
+FOLDER = "no folder"
+
 
 # def visualize_reward_curve(data0, data1, name, bagsize=50, foldern=f"qtrainlog/{FOLDER}/"):
 #     # reward_curve = np.load(reward_curve_file, allow_pickle=True)
@@ -404,6 +406,7 @@ def new_vis_helper(paraset: ParameterSet):
      to generate the visualizations of averages between the same parameters 
      (e.g. 20 training runs into one plot). """
     filename_suffix0 = paraset.create_name_without_index()
+    print(filename_suffix0)
     filename_suffix = paraset.foldername + filename_suffix0
     # Load data for visualization
     q_table = np.load(f"{filename_suffix}_nr0_q_table.npy")
@@ -428,7 +431,32 @@ def new_vis_helper(paraset: ParameterSet):
     # First compute an average of the 3 agents in each training run. 
     # (already done by avg_threeteamlist2)
     # Rewards are plotted by creating a figure where the minimum and maximum values for each episode are shown (with grey area between them), as well as the mean (as a line).
-    # TODO visualize reward figure
+    # TODO visualize reward figure 
+    # TODO test if the code below is right (seems sus) (update: looks more convincing than I thought, need to check what values were used [Dienstag 21.4. Aufgabe, morgens aber an der chapter schreiben])
+    fig, ax = plt.subplots(figsize=(12, 6))
+
+    # Calculate mean and min/max for each episode
+    rewards_mean = np.mean(rewardcurve_avg)
+    rewards_std = np.std(rewardcurve_avg)
+    episodes = np.arange(len(rewardcurve_avg))
+
+    # Plot mean line
+    ax.plot(episodes, rewardcurve_avg, label='Mean Reward', color='blue', linewidth=2)
+
+    # Plot min/max range as shaded area
+    ax.fill_between(episodes, 
+                    np.array(rewardcurve_avg) - rewards_std,
+                    np.array(rewardcurve_avg) + rewards_std,
+                    alpha=0.3, color='blue', label='±1 Std Dev')
+
+    ax.set_xlabel("Episode")
+    ax.set_ylabel("Average Reward (across 3 agents)")
+    ax.set_title(f"Reward Distribution Over Training\n{filename_suffix0}")
+    ax.legend()
+    ax.grid(True)
+
+    plt.savefig(f"{paraset.foldername}figures/{filename_suffix0}_reward_distribution.png", dpi=300, bbox_inches='tight')
+    plt.close()
 
 #End of new_vis_helper()
 
