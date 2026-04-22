@@ -399,7 +399,6 @@ def avg_vis_helper(paraset: ParameterSet):
     print(f"{filename_suffix0} Last avg. value - Winrate: {winrate0[len(winrate0) - 1]}, {winrate1[len(winrate1) - 1]}")
     print(f"{filename_suffix0} Last avg. value - Tags: {tags0_avg[len(tags0_avg) - 1]}, {tags1_avg[len(tags1_avg) - 1]}")
 
-
 def new_vis_helper(paraset: ParameterSet):
     numr = paraset.nrs #is often 20 or 1
     """Is called for every group of training runs using the same parameters 
@@ -411,52 +410,69 @@ def new_vis_helper(paraset: ParameterSet):
     # Load data for visualization
     q_table = np.load(f"{filename_suffix}_nr0_q_table.npy")
     rewardcurve = [np.load(f"{filename_suffix}_nr{i}_reward_curve.npy") for i in range(numr)]
+    # print(f"rewardcurve shape: {np.shape(rewardcurve)}") #rewardcurve shape: (20, 700, 3)
     scorelist = [np.load(f"{filename_suffix}_nr{i}_scores.npy") for i in range(numr)]
     grabslist = [np.load(f"{filename_suffix}_nr{i}_grabslist.npy") for i in range(numr)]
     tagslist = [np.load(f"{filename_suffix}_nr{i}_tagslist.npy") for i in range(numr)]
+    # Statecount if we need it again...
+    s_table = [np.load(f"{filename_suffix}_nr{i}_statecount.npy") for i in range(numr)]
     # All data loaded
 
-    if paraset.teamsize3:   
-        rewardcurve_avg = avg_threeteamlist2(rewardcurve)
-    else:
-        print("Warning: Adjust the code before using this on 2-agent training runs.")
-        rewardcurve_avg = avg_twoteamlist(rewardcurve)
-    scorelist_avg = avg_twoteamlist(scorelist)
-    grabslist_avg = avg_twoteamlist(grabslist)
-    tagslist_avg = avg_twoteamlist(tagslist)
-    # All averages computed
+#no. #average over the 20 runs, so we have one rewardcurve of shape (700, 3) now, which is the average reward for each episode and each agent across the 20 runs. We can then plot this with a line for each agent, and perhaps also a shaded area for the variance across the 20 runs.
+    episodes = np.arange(len(rewardcurve[0]))
+    print(f"rewardcurve shape before mean: {np.shape(rewardcurve)}")
+    print("rewardcurve",rewardcurve)
+    rewardcurve = np.mean(rewardcurve, 2) #this is wrong, because we want to keep the variance across the 20 runs, so we should not average over the 20 runs, but rather keep them as they are and compute the mean and stdv for each episode and each agent across the 20 runs. So we should not do this line, but rather compute the mean and stdv for each episode and each agent across the 20 runs.
+    
 
-    ## Plotting ##
-    # Plotting rewards
-    # First compute an average of the 3 agents in each training run. 
-    # (already done by avg_threeteamlist2)
-    # Rewards are plotted by creating a figure where the minimum and maximum values for each episode are shown (with grey area between them), as well as the mean (as a line).
-    # TODO visualize reward figure 
-    # TODO test if the code below is right (seems sus) (update: looks more convincing than I thought, need to check what values were used [Dienstag 21.4. Aufgabe, morgens aber an der chapter schreiben])
-    fig, ax = plt.subplots(figsize=(12, 6))
+    def avg_stdv_list(anylist): #expected shape (20, 700, 1) (either red and blue are given as two lists or reward of 3 agents is given as one averaged list) (could I plot reward differently?)
+        l_stdv = np.std(anylist, 0)
+        l_avg = np.mean(anylist, 0)
+        # l_low = l_avg - l_stdv
+        # l_high = np.min(anylist, 0)tdv
+        l_low = np.min(anylist, 0)
+        l_high = np.max(anylist, 0)
+        return l_low, l_avg, l_high, l_stdv
+    
+    print(f"rewardcurve shape after mean: {np.shape(rewardcurve)}") #(700, 3)
+    print("rewardcurve",rewardcurve)
+    l_low, l_avg, l_high, l_stdv = avg_stdv_list(rewardcurve)
+    # print(f"l_low: {l_low[599]}, l_avg: {l_avg[599]}, l_high: {l_high[599]}, l_stdv: {l_stdv[599]}")
+    #print the last value in each of the 20 lists of rewardcurve
+    # print("last values of rewardcurve for each of the 20 runs: ", [rewardcurve[i][599] for i in range(numr)]) #rewardcurve shape: (20, 700, 3) so rewardcurve[i] is shape (700, 3) and rewardcurve[i][599] is shape (3,)
 
-    # Calculate mean and min/max for each episode
-    rewards_mean = np.mean(rewardcurve_avg)
-    rewards_std = np.std(rewardcurve_avg)
-    episodes = np.arange(len(rewardcurve_avg))
+    #print("shapeshape",np.shape(avg_stdv_list(rewardcurve)))
 
-    # Plot mean line
-    ax.plot(episodes, rewardcurve_avg, label='Mean Reward', color='blue', linewidth=2)
 
-    # Plot min/max range as shaded area
-    ax.fill_between(episodes, 
-                    np.array(rewardcurve_avg) - rewards_std,
-                    np.array(rewardcurve_avg) + rewards_std,
-                    alpha=0.3, color='blue', label='±1 Std Dev')
+    # print(f"rewardcurve shape: {np.shape(rewardcurve)}") #rewardcurve shape: (20, 700, 3)
+    # print(f"scorelist shape: {np.shape(scorelist)}") #rewardcurve shape: (20, 700, 2)
+    # print(f"grabslist shape: {np.shape(grabslist)}") #rewardcurve shape: (20, 700, 2)
+    # print(f"tagslist shape: {np.shape(tagslist)}") #rewardcurve shape: (20, 700, 2)
 
-    ax.set_xlabel("Episode")
-    ax.set_ylabel("Average Reward (across 3 agents)")
-    ax.set_title(f"Reward Distribution Over Training\n{filename_suffix0}")
-    ax.legend()
-    ax.grid(True)
+    def plotlineandarea(lists):
+        print(f"lists shape: {np.shape(lists)}") #(4, 700) (low, avg, high, stdv)
+        print(lists[0][599], lists[1][599], lists[2][599])
+        fig, ax = plt.subplots(figsize=(12, 6))
+        # Plot mean line
+        ax.plot(episodes, lists[1], label='Mean Reward', color='blue', linewidth=2) #works apparently
 
-    plt.savefig(f"{paraset.foldername}figures/{filename_suffix0}_reward_distribution.png", dpi=300, bbox_inches='tight')
-    plt.close()
+        # Plot min/max range as shaded area
+        ax.fill_between(episodes,
+                        lists[0],
+                        lists[2],
+                        alpha=0.3, color='red', label='strd dev')
+
+        ax.set_xlabel("Episode")
+        ax.set_ylabel("Average Reward (across 3 agents)")
+        ax.set_title(f"Reward Distribution Over Training\n{filename_suffix0}")
+        ax.legend()
+        ax.grid(True)
+
+        plt.savefig(f"{paraset.foldername}figures/{filename_suffix0}_reward_distribution.png", dpi=300, bbox_inches='tight')
+        plt.close()
+
+    lists = avg_stdv_list(rewardcurve)
+    plotlineandarea(lists) #testing reward plotter
 
 #End of new_vis_helper()
 
@@ -466,7 +482,7 @@ if __name__ == "__main__":
     i = 0 # do not forget to set other index if multiple indexes exist (not necessary for avg_vis_helper)
     filenames = []
     # batch 1
-    # filenames.append(ParameterSet("aggressive_tags_26", "hard", 0.1, 0.99, 10.0, False, "3v3test_newbool", "qtrainlog/batch 1/", i, boolchange=True, nrs=10, ep=600, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
+    filenames.append(ParameterSet("aggressive_tags_26", "hard", 0.1, 0.99, 10.0, False, "3v3test_newbool", "qtrainlog/batch 1/", i, boolchange=True, nrs=10, ep=600, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
     # filenames.append(ParameterSet("aggressive_tags_26", "hard", 0.01, 0.95, 10.0, False, "3v3test_newbool", "qtrainlog/batch 1/", i, boolchange=True, nrs=10, ep=600, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
     # filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "3v3test_oldbool", "qtrainlog/batch 1/", i, boolchange=False, nrs=10, ep=600, teamsize3=True)) #DO NOT forget to change the folder (or create it...)
     # batch 2
@@ -491,9 +507,9 @@ if __name__ == "__main__":
 
     #batch 3c
     nbrs = 20
-    filenames.append(ParameterSet("aggressive_tags_26", "hard", 0.2, 0.95, 10.0, False, "single26test", "qtrainlog/batch 3/", i, boolchange=False, nrs=nbrs, ep=700, teamsize3=True)) 
-    filenames.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "single26test", "qtrainlog/batch 3/", i, boolchange=False, nrs=nbrs, ep=700, teamsize3=True)) 
-    filenames.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.99, 10.0, False, "single26test", "qtrainlog/batch 3/", i, boolchange=True, nrs=nbrs, ep=700, teamsize3=True)) 
+    # filenames.append(ParameterSet("aggressive_tags_26", "hard", 0.2, 0.95, 10.0, False, "single26test", "qtrainlog/batch 3/", i, boolchange=False, nrs=nbrs, ep=700, teamsize3=True)) 
+    # filenames.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "single26test", "qtrainlog/batch 3/", i, boolchange=False, nrs=nbrs, ep=700, teamsize3=True)) 
+    # filenames.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.99, 10.0, False, "single26test", "qtrainlog/batch 3/", i, boolchange=True, nrs=nbrs, ep=700, teamsize3=True)) 
 
     for e in filenames:
         # vis_helper(e)

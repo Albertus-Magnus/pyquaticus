@@ -462,8 +462,19 @@ if __name__ == "__main__":
     # parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.95, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=600, teamsize3=True)) 
     # parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.9, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=600, teamsize3=True)) 
 
+    # batch 3c
+    # nbrs = 20
+    # filenames.append(ParameterSet("aggressive_tags_26", "hard", 0.2, 0.95, 10.0, False, "single26test", "qtrainlog/batch 3/", 0, boolchange=False, nrs=nbrs, ep=700, teamsize3=True, timelimit=600.)) 
+    # filenames.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "single26test", "qtrainlog/batch 3/", 0, boolchange=False, nrs=nbrs, ep=700, teamsize3=True, timelimit=600.)) 
+    # filenames.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.99, 10.0, False, "single26test", "qtrainlog/batch 3/", 0, boolchange=True, nrs=nbrs, ep=700, teamsize3=True, timelimit=600.)) 
+
     #batch 3d
-    filenames.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrab", "qtrainlog/batch 3/", 0, boolchange=False, nrs=1, ep=300, teamsize3=True)) 
+    #filenames.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrab", "qtrainlog/batch 3/", 0, boolchange=False, nrs=1, ep=300, teamsize3=True)) 
+    filenames.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong", "qtrainlog/batch 3/", 0, boolchange=False, nrs=1, ep=300, teamsize3=True)) 
+
+    #nothingslayer
+    # filenames.append(ParameterSet("single_aggressive26", "nothing", 0.1, 0.9, 10.0, False, "nothingslayer1", "qtrainlog/batch 3/", 0, boolchange=False, nrs=1, ep=400, teamsize3=True)) 
+    # filenames.append(ParameterSet("single_aggressive26", "nothing", 0.1, 0.9, 10.0, False, "nothingslayer2", "qtrainlog/batch 3/", 0, boolchange=False, nrs=1, ep=500, teamsize3=True, ignoreseed=False, timelimit=3000.))
 
     for e in filenames:
         # check if folder is already created

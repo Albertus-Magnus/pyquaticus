@@ -35,7 +35,7 @@ thesis (March 2026).
 # this class is just there to select (and store for some time) the right parameters and generate filenames (to log the data reliably)
 class ParameterSet:
     #def __init__(self, rewardchoice: str, lrate: float, discount: float, initialq: float, pretrain: bool, name: str, fodler: str, index: int): #test first without type
-    def __init__(self, rewardchoice, dif, lrate, discount, initialq, pretrain, name, folder, index, boolchange=True, nrs=20, ep=1000, teamsize3 = False):
+    def __init__(self, rewardchoice, dif, lrate, discount, initialq, pretrain, name, folder, index, boolchange=True, nrs=20, ep=1000, teamsize3 = False, ignoreseed = True, timelimit = 600.):
         self.rewardchoice = rewardchoice #zB "single_aggressive_rew"
         self.dif = dif
         self.foldername = folder # "lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck1"
@@ -47,6 +47,8 @@ class ParameterSet:
         self.nrs = nrs
         self.ep = ep
         self.teamsize3 = teamsize3
+        self.ignoreseed = ignoreseed
+        self.timelimit = timelimit
 
     # Create a string for file storage that contains all important info about parameters (as well as an index if parameters are used more than once).
     def create_name(self):
@@ -101,7 +103,7 @@ def doTraining(parameterset: ParameterSet, number_jobs):
         # print("Beginning training run at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
         seeed = np.random.randint(0, 100000) #random seed while training, set of seeds when testing (TODO)
         #logstructure = []
-        timel = 600.#2000. #600. #TODO think about how much timelimit we should use (right now less because training is longer else)
+        timel = parameterset.timelimit#600.#2000. #600. #TODO think about how much timelimit we should use (right now less because training is longer else)
         # timelimit was computed to be 2000 seconds for 2000 q-updates (and steps), which is the number of updates 24env policies needed to train for
         if index < 500 and parameterset.pretrain: #pretraininng with easy opponents, for more exploration on opponent base  [pretraining"easy" disabled for now, all training against easy(now hard)]
             rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty="easy", reward_choice=parameterset.rewardchoice, render_mode=None, timelimit=timel, q_table=qtableee, teamsize3=True) #might make timelimit a parameterset choice too...
@@ -302,13 +304,13 @@ if __name__ == "__main__":
         #batch 3c
         # nbrs = 20
         # for i in range(nbrs): #Training against moving opponents to avoid circle-deadlocks (that did probably cost us a lot of training time when vs nothing) running a long test to get more robust data on training
-        #     parametersets.append(ParameterSet("aggressive_tags_26", "hard", 0.2, 0.95, 10.0, False, "single26test", "qtrainlog/batch 3/", i, boolchange=False, nrs=nbrs, ep=700, teamsize3=True)) 
+        #     parametersets.append(ParameterSet("aggressive_tags_26", "hard", 0.2, 0.95, 10.0, False, "single26test", "qtrainlog/batch 3/", i, boolchange=False, nrs=nbrs, ep=700, teamsize3=True, timelimit=600.)) 
         # nbrs = 20
         # for i in range(nbrs): #Training against moving opponents to avoid circle-deadlocks (that did probably cost us a lot of training time when vs nothing) running a long test to get more robust data on training
-        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "single26test", "qtrainlog/batch 3/", i, boolchange=False, nrs=nbrs, ep=700, teamsize3=True)) 
+        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "single26test", "qtrainlog/batch 3/", i, boolchange=False, nrs=nbrs, ep=700, teamsize3=True, timelimit=600.)) 
         # nbrs = 20
         # for i in range(nbrs): #Training against moving opponents to avoid circle-deadlocks (that did probably cost us a lot of training time when vs nothing) running a long test to get more robust data on training
-        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.99, 10.0, False, "single26test", "qtrainlog/batch 3/", i, boolchange=True, nrs=nbrs, ep=700, teamsize3=True)) 
+        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.99, 10.0, False, "single26test", "qtrainlog/batch 3/", i, boolchange=True, nrs=nbrs, ep=700, teamsize3=True, timelimit=600.)) 
         #     #TODO if training good reward curve but too short, run further with the qtables from this training run...
         #batch 3d
         # stepstest_single_aggressive_rew_nothing_lrate0.1_discount0.9_initq10.0_1nrs_1000ep_no_pre
@@ -317,7 +319,9 @@ if __name__ == "__main__":
         #once more with 100min episodes
         # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong", "qtrainlog/batch 3/", 0, boolchange=False, nrs=1, ep=300, teamsize3=True)) 
         #nothingslayer1 is created from the 10min enhancegrab qtable
-        # parametersets.append(ParameterSet("single_aggressive26", "nothing", 0.1, 0.9, 10.0, False, "nothingslayer1", "qtrainlog/batch 3/", 0, boolchange=False, nrs=1, ep=400, teamsize3=True)) 
+        # parametersets.append(ParameterSet("single_aggressive26", "nothing", 0.1, 0.9, 10.0, False, "nothingslayer1", "qtrainlog/batch 3/", 0, boolchange=False, nrs=1, ep=400, teamsize3=True, ignoreseed=True, timelimit=3000.)) 
+        # nothingslayer2 uses random starts because non-random starts are too brutal for learning (i.e. result in unhelpful looplike games)
+        # parametersets.append(ParameterSet("single_aggressive26", "nothing", 0.1, 0.9, 10.0, False, "nothingslayer2", "qtrainlog/batch 3/", 0, boolchange=False, nrs=1, ep=500, teamsize3=True, ignoreseed=False, timelimit=3000.)) #parameterset got expanded to include these...
         
         #########################################
         #rewardchoice = "single_aggressive_rew"
@@ -328,6 +332,7 @@ if __name__ == "__main__":
         print("evaluation pipeline not yet implemented")
         sys.exit(0)
     else:
+        ####################################### TEST AREA #######################################
         # Do visual test match here.
         setup = ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "example", "qtrainlog/example_folder/", 0) #lrate: Any, discount: Any, initialq: Any, pretrain: Any, name: Any, folder)
         #setup = ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", 0) #TODO is this dangerous to overwrite my thing?
@@ -336,7 +341,7 @@ if __name__ == "__main__":
         #filename_suffix = "/vshard_lrate0.1_discount0.95_initialq10.0_single_aggressive_rew"
         print("Manually testing qtable policy with rendering enabled.")
         #qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, (setup.foldername + setup.create_name() + "_q_table.npy"))
-        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 0/24ver_successful_q_table.npy")
+        # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 0/24ver_successful_q_table.npy")
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 1/3v3test_newbool_aggressive_tags_26_hard_lrate0.01_discount0.95_initq10.0_10nrs_600ep_no_pre_nr0_q_table.npy")
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 1/3v3test_newbool_aggressive_tags_26_hard_lrate0.1_discount0.99_initq10.0_10nrs_600ep_no_pre_nr0_q_table.npy")
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 1/3v3test_oldbool_single_aggressive_rew_hard_lrate0.2_discount0.95_initq10.0_10nrs_600ep_no_pre_nr0_q_table.npy")
@@ -345,11 +350,18 @@ if __name__ == "__main__":
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 2/speeduptest_single_aggressive_rew_nothing_lrate0.2_discount0.95_initq10.0_5nrs_1000ep_no_pre_nr0_q_table.npy")
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 2/speeduptest_aggressive_tags_26_nothing_lrate0.01_discount0.95_initq10.0_5nrs_1000ep_no_pre_nr0_q_table.npy")
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 3/stepstest2_single_aggressive_rew_nothing_lrate0.1_discount0.9_initq10.0_1nrs_600ep_no_pre_nr0_q_table.npy")
-        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")
+        # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")
+        # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 3/nothingslayer1_single_aggressive26_nothing_lrate0.1_discount0.9_initq10.0_1nrs_400ep_no_pre_nr0_q_table.npy")
+        # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 3/enhancegrablong_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")
+        
+        # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 3/single26test_aggressive_tags_26_hard_lrate0.2_discount0.95_initq10.0_20nrs_700ep_no_pre_nr0_q_table.npy")
+        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 3/single26test_single_aggressive26_hard_lrate0.15_discount0.99_initq10.0_20nrs_700ep_no_pre_nr0_q_table.npy")
+        # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 3/single26test_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_20nrs_700ep_no_pre_nr0_q_table.npy")
+
         # Muster:
         #qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 2/_nr0_q_table.npy")
         st = np.zeros((4, 4, 4, 2, 2), dtype=np.int32) #dangerous int8-hazard (int8 is insufficient here)
-        train_qlearn(st, seed=0, difficulty="nothing", reward_choice=rewardchoice, render_mode='human', timelimit=3000., q_table=qt, teamsize3=True)
+        train_qlearn(st, seed=0, difficulty="hard", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt, teamsize3=True)
         #                                   even competition-medium is not suitable for 26env :/
         timestamp = datetime.now()
         print("Ending experiment at ",timestamp.now().strftime("%d-%m-%Y %H:%M:%S"))

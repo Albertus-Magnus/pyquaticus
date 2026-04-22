@@ -40,7 +40,8 @@ def train_qlearn(
     timelimit: float = mctf_config["max_time"], #600.,
     #logname: str = "match.log",
     q_table: QTable = None, #str = None #Not a string?! Is already a QTable!
-    teamsize3: bool = False
+    teamsize3: bool = False,
+    nonrandomstarts = True
 ):
     
     # Set score function to the selected reward (match statement syntax might require python version 3.10 or newer)
@@ -79,7 +80,7 @@ def train_qlearn(
     
     # timelimit is changed if something was specified (else mctf_config value)
     mctf_config["max_time"] = timelimit #6000.#timelimit #6000.
-    mctf_config["default_init"] = True #TODO change back? #random starting positions (uses seed)
+    mctf_config["default_init"] = nonrandomstarts#True #TODO change back? #random starting positions (uses seed)
     #TODO check if this is smart. Likely we want to use 10 (value from mctf_config) for training because this is used in the competition. Right now to see if training improves with this:
     #mctf_config["sim_speedup_factor"] = is standard 10 #3 #this appears to be wayyyyyy too slow. Yet the timelimit seems too short. In visual rendering - holdup, visually there should be no difference caused by this?
     # is the speed of the agents just because they alternate between actions, not accelerating as much? TODO find out about movement, max_time and step-number TODO also find out why reward doesnt increase. Are agents learning at all?!
