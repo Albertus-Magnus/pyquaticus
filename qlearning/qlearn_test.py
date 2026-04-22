@@ -400,6 +400,8 @@ if __name__ == "__main__":      #main method should not be called that much anym
         if (index % 50) == 49:  #TODO set to other amount later
             # print(f"(In-between-storing q-table to file \"{filename_suffix}_q_table_i{index}.npy\".)")
             qtableee.toFile(f"{filename_suffix}_q_table_i{index}.npy")
+            np.save(f"{filename_suffix}_scores_i{index}.npy", scorelist) 
+            np.save(f"{filename_suffix}_reward_curve_i{index}.npy", rewardcurve)
 
         #np.save(f"{filename_suffix}_logstructure{index}.npy", logstructure) 
         # discard logstructure now, so memory does not leak

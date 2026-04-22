@@ -35,7 +35,7 @@ thesis (March 2026).
 # this class is just there to select (and store for some time) the right parameters and generate filenames (to log the data reliably)
 class ParameterSet:
     #def __init__(self, rewardchoice: str, lrate: float, discount: float, initialq: float, pretrain: bool, name: str, fodler: str, index: int): #test first without type
-    def __init__(self, rewardchoice, dif, lrate, discount, initialq, pretrain, name, folder, index, boolchange=True, nrs=20, ep=1000, teamsize3 = False, ignoreseed = True, timelimit = 600.):
+    def __init__(self, rewardchoice, dif, lrate, discount, initialq, pretrain, name, folder, index, boolchange=True, nrs=20, ep=1000, teamsize3 = False, ignoreseed = True, timelimit = 600., qtable_suffix=None):
         self.rewardchoice = rewardchoice #zB "single_aggressive_rew"
         self.dif = dif
         self.foldername = folder # "lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck1"
@@ -49,7 +49,7 @@ class ParameterSet:
         self.teamsize3 = teamsize3
         self.ignoreseed = ignoreseed
         self.timelimit = timelimit
-        self.qtablefromfile = None
+        self.qtablefromfile = qtable_suffix
 
     # Create a string for file storage that contains all important info about parameters (as well as an index if parameters are used more than once).
     def create_name(self):
@@ -85,7 +85,7 @@ def doTraining(parameterset: ParameterSet, number_jobs):
         #stepstest_single_aggressive_rew_nothing_lrate0.1_discount0.9_initq10.0_1nrs_1000ep_no_pre
         # qtableee = QTable(parameterset.LEARNING_RATE, parameterset.DISCOUNT_FACTOR, parameterset.INITIAL_Q_VALUE, 'qtrainlog/batch 3/stepstest_single_aggressive_rew_nothing_lrate0.1_discount0.9_initq10.0_1nrs_1000ep_no_pre_nr0_q_table.npy', boolchange=parameterset.boolchange)
         #enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre
-        qtableee = QTable(parameterset.LEARNING_RATE, parameterset.DISCOUNT_FACTOR, parameterset.INITIAL_Q_VALUE, 'qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy', boolchange=parameterset.boolchange)
+        qtableee = QTable(parameterset.LEARNING_RATE, parameterset.DISCOUNT_FACTOR, parameterset.INITIAL_Q_VALUE, parameterset.qtablefromfile, boolchange=parameterset.boolchange)
     else:
         # print("Setting up Q-Table")
         qtableee = QTable(parameterset.LEARNING_RATE, parameterset.DISCOUNT_FACTOR, parameterset.INITIAL_Q_VALUE)
@@ -325,9 +325,16 @@ if __name__ == "__main__":
         
 
         # TODAY PRIORITY GET PRANAV SOME POLICY FOR COMPETITION EOD!
-        parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong2", "qtrainlog/batch 3/", 0, boolchange=False, nrs=20, ep=300, teamsize3=True, timelimit=6000.)) 
-        parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong3", "qtrainlog/batch 3/", 0, boolchange=True, nrs=10, ep=300, teamsize3=True, timelimit=6000.)) 
-
+        nbrs = 20
+        for i in range(nbrs):
+            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong3", "qtrainlog/batch 3/", 0, boolchange=False, nrs=nbrs, ep=300, teamsize3=True, timelimit=6000., qtable_suffix="qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")) 
+        nbrs = 10
+        for i in range(nbrs):
+            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong4", "qtrainlog/batch 3/", 0, boolchange=True, nrs=nbrs, ep=300, teamsize3=True, timelimit=6000., qtable_suffix="qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")) 
+        # nbrs = 5
+        # for i in range(nbrs):
+        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong2", "qtrainlog/batch 3/", 0, boolchange=False, nrs=nbrs, ep=300, teamsize3=True, timelimit=6000., qtable_suffix="qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")) 
+        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong3", "qtrainlog/batch 3/", 0, boolchange=True, nrs=nbrs, ep=300, teamsize3=True, timelimit=6000., qtable_suffix="qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")) 
 
 
 
