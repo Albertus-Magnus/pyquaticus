@@ -350,18 +350,19 @@ if __name__ == "__main__":
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 2/speeduptest_single_aggressive_rew_nothing_lrate0.2_discount0.95_initq10.0_5nrs_1000ep_no_pre_nr0_q_table.npy")
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 2/speeduptest_aggressive_tags_26_nothing_lrate0.01_discount0.95_initq10.0_5nrs_1000ep_no_pre_nr0_q_table.npy")
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 3/stepstest2_single_aggressive_rew_nothing_lrate0.1_discount0.9_initq10.0_1nrs_600ep_no_pre_nr0_q_table.npy")
+        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 3/stepstest2_aggressive_tags_26_nothing_lrate0.01_discount0.9_initq10.0_1nrs_600ep_no_pre_nr0_q_table.npy")
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 3/nothingslayer1_single_aggressive26_nothing_lrate0.1_discount0.9_initq10.0_1nrs_400ep_no_pre_nr0_q_table.npy")
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 3/enhancegrablong_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")
         
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 3/single26test_aggressive_tags_26_hard_lrate0.2_discount0.95_initq10.0_20nrs_700ep_no_pre_nr0_q_table.npy")
-        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 3/single26test_single_aggressive26_hard_lrate0.15_discount0.99_initq10.0_20nrs_700ep_no_pre_nr0_q_table.npy")
+        # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 3/single26test_single_aggressive26_hard_lrate0.15_discount0.99_initq10.0_20nrs_700ep_no_pre_nr0_q_table.npy")
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 3/single26test_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_20nrs_700ep_no_pre_nr0_q_table.npy")
 
         # Muster:
         #qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 2/_nr0_q_table.npy")
         st = np.zeros((4, 4, 4, 2, 2), dtype=np.int32) #dangerous int8-hazard (int8 is insufficient here)
-        train_qlearn(st, seed=0, difficulty="hard", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt, teamsize3=True)
+        train_qlearn(st, seed=0, difficulty="hard", reward_choice=rewardchoice, render_mode='human', timelimit=6000., q_table=qt, teamsize3=True)
         #                                   even competition-medium is not suitable for 26env :/
         timestamp = datetime.now()
         print("Ending experiment at ",timestamp.now().strftime("%d-%m-%Y %H:%M:%S"))
