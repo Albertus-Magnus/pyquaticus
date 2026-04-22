@@ -396,8 +396,8 @@ if __name__ == "__main__":      #main method should not be called that much anym
             # print(f"(Pre-storing statecount-table to file \"{filename_suffix}_statecount.npy\" at index {index}.)")
             np.save(f"{filename_suffix}_statecount.npy", s_table) 
             #print("Statecount table: ",s_table)
-        # Print qtable regularly as checkpoint to additional file (but not too oft because memory leak)
-        if (index % 500) == 499: 
+        # Print qtable regularly as checkpoint to additional file (but not too oft because memory leak) (now a bit more often because I need a solution for comp today)
+        if (index % 50) == 49:  #TODO set to other amount later
             # print(f"(In-between-storing q-table to file \"{filename_suffix}_q_table_i{index}.npy\".)")
             qtableee.toFile(f"{filename_suffix}_q_table_i{index}.npy")
 
