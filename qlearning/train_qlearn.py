@@ -108,12 +108,12 @@ def doTraining(parameterset: ParameterSet, number_jobs):
         timel = parameterset.timelimit#600.#2000. #600. #TODO think about how much timelimit we should use (right now less because training is longer else)
         # timelimit was computed to be 2000 seconds for 2000 q-updates (and steps), which is the number of updates 24env policies needed to train for
         if index < 500 and parameterset.pretrain: #pretraininng with easy opponents, for more exploration on opponent base  [pretraining"easy" disabled for now, all training against easy(now hard)]
-            rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty="easy", reward_choice=parameterset.rewardchoice, render_mode=None, timelimit=timel, q_table=qtableee, teamsize3=True) #might make timelimit a parameterset choice too...
+            rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty="easy", reward_choice=parameterset.rewardchoice, render_mode=None, timelimit=timel, q_table=qtableee, teamsize3=True, nonrandomstarts=parameterset.ignoreseed) #might make timelimit a parameterset choice too...
             qtableee.qtable = u_table.qtable
             # tags, rewardlist, captures, grabs are all for [0] and [1] (the two teams)
             # After each episode update the values of q-table. For this purpose updates are calculated during the episode into the u-table. Afterwards it gets switched with q-table.
         else:
-            rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty=parameterset.dif, reward_choice=parameterset.rewardchoice, render_mode=None, timelimit=timel, q_table=qtableee, teamsize3=True)
+            rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty=parameterset.dif, reward_choice=parameterset.rewardchoice, render_mode=None, timelimit=timel, q_table=qtableee, teamsize3=True, nonrandomstarts=parameterset.ignoreseed)
             qtableee.qtable = u_table.qtable
 
         # Some of the data we are tracking needs to be added to another list structure:
@@ -153,7 +153,7 @@ def doTraining(parameterset: ParameterSet, number_jobs):
             np.save(f"{parameterset.foldername + parameterset.create_name()}_statecount.npy", s_table) 
             #print("Statecount table: ",s_table)
         # Print qtable regularly as checkpoint to additional file (but not too oft because memory leak)
-        if (index % 5) == 4 or True: #TODO is set to always keep a copy now
+        if (index % 50) == 49 or True: #TODO is set to always keep a copy now
             # print(f"(In-between-storing q-table to file \"{parameterset.foldername + parameterset.create_name()}_q_table_i{index}.npy\".)")
             qtableee.toFile(f"{parameterset.foldername + parameterset.create_name()}_q_table_i{index}.npy")
             np.save(f"{parameterset.foldername + parameterset.create_name()}_scores_i{index}.npy", scorelist) 
@@ -328,21 +328,34 @@ if __name__ == "__main__":
         # parametersets.append(ParameterSet("single_aggressive26", "nothing", 0.1, 0.9, 10.0, False, "nothingslayer2", "qtrainlog/batch 3/", 0, boolchange=False, nrs=1, ep=500, teamsize3=True, ignoreseed=False, timelimit=3000.)) #parameterset got expanded to include these...
         
 
-        nbrs = 10
-        for i in range(nbrs):
-            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "fromzero3000sec", "qtrainlog/batch 4/", i, boolchange=True, nrs=nbrs, ep=1000, teamsize3=True, timelimit=3000., qtable_suffix="qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")) 
+        # nbrs = 10
+        # for i in range(nbrs):
+        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "fromzero3000sec", "qtrainlog/batch 4/", i, boolchange=True, nrs=nbrs, ep=1000, teamsize3=True, timelimit=3000., qtable_suffix="qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")) 
         
         # TODAY PRIORITY GET PRANAV SOME POLICY FOR COMPETITION EOD!
-        nbrs = 20
-        for i in range(nbrs):
-            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong4", "qtrainlog/batch 4/", i, boolchange=False, nrs=nbrs, ep=300, teamsize3=True, timelimit=6000., qtable_suffix="qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")) 
-        nbrs = 10
-        for i in range(nbrs):
-            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong5", "qtrainlog/batch 4/", i, boolchange=True, nrs=nbrs, ep=300, teamsize3=True, timelimit=6000., qtable_suffix="qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")) 
+        # nbrs = 20
+        # for i in range(nbrs):
+        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong4", "qtrainlog/batch 4/", i, boolchange=False, nrs=nbrs, ep=300, teamsize3=True, timelimit=6000., qtable_suffix="qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")) 
+        # nbrs = 10
+        # for i in range(nbrs):
+        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong5", "qtrainlog/batch 4/", i, boolchange=True, nrs=nbrs, ep=300, teamsize3=True, timelimit=6000., qtable_suffix="qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")) 
         # nbrs = 5
         # for i in range(nbrs):
         #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong2", "qtrainlog/batch 3/", i, boolchange=False, nrs=nbrs, ep=300, teamsize3=True, timelimit=6000., qtable_suffix="qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")) 
         #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong3", "qtrainlog/batch 3/", i, boolchange=True, nrs=nbrs, ep=300, teamsize3=True, timelimit=6000., qtable_suffix="qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")) 
+
+        # nbrs = 10
+        # for i in range(nbrs):
+        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parametersearch1", "qtrainlog/batach 4/", i, boolchange=False, nrs=nbrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
+        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.9, 10.0, False, "parametersearch2", "qtrainlog/batach 4/", i, boolchange=False, nrs=nbrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
+        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parametersearch3", "qtrainlog/batach 4/", i, boolchange=False, nrs=nbrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
+        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, False, "parametersearch4", "qtrainlog/batach 4/", i, boolchange=False, nrs=nbrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
+        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.95, 10.0, False, "parametersearch5", "qtrainlog/batach 4/", i, boolchange=False, nrs=nbrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
+        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.001, 0.85, 10.0, False, "parametersearch6", "qtrainlog/batach 4/", i, boolchange=False, nrs=nbrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
+        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parametersearch7_newbool", "qtrainlog/batach 4/", i, boolchange=True, nrs=nbrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
+        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.9, 10.0, False, "parametersearch8_newbool", "qtrainlog/batach 4/", i, boolchange=True, nrs=nbrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
+            
+        
 
 
 
@@ -385,7 +398,7 @@ if __name__ == "__main__":
         # Muster:
         #qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 2/_nr0_q_table.npy")
         st = np.zeros((4, 4, 4, 2, 2), dtype=np.int32) #dangerous int8-hazard (int8 is insufficient here)
-        train_qlearn(st, seed=0, difficulty="hard", reward_choice=rewardchoice, render_mode='human', timelimit=6000., q_table=qt, teamsize3=True)
+        train_qlearn(st, seed=0, difficulty="hard", reward_choice=rewardchoice, render_mode='human', timelimit=6000., q_table=qt, teamsize3=True, nonrandomstarts=False)
         #                                   even competition-medium is not suitable for 26env :/
         timestamp = datetime.now()
         print("Ending experiment at ",timestamp.now().strftime("%d-%m-%Y %H:%M:%S"))
@@ -400,7 +413,7 @@ if __name__ == "__main__":
     else:
         num_workers = max(1, os.cpu_count() + 2)
     # or overwrite with own number:
-    #num_workers = 2#10#20 #15 was best number for my PC in small tests... (cores is 12)
+    num_workers = 80#10#20 #15 was best number for my PC in small tests... (cores is 12)
     #num_workers = max(1, os.cpu_count())#TODO test performance of +5 (12 cores, 17 processes now)
     print(f"Selecting {num_workers} as num_workers.")
 

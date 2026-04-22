@@ -76,7 +76,7 @@ def train_qlearn(
     # config_dict["default_init"] = False #random starting positions (uses seed)
 
     # TODO change back, Just to render a visual test match faster:
-    mctf_config["sim_speedup_factor"] = 20 #for faster visual test rendering
+    # mctf_config["sim_speedup_factor"] = 20 #for faster visual test rendering
     
     # timelimit is changed if something was specified (else mctf_config value)
     mctf_config["max_time"] = timelimit #6000.#timelimit #6000.
