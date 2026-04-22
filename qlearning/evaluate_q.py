@@ -627,8 +627,8 @@ if __name__ == "__main__":
     
     
     # single_training_visualizer("enhancegrablong2_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_5nrs_300ep_no_pre_nr0", 24)
-    single_training_visualizer("enhancegrablong2_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_5nrs_300ep_no_pre_nr0", 144)
-    single_training_visualizer("enhancegrablong3_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_5nrs_300ep_no_pre_nr0", 149)
+    single_training_visualizer("enhancegrablong2_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_5nrs_300ep_no_pre_nr0", 299)
+    single_training_visualizer("enhancegrablong3_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_5nrs_300ep_no_pre_nr0", 299)
     
 
     print("Ended visualization.")

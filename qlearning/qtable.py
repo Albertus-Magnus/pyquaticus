@@ -19,8 +19,8 @@ from pyquaticus.config import config_dict_std, ACTION_MAP
 # self: agent_0 or agent_1
 # opponents: agent_2 and agent_2
 
-FLAG_DELIVERY_POS = np.array([10., 70.]) # (upper left corner)
-# FLAG_DELIVERY_POS = np.array([150., 70.]) # (upper right corner)
+B_FLAG_DELIVERY_POS = np.array([10., 70.]) # (upper left corner)
+R_FLAG_DELIVERY_POS = np.array([150., 70.]) # (upper right corner)
 # the flag in the 26env has to be delivered to one of the two bases in the corners of the own side, not just to the own side anymore.
 
 class QTable:

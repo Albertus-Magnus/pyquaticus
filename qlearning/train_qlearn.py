@@ -63,6 +63,8 @@ class ParameterSet:
         #number of episodes (and 500-pretrained?) has to be hand-adjusted, perhaps change that...
         return n
     
+    #TODO boolchange is not printed into the name?
+    
     # Create a string for file storage that contains all important info about parameters (as well as an index if parameters are used more than once).
     def create_name_without_index(self):
         if self.pretrain:
