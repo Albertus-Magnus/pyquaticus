@@ -62,6 +62,61 @@ def visualize_reward_curve(data0, data1, name, bagsize=50, foldern=f"qtrainlog/{
     plt.close() #
 #End of visualize_reward_curve()
 
+def visualize_reward_quick_and_ugly(data0, data1, data2, name, bagsize=1, foldern="qtrainlog/batch 3/quickfigures/"):#"enhancegrablong_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_i499"):
+    """
+    foldern example
+    enhancegrablong_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre 
+    (eventuell mit _i499 ?)
+    """
+    foldern = "qtrainlog/batch 3/quickfigures/" #+ name
+    # reward_curve = np.load(reward_curve_file, allow_pickle=True)
+    # rewards0 = [step[0] for step in reward_curve]
+    # rewards1 = [step[1] for step in reward_curve]
+    plt.figure(figsize=(12, 6))
+    plt.plot(data0, label='Agent 0', color='blue')
+    plt.plot(data1, label='Agent 1', color='darkblue')
+    plt.plot(data2, label='Agent 2', color='lightblue')
+    plt.xlabel(f"Steps (binned by {bagsize} episodes)")
+    plt.ylabel(f"Reward (avg per {bagsize} episodes)")
+    plt.title(f"Rewards during Q-Learn Training (3v3)\n{name}")
+    plt.grid(True)
+    # Scale x-achsis labels times 50 (or times bagsize):
+    ticks = plt.gca().get_xticks()
+    ticks = ticks[1:(len(ticks)-1)]
+    #print("\nticks: ",ticks)
+    plt.gca().set_xticks(ticks)
+    plt.gca().set_xticklabels([f'{int(x*bagsize)}' for x in ticks])
+    plt.legend()
+    # Save figure to file:
+    plt.savefig(f"{foldern}{name}_reward.png", dpi=300, bbox_inches='tight')
+    #plt.show()
+    plt.close() #
+#End of visualize_reward_quick_and_ugly()
+
+def visualize_curve_quickandugly(data0, data1, ylabel="Score", name="Training Progress", bagsize=1, foldern="qtrainlog/batch 3/quickfigures/"):
+    import matplotlib.pyplot as plt
+    # reward_curve = np.load(reward_curve_file, allow_pickle=True)
+    # rewards0 = [step[0] for step in reward_curve]
+    # rewards1 = [step[1] for step in reward_curve]
+    plt.figure(figsize=(12, 6))
+    plt.plot(data0, label='Team Blue', color='blue')
+    plt.plot(data1, label='Team Red', color='red')
+    plt.xlabel(f"Steps (binned by {bagsize} episodes)")
+    plt.ylabel(ylabel)
+    plt.title(f"{ylabel}\n{name}")
+    plt.grid(True)
+    # Scale x-achsis labels times 50 (or times bagsize):
+    ticks = plt.gca().get_xticks()
+    ticks = ticks[1:(len(ticks)-1)]
+    plt.gca().set_xticks(ticks)
+    plt.gca().set_xticklabels([f'{int(x*bagsize)}' for x in ticks])
+    plt.legend()
+    # Save figure to file:
+    plt.savefig(f"{foldern}{name}_{ylabel}.png", dpi=300, bbox_inches='tight')
+    #plt.show()
+    plt.close #
+#End of visualize_curve_quickandugly()
+
 def visualize_curve(data0, data1, ylabel="Score", name="Training Progress", bagsize=50, foldern=f"qtrainlog/{FOLDER}/"):
     import matplotlib.pyplot as plt
     # reward_curve = np.load(reward_curve_file, allow_pickle=True)
@@ -384,13 +439,64 @@ def avg_vis_helper(paraset: ParameterSet):
     print(f"{filename_suffix0} Last avg. value - Tags: {tags0_avg[len(tags0_avg) - 1]}, {tags1_avg[len(tags1_avg) - 1]}")
 
 
+
+def single_training_visualizer(filename, max_index, TWENTY=20):
+    """
+    filename example:
+    nothingslayer2_single_aggressive26_nothing_lrate0.1_discount0.9_initq10.0_1nrs_500ep_no_pre_nr0
+    the files could then be called 
+    nothingslayer2_single_aggressive26_nothing_lrate0.1_discount0.9_initq10.0_1nrs_500ep_no_pre_nr0_q_table_i499.npy
+    thus max_index zB 499 is useful
+    """
+    foldern = "qtrainlog/batch 3/"
+    #filename = "qtrainlog/batch 3/" + filename
+    # rewardcurve = np.load(f"{filename}_reward_curve_i{max_index}.npy")
+    rewardcurve = np.load(f"{foldern}{filename}_reward_curve_i{max_index}.npy") #just for test
+    scorelist = np.load(f"{foldern}{filename}_scores_i{max_index}.npy")
+
+    print(f"rewardcurve shape: {np.shape(rewardcurve)}") #(500, 3)
+    # print(f"scorelist shape: {np.shape(scorelist)}")
+
+
+    # visualize_reward_quick_and_ugly(rewards0, rewards1, rewards2, filename_suffix0 + "NO_AVG", foldern=paraset.foldername, bagsize=1, data2=rewards2)
+    # else:
+    #     visualize_reward_quick_and_ugly(rewards0, rewards1, filename_suffix0 + "NO_AVG", foldern=paraset.foldername, bagsize=1)
+    # #visualize_curve(scores0_avg, scores1_avg, ylabel=f"Score (avg per {bagsize} episodes)", name=filename_suffix0, foldern=paraset.foldername)
+    # # the visualiztaion with bags is not necessary for the averaged score one? perhaps wrong, but I rather need some range and variance visualizations
+    # visualize_curve(scores0, scores1, ylabel=f"Score (NO AVG, scorelist_avg direct test)", name=filename_suffix0, foldern=paraset.foldername, bagsize=1)
+
+
+
+    # avg_rew_curve = np.mean(rewardcurve, axis=1) #average over the three agents, shape should be (500,) now
+    # print(f"avg_rew_curve shape: {np.shape(avg_rew_curve)}")
+    # print(f"avg_rew_curve: {avg_rew_curve}")
+
+    #I have a rewardcurve of shape (500, 3) where the second dimension is the reward for each of the three agents. I want to separate the three agents into their own lists:
+    rewards0 = rewardcurve[:, 0]
+    rewards1 = rewardcurve[:, 1]
+    rewards2 = rewardcurve[:, 2]
+    
+    visualize_reward_quick_and_ugly(rewards0, rewards1, rewards2, filename, bagsize=1)
+
+    score0 = scorelist[:, 0]
+    score1 = scorelist[:, 1]
+
+
+    visualize_curve_quickandugly(score0, score1, ylabel="Score", name=filename, bagsize=1, foldern="qtrainlog/batch 3/quickfigures/")
+
+
+    print("--------------------------------------------")
+    print(f"{filename}\nLast avg. value - Rewards: {rewardcurve[len(rewardcurve) - 1]} (agents 0-2)")
+    print(f"{filename}\nLast avg. value - Scores: {scorelist[len(scorelist) - 1]} (blue, red)")
+    # print(f"{filename}\nLast avg. value - Winrate: {winrate0[len(winrate0) - 1]}, {winrate1[len(winrate1) - 1]}")
+
 if __name__ == "__main__":
     
     #filename_suffix0 = "vshard_example_suffix01"
     #filename_suffix = "qtrainlog/vshard_"+filename_suffix
     
     #vis_helper(filename_suffix0)
-    print(f"Starting visualization of {FOLDER}.")
+    # print(f"Starting visualization of {FOLDER}.")
     #q_table = np.load("qtrainlog/vshard_example_suffix01_q_table.npy") #TODO visualize Q-Table
     #matrix_to_heatmap(q_table, "test_title", "qtrainlog/vshard_example_suffix01_q_table.png")
 
@@ -448,40 +554,45 @@ if __name__ == "__main__":
     # filenames.append(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, False, "longeptest", "qtrainlog/batch 2/", i, boolchange=False, nrs=2, ep=1000, teamsize3=True)) 
     # filenames.append(ParameterSet("aggressive_tags_26", "hard", 0.1, 0.9, 10.0, False, "longeptest", "qtrainlog/batch 2/", i, boolchange=False, nrs=2, ep=1000, teamsize3=True)) 
     # batch 3a1
-    parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.2, 0.95, 10.0, False, "stepstest", "qtrainlog/batch 3/", i, boolchange=False, nrs=3, ep=1000, teamsize3=True)) 
-    parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.1, 0.9, 10.0, False, "stepstest", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=1000, teamsize3=True)) 
-    parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.1, 0.99, 10.0, False, "stepstest", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=1000, teamsize3=True)) 
-    parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.1, 0.99, 10.0, False, "stepstest", "qtrainlog/batch 3/", i, boolchange=True, nrs=3, ep=1000, teamsize3=True)) 
-    parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.95, 10.0, False, "stepstest", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=1000, teamsize3=True)) 
-    parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.9, 10.0, False, "stepstest", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=1000, teamsize3=True)) 
-    # batch 3a2
-    parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.2, 0.95, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=False, nrs=3, ep=600, teamsize3=True)) 
-    parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.1, 0.9, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=600, teamsize3=True)) 
-    parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.1, 0.99, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=600, teamsize3=True)) 
-    parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.1, 0.99, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=True, nrs=3, ep=600, teamsize3=True)) 
-    parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.95, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=600, teamsize3=True)) 
-    parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.9, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=600, teamsize3=True)) 
+    # parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.2, 0.95, 10.0, False, "stepstest", "qtrainlog/batch 3/", i, boolchange=False, nrs=3, ep=1000, teamsize3=True)) 
+    # parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.1, 0.9, 10.0, False, "stepstest", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=1000, teamsize3=True)) 
+    # parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.1, 0.99, 10.0, False, "stepstest", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=1000, teamsize3=True)) 
+    # parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.1, 0.99, 10.0, False, "stepstest", "qtrainlog/batch 3/", i, boolchange=True, nrs=3, ep=1000, teamsize3=True)) 
+    # parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.95, 10.0, False, "stepstest", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=1000, teamsize3=True)) 
+    # parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.9, 10.0, False, "stepstest", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=1000, teamsize3=True)) 
+    # # batch 3a2
+    # parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.2, 0.95, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=False, nrs=3, ep=600, teamsize3=True)) 
+    # parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.1, 0.9, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=600, teamsize3=True)) 
+    # parametersets.append(ParameterSet("single_aggressive_rew", "nothing", 0.1, 0.99, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=600, teamsize3=True)) 
+    # parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.1, 0.99, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=True, nrs=3, ep=600, teamsize3=True)) 
+    # parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.95, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=600, teamsize3=True)) 
+    # parametersets.append(ParameterSet("aggressive_tags_26", "nothing", 0.01, 0.9, 10.0, False, "stepstest2", "qtrainlog/batch 3/", i, boolchange=False, nrs=1, ep=600, teamsize3=True)) 
 
-    # batch 3c
-    nbrs = 20
-    filenames.append(ParameterSet("aggressive_tags_26", "hard", 0.2, 0.95, 10.0, False, "single26test", "qtrainlog/batch 3/", 0, boolchange=False, nrs=nbrs, ep=700, teamsize3=True, timelimit=600.)) 
-    filenames.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "single26test", "qtrainlog/batch 3/", 0, boolchange=False, nrs=nbrs, ep=700, teamsize3=True, timelimit=600.)) 
-    filenames.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.99, 10.0, False, "single26test", "qtrainlog/batch 3/", 0, boolchange=True, nrs=nbrs, ep=700, teamsize3=True, timelimit=600.)) 
+    # # batch 3c
+    # nbrs = 20
+    # filenames.append(ParameterSet("aggressive_tags_26", "hard", 0.2, 0.95, 10.0, False, "single26test", "qtrainlog/batch 3/", 0, boolchange=False, nrs=nbrs, ep=700, teamsize3=True, timelimit=600.)) 
+    # filenames.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "single26test", "qtrainlog/batch 3/", 0, boolchange=False, nrs=nbrs, ep=700, teamsize3=True, timelimit=600.)) 
+    # filenames.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.99, 10.0, False, "single26test", "qtrainlog/batch 3/", 0, boolchange=True, nrs=nbrs, ep=700, teamsize3=True, timelimit=600.)) 
 
-    #batch 3d
-    filenames.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrab", "qtrainlog/batch 3/", 0, boolchange=False, nrs=1, ep=300, teamsize3=True)) 
-    filenames.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong", "qtrainlog/batch 3/", 0, boolchange=False, nrs=1, ep=300, teamsize3=True)) 
+    # #batch 3d
+    # filenames.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrab", "qtrainlog/batch 3/", 0, boolchange=False, nrs=1, ep=300, teamsize3=True)) 
+    # filenames.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong", "qtrainlog/batch 3/", 0, boolchange=False, nrs=1, ep=300, teamsize3=True)) 
 
-    #nothingslayer
-    filenames.append(ParameterSet("single_aggressive26", "nothing", 0.1, 0.9, 10.0, False, "nothingslayer1", "qtrainlog/batch 3/", 0, boolchange=False, nrs=1, ep=400, teamsize3=True)) 
-    filenames.append(ParameterSet("single_aggressive26", "nothing", 0.1, 0.9, 10.0, False, "nothingslayer2", "qtrainlog/batch 3/", 0, boolchange=False, nrs=1, ep=500, teamsize3=True, ignoreseed=False, timelimit=3000.))
+    # #nothingslayer
+    # filenames.append(ParameterSet("single_aggressive26", "nothing", 0.1, 0.9, 10.0, False, "nothingslayer1", "qtrainlog/batch 3/", 0, boolchange=False, nrs=1, ep=400, teamsize3=True)) 
+    # filenames.append(ParameterSet("single_aggressive26", "nothing", 0.1, 0.9, 10.0, False, "nothingslayer2", "qtrainlog/batch 3/", 0, boolchange=False, nrs=1, ep=500, teamsize3=True, ignoreseed=False, timelimit=3000.))
+
+    # Zeitnot-comp training
+    # filenames.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong3", "qtrainlog/batch 3/", 0, boolchange=False, nrs=20, ep=300, teamsize3=True, timelimit=6000., qtable_suffix="qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")) 
+    # filenames.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong4", "qtrainlog/batch 3/", 0, boolchange=True, nrs=10, ep=300, teamsize3=True, timelimit=6000., qtable_suffix="qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")) 
+    # filenames.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong2", "qtrainlog/batch 3/", 0, boolchange=False, nrs=5, ep=300, teamsize3=True, timelimit=6000., qtable_suffix="qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")) 
+    # filenames.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong3", "qtrainlog/batch 3/", 0, boolchange=True, nrs=5, ep=300, teamsize3=True, timelimit=6000., qtable_suffix="qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")) 
 
     for e in filenames:
         # check if folder is already created
         if not os.path.isdir(e.foldername+"figures/"):
             print("Creating folder "+e.foldername+"figures/")
             os.makedirs(e.foldername+"figures/")
-
         #vis_helper(e)
         avg_vis_helper(e)
     for e in parametersets:
@@ -489,7 +600,6 @@ if __name__ == "__main__":
         if not os.path.isdir(e.foldername+"figures/"):
             print("Creating folder "+e.foldername+"figures/")
             os.makedirs(e.foldername+"figures/")
-
         avg_vis_helper(e)
     #vis_helper("math2scatter_aggressive_tags_24_hard_lrate0.1_discount0.9_initq10.0_1000ep_no_pre_nr0")
 
@@ -506,6 +616,19 @@ if __name__ == "__main__":
     #                             qtable[a][b][c][d][e][f] = 10
     # na = "f"
     # matrix_to_heatmap(qtable, f"dimension {na}", f"dimension_{na}_legend", "name")
+
+    #single_training_visualizer("nothingslayer2_single_aggressive26_nothing_lrate0.1_discount0.9_initq10.0_1nrs_500ep_no_pre_nr0", 499, TWENTY=1)
+    # single_training_visualizer("enhancegrablong3_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_5nrs_300ep_no_pre_nr0", 9)
+    
+    
+    
+    
+    
+    
+    
+    # single_training_visualizer("enhancegrablong2_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_5nrs_300ep_no_pre_nr0", 24)
+    single_training_visualizer("enhancegrablong2_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_5nrs_300ep_no_pre_nr0", 144)
+    single_training_visualizer("enhancegrablong3_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_5nrs_300ep_no_pre_nr0", 149)
     
 
     print("Ended visualization.")
