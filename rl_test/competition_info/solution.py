@@ -24,7 +24,7 @@ class solution:
         # self.policy_two = Policy.from_checkpoint(os.path.abspath('./working_dir/' + '<Your Policy Path Here>'))
         # self.policy_three = Policy.from_checkpoint(os.path.abspath('./working_dir/' + '<Your Policy Path Here>'))
         #blue_qtable_array = np.load((os.path.abspath('./working_dir/' + 'enhancegrablong3_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_5nrs_300ep_no_pre_nr0_q_table_i174.npy')))
-        blue_qtable_array = np.load((os.path.abspath('./working_dir/' + 'qtable.npy')))
+        blue_qtable_array = np.load((os.path.abspath('./working_dir/' + 'qtable.npy'))) 
         # blue_qtable_array = np.load((os.path.abspath('./rl_test/competition_info/' + 'qtable.npy'))) 
         # print("Q-Table loaded, shape:", np.shape(blue_qtable_array))
         # we actually only need one qtable, since only the locations in compute_action() have to be different...
@@ -65,22 +65,12 @@ class solution:
         '''
         # To figure out the best reward we need ownpos, opp1, opp2, b_flag, r_flag
         # compute ownpos:
-        # if obs[self.id]['has_flag']: 
         if full_obs[agent_id]['has_flag']:
 
-            # agent_heading = info[self.id]['global_state'][(self.id, "heading")]
-            # agent_position = info[self.id]['global_state'][(self.id, 'pos')]
-            # print("TESTING HERE", full_obs[(agent_id, 'heading')]) #this is definitely the wrong way to access this. Instead use full_obs[agent_id]['heading']
-            # print("TESTING HERE", full_obs)#[agent_id])
-
-            #debugging bunker
-            # print(f"\nglobal_state: \n{global_state[agent_id]['global_state'][(agent_id, 'heading')]}") #this is the right way to access heading.
-
-            # print("TESTING HERE", full_obs[agent_id]['global_state']['heading'])
-            agent_heading = global_state[agent_id]['global_state'][(agent_id, 'heading')]
-                #full_obs[agent_id]['heading']#full_obs[(agent_id, "heading")] #or is it         full_obs[agent_id]['heading'] #tested
-            agent_position = global_state[agent_id]['global_state'][(agent_id, 'pos')]
-                #full_obs[agent_id]['pos']#full_obs[(agent_id, 'pos')] #or is it full_obs[agent_id]['pos'] #tested
+            agent_heading = global_state[agent_id]['global_state'][(agent_id, 'heading')] #deactivated to test if other address works, since this might be the issue encountered in step 97...
+            # agent_heading = global_state[(agent_id, 'heading')]
+            agent_position = global_state[agent_id]['global_state'][(agent_id, 'pos')] #deactivated to test if other address works, since this might be the issue encountered in step 97...
+            # agent_position = global_state[(agent_id, 'pos')]
 
             if agent_id in ['agent_0', 'agent_1', 'agent_2']:
                 FLAG_DELIVERY_POS = B_FLAG_DELIVERY_POS

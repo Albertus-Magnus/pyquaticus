@@ -11,6 +11,7 @@ EPSG_3857_EXT_Y = 20048966.104014594 # meters (https://epsg.io/3857)
 
 LINE_INTERSECT_TOL = 1e-9
 
+
 ### Standard Configuration Dictionary ###
 config_dict_competition = {
 
@@ -199,3 +200,6 @@ ACTION_MAP.append([0.0, 0.0])
 #  [0.5,  135], [0.5,   90], [0.5,  45], 
 #  [0.5,    0], [0.5,  -45], [0.5, -90], 
 #  [0.5, -135], [0.0,    0]]
+
+
+config_dict_std = config_dict_competition
