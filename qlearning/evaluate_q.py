@@ -596,14 +596,14 @@ if __name__ == "__main__":
     # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong3", "qtrainlog/batch 3/", 0, boolchange=True, nrs=20, ep=300, teamsize3=True, timelimit=6000., qtable_suffix="qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")) 
 
     # #scattershot hpc 23-04-26 eod ending (ca)
-    parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parametersearch1", "qtrainlog/batach 4/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
-    parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.9, 10.0, False, "parametersearch2", "qtrainlog/batach 4/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
-    parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parametersearch3", "qtrainlog/batach 4/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
-    parametersets.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, False, "parametersearch4", "qtrainlog/batach 4/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
-    parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.95, 10.0, False, "parametersearch5", "qtrainlog/batach 4/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
-    parametersets.append(ParameterSet("single_aggressive26", "hard", 0.001, 0.85, 10.0, False, "parametersearch6", "qtrainlog/batach 4/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
-    parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parametersearch7_newbool", "qtrainlog/batach 4/", i, boolchange=True, nrs=10, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
-    parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.9, 10.0, False, "parametersearch8_newbool", "qtrainlog/batach 4/", i, boolchange=True, nrs=10, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
+    # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parametersearch1", "qtrainlog/batch 4/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
+    # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.9, 10.0, False, "parametersearch2", "qtrainlog/batch 4/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
+    # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parametersearch3", "qtrainlog/batch 4/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
+    # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, False, "parametersearch4", "qtrainlog/batch 4/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
+    # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.95, 10.0, False, "parametersearch5", "qtrainlog/batch 4/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
+    # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.001, 0.85, 10.0, False, "parametersearch6", "qtrainlog/batch 4/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
+    # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parametersearch7_newbool", "qtrainlog/batch 4/", i, boolchange=True, nrs=10, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
+    # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.9, 10.0, False, "parametersearch8_newbool", "qtrainlog/batch 4/", i, boolchange=True, nrs=10, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
 
 
     for e in filenames:

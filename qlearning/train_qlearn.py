@@ -138,7 +138,7 @@ def doTraining(parameterset: ParameterSet, number_jobs):
         # Print all important data (especially the q-table!) regularly to file:
         if (index % 50) == 49: 
             # print(f"(Pre-storing q-table to file \"{parameterset.foldername + parameterset.create_name()}_q_table.npy\" at index {index}.)")
-            qtableee.toFile(f"{parameterset.foldername + parameterset.create_name()}_q_table.npy")
+            qtableee.toFile(f"{parameterset.foldername + parameterset.create_name()}_q_table_i{index}.npy") #this might be excessive file creation...
             # print(f"(Pre-storing rewardcurve to file \"{parameterset.foldername + parameterset.create_name()}_reward_curve.npy\" at index {index}.)")
             np.save(f"{parameterset.foldername + parameterset.create_name()}_reward_curve.npy", rewardcurve)
             #print("Storing logstructure to file", "logstructure.npy")
@@ -153,11 +153,6 @@ def doTraining(parameterset: ParameterSet, number_jobs):
             np.save(f"{parameterset.foldername + parameterset.create_name()}_statecount.npy", s_table) 
             #print("Statecount table: ",s_table)
         # Print qtable regularly as checkpoint to additional file (but not too oft because memory leak)
-        if (index % 50) == 49 or True: #TODO is set to always keep a copy now
-            # print(f"(In-between-storing q-table to file \"{parameterset.foldername + parameterset.create_name()}_q_table_i{index}.npy\".)")
-            qtableee.toFile(f"{parameterset.foldername + parameterset.create_name()}_q_table_i{index}.npy")
-            np.save(f"{parameterset.foldername + parameterset.create_name()}_scores_i{index}.npy", scorelist) 
-            np.save(f"{parameterset.foldername + parameterset.create_name()}_reward_curve_i{index}.npy", rewardcurve)
 
         #np.save(f"{filename_suffix}_logstructure{index}.npy", logstructure) 
         # discard logstructure now, so memory does not leak
