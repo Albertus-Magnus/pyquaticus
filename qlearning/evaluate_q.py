@@ -448,7 +448,8 @@ def single_training_visualizer(filename, max_index, TWENTY=20):
     nothingslayer2_single_aggressive26_nothing_lrate0.1_discount0.9_initq10.0_1nrs_500ep_no_pre_nr0_q_table_i499.npy
     thus max_index zB 499 is useful
     """
-    foldern = "qtrainlog/batch 3/"
+    # foldern = "qtrainlog/batch 3/"
+    foldern = "qtrainlog/batch 4/"
     #filename = "qtrainlog/batch 3/" + filename
     # rewardcurve = np.load(f"{filename}_reward_curve_i{max_index}.npy")
     rewardcurve = np.load(f"{foldern}{filename}_reward_curve_i{max_index}.npy") #just for test
@@ -588,13 +589,13 @@ if __name__ == "__main__":
     # filenames.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong2", "qtrainlog/batch 3/", 0, boolchange=False, nrs=5, ep=300, teamsize3=True, timelimit=6000., qtable_suffix="qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")) 
     # filenames.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong3", "qtrainlog/batch 3/", 0, boolchange=True, nrs=5, ep=300, teamsize3=True, timelimit=6000., qtable_suffix="qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")) 
 
-    parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "fromzero3000sec", "qtrainlog/batch 4/", 0, boolchange=True, nrs=10, ep=1000, teamsize3=True, timelimit=3000., qtable_suffix="qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")) 
-    parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong4", "qtrainlog/batch 4/", 0, boolchange=False, nrs=20, ep=300, teamsize3=True, timelimit=6000., qtable_suffix="qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")) 
-    parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong5", "qtrainlog/batch 4/", 0, boolchange=True, nrs=20, ep=300, teamsize3=True, timelimit=6000., qtable_suffix="qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")) 
-    parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong2", "qtrainlog/batch 3/", 0, boolchange=False, nrs=20, ep=300, teamsize3=True, timelimit=6000., qtable_suffix="qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")) 
-    parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong3", "qtrainlog/batch 3/", 0, boolchange=True, nrs=20, ep=300, teamsize3=True, timelimit=6000., qtable_suffix="qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")) 
+    # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "fromzero3000sec", "qtrainlog/batch 4/", 0, boolchange=True, nrs=10, ep=1000, teamsize3=True, timelimit=3000., qtable_suffix="qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")) 
+    # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong4", "qtrainlog/batch 4/", 0, boolchange=False, nrs=20, ep=300, teamsize3=True, timelimit=6000., qtable_suffix="qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")) 
+    # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong5", "qtrainlog/batch 4/", 0, boolchange=True, nrs=20, ep=300, teamsize3=True, timelimit=6000., qtable_suffix="qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")) 
+    # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong2", "qtrainlog/batch 3/", 0, boolchange=False, nrs=20, ep=300, teamsize3=True, timelimit=6000., qtable_suffix="qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")) 
+    # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong3", "qtrainlog/batch 3/", 0, boolchange=True, nrs=20, ep=300, teamsize3=True, timelimit=6000., qtable_suffix="qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")) 
 
-    #scattershot hpc 23-04-26 eod ending (ca)
+    # #scattershot hpc 23-04-26 eod ending (ca)
     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parametersearch1", "qtrainlog/batach 4/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.9, 10.0, False, "parametersearch2", "qtrainlog/batach 4/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parametersearch3", "qtrainlog/batach 4/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
@@ -644,8 +645,13 @@ if __name__ == "__main__":
     
     
     # single_training_visualizer("enhancegrablong2_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_5nrs_300ep_no_pre_nr0", 24)
-    single_training_visualizer("enhancegrablong2_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_5nrs_300ep_no_pre_nr0", 299)
-    single_training_visualizer("enhancegrablong3_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_5nrs_300ep_no_pre_nr0", 299)
+    # single_training_visualizer("enhancegrablong2_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_5nrs_300ep_no_pre_nr0", 299)
+    # single_training_visualizer("enhancegrablong3_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_5nrs_300ep_no_pre_nr0", 299)
+
+    # single_training_visualizer("fromzero3000sec_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_10nrs_1000ep_no_pre_nr9", 999, TWENTY=1)
+    # single_training_visualizer("fromzero3000sec_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_10nrs_1000ep_no_pre_nr8", 999, TWENTY=1)
+    # single_training_visualizer("fromzero3000sec_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_10nrs_1000ep_no_pre_nr6", 999, TWENTY=1)
+    # single_training_visualizer("fromzero3000sec_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_10nrs_1000ep_no_pre_nr5", 999, TWENTY=1)
     
 
     print("Ended visualization.")
