@@ -19,16 +19,21 @@ from pyquaticus.config import config_dict_std, ACTION_MAP
 # self: agent_0 or agent_1
 # opponents: agent_2 and agent_2
 
-B_FLAG_DELIVERY_POS = np.array([10., 70.]) # (upper left corner)
-R_FLAG_DELIVERY_POS = np.array([150., 70.]) # (upper right corner)
+# B_FLAG_DELIVERY_POS = np.array([10., 70.]) # (upper left corner)
+# R_FLAG_DELIVERY_POS = np.array([150., 70.]) # (upper right corner)
+
+# currently training is only on blue position
+FLAG_DELIVERY_POS = np.array([10., 70.]) # (upper left corner)
+
 # the flag in the 26env has to be delivered to one of the two bases in the corners of the own side, not just to the own side anymore.
 
 class QTable:
-    def __init__(self, LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, filename=None, boolchange=True):
+    def __init__(self, LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, filename=None, boolchange=True, sharpturns=True):
         self.LEARNING_RATE = LEARNING_RATE
         self.DISCOUNT_FACTOR = DISCOUNT_FACTOR
         self.INITIAL_Q_VALUE = INITIAL_Q_VALUE
         self.boolchange = boolchange
+        self.sharpturns = sharpturns #decides if 90° turns are the left/right action, if false its 45° turns
         if not filename == None:
             self.qtable = np.load(filename)
             #print(self.qtable)
@@ -124,18 +129,32 @@ class QTable:
                 b_flag = int(obs[agentID][('opponent_0', 'has_flag')] or obs[agentID][('opponent_1', 'has_flag')]) #true if any opponent has your flag Was changed to show on which side of the map we are.
         # compute r_flag
         r_flag = int(obs[agentID]['has_flag']) #is boolean, but integer (0-1) is better for array index
-        #translate action from [4, 2, 0, 6] to [0, 1, 2, 3]
-        if action == 4:
-            action_index = 0
-        elif action == 2:
-            action_index = 1
-        elif action == 0:
-            action_index = 2
-        elif action == 6:
-            action_index = 3
+        if self.sharpturns:
+            #translate action from [4, 2, 0, 6] to [0, 1, 2, 3]
+            if action == 4:
+                action_index = 0
+            elif action == 2:
+                action_index = 1
+            elif action == 0:
+                action_index = 2
+            elif action == 6:
+                action_index = 3
+            else:
+                print("Error: Action not recognized in prepareUpdate() of QTable.")
+                action_index = -1
         else:
-            print("Error: Action not recognized in prepareUpdate() of QTable.")
-            action_index = -1
+            #translate action from [4, 3, 0, 5] to [0, 1, 2, 3]
+            if action == 4:
+                action_index = 0
+            elif action == 3:
+                action_index = 1
+            elif action == 0:
+                action_index = 2
+            elif action == 5:
+                action_index = 3
+            else:
+                print("Error: Action not recognized in prepareUpdate() of QTable.")
+                action_index = -1
         return (ownpos, opp1_bearing, opp2_bearing, b_flag, r_flag, action_index)
 
     def toFile(self, filename): #zB "q_table.npy"
@@ -240,6 +259,12 @@ class QlearnPolicy(BaseAgentPolicy):
         #  [0.5,  135], [0.5,   90], [0.5,  45], 
         #  [0.5,    0], [0.5,  -45], [0.5, -90], 
         #  [0.5, -135], [0.0,    0]] 
+        # 90° turns are this:
+        # actions = [[1.0, 0], [1.0, 90], [1.0, 180], [1.0, -90]] #(forward, right, backward, left)
+        # actions = [4, 2, 0, 6] #(same actions, but as discrete indexes for pyquaticus, according to ACTION_MAP)
+        # 45° turns (slightly forwards, perhaps this preserves speed?) are this:
+        # [[1.0, 0], [1.0, 45], [1.0, 180], [1.0, -45]]
+        # [4, 3, 0, 5]
         ''' ownpos is the relative heading towards the objective, divided into 4 areas
             pos3  |  pos0
             -----/_\-----   (agent is /_\)
@@ -247,24 +272,10 @@ class QlearnPolicy(BaseAgentPolicy):
         '''
         # To figure out the best reward we need ownpos, opp1, opp2, b_flag, r_flag, action
         # compute ownpos:
-        if obs[self.id]['has_flag']: #the if-case works     #TODO TODO find the bug that makes agent move in circle here (also pull and visualize new try against nothing)
-            # heading towards objective (positional awareness variable) is towards enemy base normally...
-            # ownpos = headingToState(obs[self.id]['own_home_bearing']) 
-            # print(info)
-            # print(f"Agent Position: {info['agent_0']['global_state'][(self.id, 'pos')]}") #position works as thought.
-            #ownpos = headingToState(np.array([5.0, 75.0])) #adjusted for 26 twobase rules      #TODO reinstate this line, but change [x,y] to bearing towards x,y (perhaps change headingToState to do that?)
-            # vec_from_agent = np.array([10. - info['agent_0']['global_state'][(self.id, 'pos')][0] , 70. - info['agent_0']['global_state'][(self.id, 'pos')][1] ])
-            # agent_heading = info['agent_0']['global_state'][(self.id, "heading")]
-            #ownpos = headingToState(vec_to_heading(np.array([5., 75.]))) #TODO test this (then add to prepareUpdate()...)
-            # ownpos = headingToState(angle180(vec_to_heading(vec_from_agent) - agent_heading)) #TODO test this (then add to prepareUpdate()...)
-            # print(f"vector to goal: {vec_from_agent}, heading: {angle180(vec_to_heading(vec_from_agent) - agent_heading)}") #vec_to_heading doesn not appear to work! need other way to use headingToState after capture
-            #ownpos = headingToState(obs[self.id]['wall_0_bearing'])
-
+        if obs[self.id]['has_flag']: 
             agent_heading = info[self.id]['global_state'][(self.id, "heading")]
             agent_position = info[self.id]['global_state'][(self.id, 'pos')]
-
             ownpos = headingToState( bearing_from_coord(FLAG_DELIVERY_POS, agent_position, agent_heading) )
-
         else:
             # ...and towards own base (or map half) if agent has grabbed the enemy flag
             #print("own_home_bearing =",obs[self.id]['own_home_bearing'])#output of this is "own_home_bearing = 117.06809126991149"
@@ -311,10 +322,11 @@ class QlearnPolicy(BaseAgentPolicy):
             if q_max < self.q_Table.qtable[ownpos][opp1_bearing][opp2_bearing][b_flag][r_flag][i]:
                 q_max = self.q_Table.qtable[ownpos][opp1_bearing][opp2_bearing][b_flag][r_flag][i]
                 a_max = i
-        #print("Maximum reward",q_max,"expected for action",i,".")
-        #return a_max #translate first to pyquaticus action
-        #actions = [[1.0, 0], [1.0, 90], [1.0, 180], [1.0, -90]] #(forward, right, backward, left)
-        actions = [4, 2, 0, 6] #(same actions, but as discrete indexes for pyquaticus, according to ACTION_MAP)
+        #actions = [[1.0, 0], [1.0, 90], [1.0, 180], [1.0, -90]] #(forward, right, backward, left) 90° turns
+        if self.q_Table.sharpturns:
+            actions = [4, 2, 0, 6] #(same actions, but as discrete indexes for pyquaticus, according to ACTION_MAP)
+        else:
+            actions = [4, 3, 0, 5] #45°turns
         return actions[a_max]
     #End of compute_action()
 #End of QlearnPolicy()

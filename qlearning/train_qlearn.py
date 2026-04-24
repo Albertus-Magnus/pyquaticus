@@ -35,7 +35,7 @@ thesis (March 2026).
 # this class is just there to select (and store for some time) the right parameters and generate filenames (to log the data reliably)
 class ParameterSet:
     #def __init__(self, rewardchoice: str, lrate: float, discount: float, initialq: float, pretrain: bool, name: str, fodler: str, index: int): #test first without type
-    def __init__(self, rewardchoice, dif, lrate, discount, initialq, pretrain, name, folder, index, boolchange=True, nrs=20, ep=1000, teamsize3 = False, ignoreseed = True, timelimit = 600., qtable_suffix=None):
+    def __init__(self, rewardchoice, dif, lrate, discount, initialq, pretrain, name, folder, index, boolchange=True, nrs=20, ep=1000, teamsize3=False, ignoreseed=True, timelimit=600., qtable_suffix=None, sharpturns=True):
         self.rewardchoice = rewardchoice #zB "single_aggressive_rew"
         self.dif = dif
         self.foldername = folder # "lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck1"
@@ -50,6 +50,7 @@ class ParameterSet:
         self.ignoreseed = ignoreseed
         self.timelimit = timelimit
         self.qtablefromfile = qtable_suffix
+        self.sharpturns = sharpturns
 
     # Create a string for file storage that contains all important info about parameters (as well as an index if parameters are used more than once).
     def create_name(self):
@@ -57,9 +58,13 @@ class ParameterSet:
             pre = "500-pretrained" 
         else:
             pre = "no_pre"
+        if self.sharpturns: sh = "sharpturns_" 
+        else:               sh = ""
+        if self.boolchange: nb = "_newbool"
+        else:               nb = ""
         # the name of all files (qtable, stats, s-table,...):   ("_qtable" etc are appended)
         #n = self.name + "_" + str(self.rewardchoice) + "_" + self.dif + "_lrate"+ str(self.LEARNING_RATE) + "_discount" + str(self.DISCOUNT_FACTOR) + "_initq" + str(self.INITIAL_Q_VALUE) + "_" + "1000ep_" + pre + "_nr" + str(self.index) #old name scheme, before nrs and ep were parameterized
-        n = self.name + "_" + str(self.rewardchoice) + "_" + self.dif + "_lrate"+ str(self.LEARNING_RATE) + "_discount" + str(self.DISCOUNT_FACTOR) + "_initq" + str(self.INITIAL_Q_VALUE) + "_"+str(self.nrs)+"nrs_" + str(self.ep) + "ep_" + pre + "_nr" + str(self.index)
+        n = self.name + nb + "_" + sh + str(self.rewardchoice) + "_" + self.dif + "_lrate"+ str(self.LEARNING_RATE) + "_discount" + str(self.DISCOUNT_FACTOR) + "_initq" + str(self.INITIAL_Q_VALUE) + "_"+str(self.nrs)+"nrs_" + str(self.ep) + "ep_" + pre + "_nr" + str(self.index)
         #number of episodes (and 500-pretrained?) has to be hand-adjusted, perhaps change that...
         return n
     
@@ -71,9 +76,11 @@ class ParameterSet:
             pre = "500-pretrained" #NOTE this 500- is missing from the first set of runs (avgtest1?)
         else:
             pre = "no_pre"
+        if self.sharpturns: sh = "sharpturns_" #has to be included in name, because needs different treatment in the solution.py (or evaluation etc)
+        else:               sh = ""
         # the name of all files (qtable, stats, s-table,...):   ("_qtable" etc are appended)
         #n = self.name + "_" + str(self.rewardchoice) + "_" + self.dif + "_lrate"+ str(self.LEARNING_RATE) + "_discount" + str(self.DISCOUNT_FACTOR) + "_initq" + str(self.INITIAL_Q_VALUE) + "_" + "1000ep_" + pre #old name scheme, before nrs and ep (batch 10c and before)
-        n = self.name + "_" + str(self.rewardchoice) + "_" + self.dif + "_lrate"+ str(self.LEARNING_RATE) + "_discount" + str(self.DISCOUNT_FACTOR) + "_initq" + str(self.INITIAL_Q_VALUE) + "_" +str(self.nrs)+"nrs_" + str(self.ep) + "ep_" + pre
+        n = self.name + "_" + sh + str(self.rewardchoice) + "_" + self.dif + "_lrate"+ str(self.LEARNING_RATE) + "_discount" + str(self.DISCOUNT_FACTOR) + "_initq" + str(self.INITIAL_Q_VALUE) + "_" +str(self.nrs)+"nrs_" + str(self.ep) + "ep_" + pre
         #number of episodes (and 500-pretrained?) has to be hand-adjusted, perhaps change that...
         return n
 
@@ -87,10 +94,10 @@ def doTraining(parameterset: ParameterSet, number_jobs):
         #stepstest_single_aggressive_rew_nothing_lrate0.1_discount0.9_initq10.0_1nrs_1000ep_no_pre
         # qtableee = QTable(parameterset.LEARNING_RATE, parameterset.DISCOUNT_FACTOR, parameterset.INITIAL_Q_VALUE, 'qtrainlog/batch 3/stepstest_single_aggressive_rew_nothing_lrate0.1_discount0.9_initq10.0_1nrs_1000ep_no_pre_nr0_q_table.npy', boolchange=parameterset.boolchange)
         #enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre
-        qtableee = QTable(parameterset.LEARNING_RATE, parameterset.DISCOUNT_FACTOR, parameterset.INITIAL_Q_VALUE, parameterset.qtablefromfile, boolchange=parameterset.boolchange)
+        qtableee = QTable(parameterset.LEARNING_RATE, parameterset.DISCOUNT_FACTOR, parameterset.INITIAL_Q_VALUE, parameterset.qtablefromfile, boolchange=parameterset.boolchange, sharpturns=parameterset.sharpturns)
     else:
         # print("Setting up Q-Table")
-        qtableee = QTable(parameterset.LEARNING_RATE, parameterset.DISCOUNT_FACTOR, parameterset.INITIAL_Q_VALUE)
+        qtableee = QTable(parameterset.LEARNING_RATE, parameterset.DISCOUNT_FACTOR, parameterset.INITIAL_Q_VALUE, boolchange=parameterset.boolchange, sharpturns=parameterset.sharpturns)
     s_table = np.zeros((4, 4, 4, 2, 2), dtype=np.uint32) #statecount-table 
     # same dimensionality as qtable, but no action-options (because we just want to know about the state... for now)
     # statecount-table (to measure how many times a state was updated)
@@ -178,7 +185,7 @@ def doTraining(parameterset: ParameterSet, number_jobs):
     with lock:
         # counter += 1
         counter.value += 1
-        print(f"Concluded experiment {counter.value} out of {number_jobs}", flush=True)
+        print(f"Concluded experiment \"{parameterset.create_name()}\" ({counter.value} out of {number_jobs}).", flush=True)
         # print(f"Concluded job {counter} out of {number_jobs}")
 #End of doTraining
 
@@ -339,19 +346,7 @@ if __name__ == "__main__":
         #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong2", "qtrainlog/batch 3/", i, boolchange=False, nrs=nbrs, ep=300, teamsize3=True, timelimit=6000., qtable_suffix="qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")) 
         #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.9, 10.0, False, "enhancegrablong3", "qtrainlog/batch 3/", i, boolchange=True, nrs=nbrs, ep=300, teamsize3=True, timelimit=6000., qtable_suffix="qtrainlog/batch 3/enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre_nr0_q_table.npy")) 
 
-        # nbrs = 10
-        # for i in range(nbrs):
-        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parametersearch1", "qtrainlog/batach 4/", i, boolchange=False, nrs=nbrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
-        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.9, 10.0, False, "parametersearch2", "qtrainlog/batach 4/", i, boolchange=False, nrs=nbrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
-        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parametersearch3", "qtrainlog/batach 4/", i, boolchange=False, nrs=nbrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
-        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, False, "parametersearch4", "qtrainlog/batach 4/", i, boolchange=False, nrs=nbrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
-        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.95, 10.0, False, "parametersearch5", "qtrainlog/batach 4/", i, boolchange=False, nrs=nbrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
-        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.001, 0.85, 10.0, False, "parametersearch6", "qtrainlog/batach 4/", i, boolchange=False, nrs=nbrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
-        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parametersearch7_newbool", "qtrainlog/batach 4/", i, boolchange=True, nrs=nbrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
-        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.9, 10.0, False, "parametersearch8_newbool", "qtrainlog/batach 4/", i, boolchange=True, nrs=nbrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False))
-            
-
-        # batch 5a
+        # batch 5a ################ large batch #################
         nbrs = 10
         for i in range(nbrs):
             parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parametersearch1", "qtrainlog/batch 5/", i, boolchange=False, nrs=nbrs, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
@@ -360,8 +355,24 @@ if __name__ == "__main__":
             parametersets.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, False, "parametersearch4", "qtrainlog/batch 5/", i, boolchange=False, nrs=nbrs, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
             parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.95, 10.0, False, "parametersearch5", "qtrainlog/batch 5/", i, boolchange=False, nrs=nbrs, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
             parametersets.append(ParameterSet("single_aggressive26", "hard", 0.001, 0.85, 10.0, False, "parametersearch6", "qtrainlog/batch 5/", i, boolchange=False, nrs=nbrs, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
-            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parametersearch7_newbool", "qtrainlog/batch 5/", i, boolchange=True, nrs=nbrs, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
-            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.9, 10.0, False, "parametersearch8_newbool", "qtrainlog/batch 5/", i, boolchange=True, nrs=nbrs, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
+            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parametersearch7", "qtrainlog/batch 5/", i, boolchange=True, nrs=nbrs, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
+            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.9, 10.0, False, "parametersearch8", "qtrainlog/batch 5/", i, boolchange=True, nrs=nbrs, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
+        nbrs = 10
+        for i in range(nbrs):
+            # comparison with sharpturns
+            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parametersearch9", "qtrainlog/batch 5/", i, boolchange=False, nrs=nbrs, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False, sharpturns=False))
+            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.9, 10.0, False, "parametersearch10", "qtrainlog/batch 5/", i, boolchange=False, nrs=nbrs, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False, sharpturns=False))
+            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parametersearch11", "qtrainlog/batch 5/", i, boolchange=False, nrs=nbrs, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False, sharpturns=False))
+            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, False, "parametersearch12", "qtrainlog/batch 5/", i, boolchange=False, nrs=nbrs, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False, sharpturns=False))
+            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.95, 10.0, False, "parametersearch13", "qtrainlog/batch 5/", i, boolchange=False, nrs=nbrs, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False, sharpturns=False))
+            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.001, 0.85, 10.0, False, "parametersearch14", "qtrainlog/batch 5/", i, boolchange=False, nrs=nbrs, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False, sharpturns=False))
+            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parametersearch15", "qtrainlog/batch 5/", i, boolchange=True, nrs=nbrs, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False, sharpturns=False))
+            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.9, 10.0, False, "parametersearch16", "qtrainlog/batch 5/", i, boolchange=True, nrs=nbrs, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False, sharpturns=False))
+        nbrs = 10
+        for i in range(nbrs):
+            parametersets.append(ParameterSet("aggressive_tags_26", "hard", 0.01, 0.99, 10.0, False, "parametersearch17", "qtrainlog/batch 5/", i, boolchange=True, nrs=nbrs, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False, sharpturns=False))
+            parametersets.append(ParameterSet("aggressive_tags_26", "hard", 0.15, 0.95, 10.0, False, "parametersearch18", "qtrainlog/batch 5/", i, boolchange=True, nrs=nbrs, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False, sharpturns=False))
+            
         
 
 
@@ -420,7 +431,7 @@ if __name__ == "__main__":
     else:
         num_workers = max(1, os.cpu_count() + 2)
     # or overwrite with own number:
-    num_workers = 80#10#20 #15 was best number for my PC in small tests... (cores is 12)
+    num_workers = 64#10#20 #15 was best number for my PC in small tests... (cores is 12)
     #num_workers = max(1, os.cpu_count())#TODO test performance of +5 (12 cores, 17 processes now)
     print(f"Selecting {num_workers} as num_workers.")
 
