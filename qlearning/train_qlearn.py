@@ -437,7 +437,7 @@ if __name__ == "__main__":
     else:
         num_workers = max(1, os.cpu_count() + 2)
     # or overwrite with own number:
-    num_workers = 50#10#20 #15 was best number for my PC in small tests... (cores is 12)
+    num_workers = 100#10#20 #15 was best number for my PC in small tests... (cores is 12)
     #num_workers = max(1, os.cpu_count())#TODO test performance of +5 (12 cores, 17 processes now)
     print(f"Selecting {num_workers} as num_workers.")
 
