@@ -29,7 +29,10 @@ class solution:
         # print("Q-Table loaded, shape:", np.shape(blue_qtable_array))
         # we actually only need one qtable, since only the locations in compute_action() have to be different...
 
+        ##########
         boolchange = True #set for current qtable, adjust when using different qtable (was trained specifically for one of either choice)
+        self.sharpturns = True
+        ##########
         LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.9, 10.0 #we probably can remove those from here
         self.q_Table = QTable(LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, blue_qtable_array, boolchange) 
         # self.red_qtable = QTable()
@@ -117,7 +120,10 @@ class solution:
         #print("Maximum reward",q_max,"expected for action",i,".")
         #return a_max #translate first to pyquaticus action
         #actions = [[1.0, 0], [1.0, 90], [1.0, 180], [1.0, -90]] #(forward, right, backward, left)
-        actions = [4, 2, 0, 6] #(same actions, but as discrete indexes for pyquaticus, according to ACTION_MAP)
+        if self.sharpturns:
+            actions = [4, 2, 0, 6] #(same actions, but as discrete indexes for pyquaticus, according to ACTION_MAP)
+        else:
+            actions = [4, 3, 0, 5]
         return actions[a_max]
     #End of compute_action()
 

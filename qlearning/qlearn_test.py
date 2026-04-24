@@ -41,7 +41,8 @@ def train_qlearn(
     #logname: str = "match.log",
     q_table: QTable = None, #str = None #Not a string?! Is already a QTable!
     teamsize3: bool = False,
-    ignoreseed = True
+    ignoreseed = True,
+    sim_speed = 3
 ):
     
     # Set score function to the selected reward (match statement syntax might require python version 3.10 or newer)
@@ -76,7 +77,7 @@ def train_qlearn(
     # config_dict["default_init"] = False #random starting positions (uses seed)
 
     # TODO change back, Just to render a visual test match faster:
-    mctf_config["sim_speedup_factor"] = 1 #20 #for faster visual test rendering (currently set to 1, since this appears to be the setting for the mctf26 configuration)
+    mctf_config["sim_speedup_factor"] = sim_speed#1 #20 #for faster visual test rendering (currently set to 1, since this appears to be the setting for the mctf26 configuration)
     
     # timelimit is changed if something was specified (else mctf_config value)
     mctf_config["max_time"] = timelimit #6000.#timelimit #6000.
