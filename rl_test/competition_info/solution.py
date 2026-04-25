@@ -31,7 +31,7 @@ class solution:
 
         ##########
         boolchange = True #set for current qtable, adjust when using different qtable (was trained specifically for one of either choice)
-        self.sharpturns = True
+        self.sharpturns = False #set for 25-04-26 qtable
         ##########
         LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE = 0.1, 0.9, 10.0 #we probably can remove those from here
         self.q_Table = QTable(LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, blue_qtable_array, boolchange) 
@@ -70,10 +70,10 @@ class solution:
         # compute ownpos:
         if full_obs[agent_id]['has_flag']:
 
-            agent_heading = global_state[agent_id]['global_state'][(agent_id, 'heading')] #deactivated to test if other address works, since this might be the issue encountered in step 97...
-            # agent_heading = global_state[(agent_id, 'heading')]
-            agent_position = global_state[agent_id]['global_state'][(agent_id, 'pos')] #deactivated to test if other address works, since this might be the issue encountered in step 97...
-            # agent_position = global_state[(agent_id, 'pos')]
+            # agent_heading = global_state[agent_id]['global_state'][(agent_id, 'heading')] #deactivated to test if other address works, since this might be the issue encountered in step 97...
+            agent_heading = global_state[(agent_id, 'heading')] #this is how global_state should be accessed.
+            # agent_position = global_state[agent_id]['global_state'][(agent_id, 'pos')] #deactivated to test if other address works, since this might be the issue encountered in step 97...
+            agent_position = global_state[(agent_id, 'pos')]
 
             if agent_id in ['agent_0', 'agent_1', 'agent_2']:
                 FLAG_DELIVERY_POS = B_FLAG_DELIVERY_POS
