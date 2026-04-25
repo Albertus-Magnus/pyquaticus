@@ -361,6 +361,7 @@ if __name__ == "__main__":
         #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.9, 10.0, False, "parametersearch8", "qtrainlog/batch 5/", i, boolchange=True, nrs=nbrs, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
         #     #NOTE parametersearch1-8 files are existing in batch5...
         
+        #NOTE sharpturns was introduced after this and is a misnamer (if sharpturns is in the name, it is the OLD turning style! ->has to be handled somehow...)
         # # batch 6
         # nbrs = 10
         # for i in range(nbrs): #(wurden nach vorne gelegt: 16 & 17)
@@ -393,14 +394,14 @@ if __name__ == "__main__":
         # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.9, 10.0, False, "shortpara11", "qtrainlog/batch 6b/", 0, boolchange=True, nrs=1, ep=600, teamsize3=True, timelimit=600., ignoreseed=False, sharpturns=False, sim_speedup=3))
 
         # batch 6c  (promising parameters training on hpc [and locally, just in case too->6d])
-        nrs = 5
-        for i in range(nrs):
-            parametersets.append(ParameterSet("aggressive_tags_26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm17", "qtrainlog/batch 6c/", i, boolchange=True, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
-            parametersets.append(ParameterSet("aggressive_tags_26", "hard", 0.15, 0.95, 10.0, False, "parameterconfirm18", "qtrainlog/batch 6c/", i, boolchange=True, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
-            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parameterconfirm9", "qtrainlog/batch 6c/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
-            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.9, 10.0, False, "parameterconfirm10", "qtrainlog/batch 6c/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
-            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm11", "qtrainlog/batch 6c/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
-            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, False, "parameterconfirm12", "qtrainlog/batch 6c/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        # nrs = 5
+        # for i in range(nrs):
+        #     parametersets.append(ParameterSet("aggressive_tags_26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm17", "qtrainlog/batch 6c/", i, boolchange=True, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        #     parametersets.append(ParameterSet("aggressive_tags_26", "hard", 0.15, 0.95, 10.0, False, "parameterconfirm18", "qtrainlog/batch 6c/", i, boolchange=True, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parameterconfirm9", "qtrainlog/batch 6c/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.9, 10.0, False, "parameterconfirm10", "qtrainlog/batch 6c/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm11", "qtrainlog/batch 6c/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, False, "parameterconfirm12", "qtrainlog/batch 6c/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
         # # batch 6d
         # nrs = 2
         # for i in range(nrs):
@@ -423,7 +424,7 @@ if __name__ == "__main__":
     else:
         ####################################### TEST AREA #######################################
         # Do visual test match here.
-        setup = ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "example", "qtrainlog/example_folder/", 0) #lrate: Any, discount: Any, initialq: Any, pretrain: Any, name: Any, folder)
+        setup = ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "example", "qtrainlog/example_folder/", 0, sharpturns=False) #lrate: Any, discount: Any, initialq: Any, pretrain: Any, name: Any, folder)
         #setup = ParameterSet("single_aggressive_rew", "hard", 0.2, 0.95, 10.0, False, "avgtest3", "qtrainlog/batch 6 part three/", 0) #TODO is this dangerous to overwrite my thing?
         # (do i need to change this so it loads a file?) prolly, 'cause it is for visual test match of trained policy
         rewardchoice = "single_aggressive_rew"
@@ -448,14 +449,15 @@ if __name__ == "__main__":
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 3/single26test_single_aggressive26_hard_lrate0.15_discount0.99_initq10.0_20nrs_700ep_no_pre_nr0_q_table.npy")
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 3/single26test_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_20nrs_700ep_no_pre_nr0_q_table.npy")
 
-        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 6b/shortpara6_single_aggressive26_hard_lrate0.01_discount0.99_initq10.0_1nrs_600ep_no_pre_nr0_q_table.npy")
-        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 6b/shortpara1_sharpturns_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_1nrs_600ep_no_pre_nr0_q_table.npy")
+        # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 6b/shortpara6_single_aggressive26_hard_lrate0.01_discount0.99_initq10.0_1nrs_600ep_no_pre_nr0_q_table.npy")
+        # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 6b/shortpara1_sharpturns_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_1nrs_600ep_no_pre_nr0_q_table.npy")
+        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 6b/shortpara10_newbool_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_1nrs_600ep_no_pre_nr0_q_table.npy")
 
         # Muster:
         #qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 2/_nr0_q_table.npy")
         st = np.zeros((4, 4, 4, 2, 2), dtype=np.int32) #dangerous int8-hazard (int8 is insufficient here)
-        train_qlearn(st, seed=0, difficulty="hard", reward_choice=rewardchoice, render_mode='human', timelimit=6000., q_table=qt, teamsize3=True, ignoreseed=False, sim_speed=10)
-        #                                   even competition-medium is not suitable for 26env :/
+        rewardsteps, score, grabs, tags, u_table  = train_qlearn(st, seed=0, difficulty="hard", reward_choice=rewardchoice, render_mode=None, timelimit=600., q_table=qt, teamsize3=True, ignoreseed=False, sim_speed=1)
+        print(f"score: {grabs}, grabs: {grabs}")
         timestamp = datetime.now()
         print("Ending experiment at ",timestamp.now().strftime("%d-%m-%Y %H:%M:%S"))
         sys.exit(0)
