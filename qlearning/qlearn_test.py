@@ -44,6 +44,8 @@ def train_qlearn(
     ignoreseed = True,
     sim_speed = 3
 ):
+    #make sure seed is random
+    seed=np.random.randint(0, 100000)
     
     # Set score function to the selected reward (match statement syntax might require python version 3.10 or newer)
     match reward_choice:

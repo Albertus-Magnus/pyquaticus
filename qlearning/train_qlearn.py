@@ -412,6 +412,15 @@ if __name__ == "__main__":
         #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm11", "qtrainlog/batch 6c/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
         #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, False, "parameterconfirm12", "qtrainlog/batch 6c/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
 
+        # batch 6c 2.0  (rerun because bug?)
+        nrs = 20
+        for i in range(nrs):
+            parametersets.append(ParameterSet("aggressive_tags_26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm17", "qtrainlog/batch 6c/", i, boolchange=True, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
+            parametersets.append(ParameterSet("aggressive_tags_26", "hard", 0.15, 0.95, 10.0, False, "parameterconfirm18", "qtrainlog/batch 6c/", i, boolchange=True, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
+            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parameterconfirm9", "qtrainlog/batch 6c/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
+            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.9, 10.0, False, "parameterconfirm10", "qtrainlog/batch 6c/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
+            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm11", "qtrainlog/batch 6c/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
+            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, False, "parameterconfirm12", "qtrainlog/batch 6c/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
 
         #########################################
         #rewardchoice = "single_aggressive_rew"
@@ -461,7 +470,7 @@ if __name__ == "__main__":
         # Muster:
         #qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 2/_nr0_q_table.npy")
         st = np.zeros((4, 4, 4, 2, 2), dtype=np.int32) #dangerous int8-hazard (int8 is insufficient here)
-        rewardsteps, score, grabs, tags, u_table  = train_qlearn(st, seed=np.random.randint(0, 100000), difficulty="hard", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt, teamsize3=True, ignoreseed=False, sim_speed=10)
+        rewardsteps, score, grabs, tags, u_table  = train_qlearn(st, seed=np.random.randint(0, 100000), difficulty="hard", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt, teamsize3=True, ignoreseed=True, sim_speed=10)
         print(f"score: {grabs}, grabs: {grabs}")
         timestamp = datetime.now()
         print("Ending experiment at ",timestamp.now().strftime("%d-%m-%Y %H:%M:%S"))
@@ -481,7 +490,7 @@ if __name__ == "__main__":
     else:
         num_workers = max(1, os.cpu_count() + 2)
     # or overwrite with own number:
-    # num_workers = 100#10#20 #15 was best number for my PC in small tests... (cores is 12)
+    num_workers = 30#10#20 #15 was best number for my PC in small tests... (cores is 12)
     #num_workers = max(1, os.cpu_count())#TODO test performance of +5 (12 cores, 17 processes now)
     print(f"Selecting {num_workers} as num_workers.")
 
