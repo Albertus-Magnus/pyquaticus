@@ -80,7 +80,7 @@ class KeyTest:
         while True:
             action_dict = self.process_event(self.quittable)
             self.obs, rewards, terminated, truncated, info = self.env.step(action_dict)
-            # print(info['agent_0']['global_state'][('agent_0', 'pos')])
+            print("[",info['agent_0']['global_state'][('agent_0', 'pos')][0],",",info['agent_0']['global_state'][('agent_0', 'pos')][1],"],")
             for k in terminated:
                 if terminated[k] == True or truncated[k]==True:
                     time.sleep(1.)
