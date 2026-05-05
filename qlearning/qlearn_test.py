@@ -128,7 +128,7 @@ def train_qlearn(
         
         # print("Setting up q-learn agents")
         if q_table == None: print("Error: q-table not set up before agents are created.")
-        u_table = QTable(q_table.LEARNING_RATE, q_table.DISCOUNT_FACTOR, q_table.INITIAL_Q_VALUE)
+        u_table = QTable(q_table.LEARNING_RATE, q_table.DISCOUNT_FACTOR, q_table.INITIAL_Q_VALUE, prev_action=q_table.prev_action) #since only the q-table and its values are used, it is not necessary to set all parameters (like sharpturns) here. Careful though, prev_action is necessary...
         u_table.qtable = np.copy(q_table.qtable)
         # q-learn agents
         R_one = QlearnPolicy('agent_0', env, q_table, u_table)
@@ -136,12 +136,12 @@ def train_qlearn(
         R_three = QlearnPolicy('agent_2', env, q_table, u_table)
     else: #2v2
         # Base_combine agents
-        H_one = Heuristic_CTF_Agent('agent_2', env, mode=difficulty, continuous=False)#TODO try if False works (seems more fair)
+        H_one = Heuristic_CTF_Agent('agent_2', env, mode=difficulty, continuous=False)
         H_two = Heuristic_CTF_Agent('agent_3', env, mode=difficulty, continuous=False)
         
         # print("Setting up q-learn agents")
         if q_table == None: print("Error: q-table not set up before agents are created.")
-        u_table = QTable(q_table.LEARNING_RATE, q_table.DISCOUNT_FACTOR, q_table.INITIAL_Q_VALUE)
+        u_table = QTable(q_table.LEARNING_RATE, q_table.DISCOUNT_FACTOR, q_table.INITIAL_Q_VALUE, prev_action=q_table.prev_action)
         u_table.qtable = np.copy(q_table.qtable)
         # q-learn agents
         R_one = QlearnPolicy('agent_0', env, q_table, u_table)
@@ -205,7 +205,7 @@ def train_qlearn(
             R_two.set_q_value(a1_qstep[0], a1_qstep[1], a1_qstep[2], a1_qstep[3], a1_qstep[4], a1_qstep[5], reward['agent_1'])
             s_table[a1_qstep[0]][a1_qstep[1]][a1_qstep[2]][a1_qstep[3]][a1_qstep[4]] += 1
             rewardsteps.append({'agent_0': reward['agent_0'], 'agent_1': reward['agent_1']})
-        # (end of 3v3 vs 2v2 if-block)
+        # (end of teamsize if-block)
 
         k =  list(term.keys()) #Gameover check.
 
@@ -213,6 +213,7 @@ def train_qlearn(
         if term[k[0]] == True or trunc[k[0]]==True:
             # Game over
             break
+    #End of while True (game loop)
 
     # print("\n~~~Run Concluded~~~")
     # formatted_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")

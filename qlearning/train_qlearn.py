@@ -431,10 +431,12 @@ if __name__ == "__main__":
         #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm11", "qtrainlog/batch 6e/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
         #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, False, "parameterconfirm12", "qtrainlog/batch 6e/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
 
-        # experimenting with previous_action (in 6c folder)
-        nrs = 10
-        for i in range(nrs):
-            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "previoustest1", "qtrainlog/batch 6e/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        # batch 7a (experimenting with previous_action)
+        # testing to verify code:
+        parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "previoustest0", "qtrainlog/batch 7a/", 0, boolchange=False, nrs=1, ep=100, teamsize3=True, timelimit=600., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
+        # nrs = 10
+        # for i in range(nrs):
+        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "previoustest1", "qtrainlog/batch 7a/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
 
         #########################################
         #rewardchoice = "single_aggressive_rew"

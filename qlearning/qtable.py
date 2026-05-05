@@ -28,12 +28,13 @@ FLAG_DELIVERY_POS = np.array([10., 70.]) # (upper left corner)
 # the flag in the 26env has to be delivered to one of the two bases in the corners of the own side, not just to the own side anymore.
 
 class QTable:
-    def __init__(self, LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, filename=None, boolchange=True, sharpturns=True, previous_action):
+    def __init__(self, LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, filename=None, boolchange=True, sharpturns=True, previous_action=False):
         self.LEARNING_RATE = LEARNING_RATE
         self.DISCOUNT_FACTOR = DISCOUNT_FACTOR
         self.INITIAL_Q_VALUE = INITIAL_Q_VALUE
         self.boolchange = boolchange
         self.sharpturns = sharpturns #decides if 90° turns are the left/right action, if false its 45° turns
+        self.prev_action = previous_action #if true, the previous action is added as a parameter to the q-table (increasing its statespace by factor 4).
         if not filename == None:
             self.qtable = np.load(filename)
             #print(self.qtable)
@@ -51,7 +52,10 @@ class QTable:
         '''
         #self.actionsize = 4
         #self.q_table = np.zeros((self.statesize, self.actionsize)) #nope, we want to have it 6-dimensional
-        self.qtable = np.zeros((4, 4, 4, 2, 2, 4))
+        if self.prev_action:
+            self.qtable = np.zeros((4, 4, 4, 2, 2, 4, 4)) #ownpos, opp1, opp2, b_flag, r_flag, action, previous action
+        else:
+            self.qtable = np.zeros((4, 4, 4, 2, 2, 4))
         # Set q-values to initial value (not necessarily zero)
         # initial q-value high encourages exploration, low (even negative) encourages exploitation
         self.qtable = np.full_like(self.qtable, self.INITIAL_Q_VALUE) 
@@ -203,6 +207,12 @@ class QlearnPolicy(BaseAgentPolicy):
         # copy of q_table (update-table) is used for updates of q-values, while old unmodified q_table is used only for action selection (and max(future action) in the update calculation)
         self.u_Table = u_table
 
+        if self.q_Table.prev_action:
+            # Experimental setting where the agent has memory of their previous action, might result in smoother steering...
+            self.pre_a = 0
+        else: self.pre_a = -1 #This should not occur.
+    #End of __init__()
+
     @staticmethod #either this line or self as first argument. Python stinks sometimes...
     def headingDiff(heading, pos1, pos2): #TODO check if math correct
         # heading can range from -180 to 180, we want to compute with 360-range values
@@ -235,19 +245,32 @@ class QlearnPolicy(BaseAgentPolicy):
 
         reward is from frame n+1, the rest of the values are from frame n (action being the action between these frames, so selected in frame n).
         """
+        prev = self.q_Table.prev_action # Experimental previous action memory setting.
         # old_q is taken from the (during this episode) updated q-value
-        old_q = self.u_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][action]
+        if prev:
+            old_q = self.u_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][action][self.pre_a]
+        else:
+            old_q = self.u_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][action]
 
         # Calculation of loss etc as per the qlearn algorithm
         opt_future_value = -100000000000. #"." cause reward is continuous
         for i in range(4): #for every possible action do...
             # opt_future_value is taken from the un-updated qtable that is also used for action selection.
-            opt_future_value = max(opt_future_value, self.q_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][ i ])
+            if prev:
+                opt_future_value = max(opt_future_value, self.q_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][ i ][self.pre_a])
+            else:
+                # (standard setting, without previous action memory)
+                opt_future_value = max(opt_future_value, self.q_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][ i ])
         # Loss function is used to compute new q-value:
         new_q = (1 - self.q_Table.LEARNING_RATE) * old_q + self.q_Table.LEARNING_RATE * (reward + self.q_Table.DISCOUNT_FACTOR * opt_future_value)
         # LEARNING_RATE and other parameters should remain the same between both tables
         #print(f"Updating Q-value for state ({ownpos}, {opp1}, {opp2}, {b_flag}, {r_flag}) and action {action} from {old_q} to {new_q} based on reward {reward} and optimal future value {opt_future_value}.")
-        self.u_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][action] = new_q
+        if prev:
+            self.u_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][action][self.pre_a] = new_q
+            # Previous action is now set to this frames action, since set_q_value() is the last reference to it within each frame.
+            self.pre_a = action
+        else:
+            self.u_Table.qtable[ownpos][opp1][opp2][b_flag][r_flag][action] = new_q
     #End of set_q_value()
 
     def compute_action(self, obs, info: dict[str, dict]):
@@ -318,10 +341,16 @@ class QlearnPolicy(BaseAgentPolicy):
         q_max = -1000000000000
         a_max = -1
         for i in range(4):
-            #print(self.q_Table.qtable[ownpos][opp1_bearing][opp2_bearing][b_flag][r_flag])
-            if q_max < self.q_Table.qtable[ownpos][opp1_bearing][opp2_bearing][b_flag][r_flag][i]:
-                q_max = self.q_Table.qtable[ownpos][opp1_bearing][opp2_bearing][b_flag][r_flag][i]
-                a_max = i
+            # Account for experimental setting with extra memory (and 4x increased statespace)
+            if self.q_Table.prev_action:
+                if q_max < self.q_Table.qtable[ownpos][opp1_bearing][opp2_bearing][b_flag][r_flag][i][self.pre_a]:
+                    q_max = self.q_Table.qtable[ownpos][opp1_bearing][opp2_bearing][b_flag][r_flag][i][self.pre_a]
+                    a_max = i
+            # Otherwise, standard setting without previous action memory:
+            else:
+                if q_max < self.q_Table.qtable[ownpos][opp1_bearing][opp2_bearing][b_flag][r_flag][i]:
+                    q_max = self.q_Table.qtable[ownpos][opp1_bearing][opp2_bearing][b_flag][r_flag][i]
+                    a_max = i
         #actions = [[1.0, 0], [1.0, 90], [1.0, 180], [1.0, -90]] #(forward, right, backward, left) 90° turns
         if self.q_Table.sharpturns:
             actions = [4, 2, 0, 6] #(same actions, but as discrete indexes for pyquaticus, according to ACTION_MAP)
