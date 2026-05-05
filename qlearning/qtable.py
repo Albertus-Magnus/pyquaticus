@@ -75,20 +75,7 @@ class QTable:
     """
 
     def prepareUpdate(self, obs, info, agentID, action):
-        #delete below (test)
-        # if agentID == 'agent_0' and False:
-        #     vec_from_agent = np.array([5. - info['agent_0']['global_state'][(agentID, 'pos')][0] , 75. - info['agent_0']['global_state'][(agentID, 'pos')][1] ])
-        #     agent_heading = info['agent_0']['global_state'][(agentID, "heading")]
-        #     ownpos = headingToState(angle180(vec_to_heading(vec_from_agent) - agent_heading))
-        #     print(f"ownpos: {ownpos} heading: {angle180(vec_to_heading(vec_from_agent) - agent_heading)}")
-        #####remove above
-        if obs[agentID]['has_flag']:            
-            # heading towards objective (positional awareness variable) is towards enemy base normally...
-            #ownpos = headingToState(obs[agentID]['own_home_bearing']) 
-            #ownpos = headingToState(np.array([5.0, 75.0])) #adjusted for 2026 twobase rules
-            #ownpos = headingToState(obs[agentID]['wall_0_bearing'])
-            #ownpos = headingToState(vec_to_heading(np.array([5., 75.]))) 
-            # vec_from_agent = np.array([5. - info['agent_0']['global_state'][(agentID, 'pos')][0] , 75. - info['agent_0']['global_state'][(agentID, 'pos')][1] ])
+        if obs[agentID]['has_flag']:
             agent_heading = info['agent_0']['global_state'][(agentID, "heading")]
             agent_position = info[agentID]['global_state'][(agentID, 'pos')]
 
