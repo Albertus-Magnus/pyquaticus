@@ -28,13 +28,13 @@ FLAG_DELIVERY_POS = np.array([10., 70.]) # (upper left corner)
 # the flag in the 26env has to be delivered to one of the two bases in the corners of the own side, not just to the own side anymore.
 
 class QTable:
-    def __init__(self, LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, filename=None, boolchange=True, sharpturns=True, previous_action=False):
+    def __init__(self, LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, filename=None, boolchange=True, sharpturns=True, prev_action=False):
         self.LEARNING_RATE = LEARNING_RATE
         self.DISCOUNT_FACTOR = DISCOUNT_FACTOR
         self.INITIAL_Q_VALUE = INITIAL_Q_VALUE
         self.boolchange = boolchange
         self.sharpturns = sharpturns #decides if 90° turns are the left/right action, if false its 45° turns
-        self.prev_action = previous_action #if true, the previous action is added as a parameter to the q-table (increasing its statespace by factor 4).
+        self.prev_action = prev_action #if true, the previous action is added as a parameter to the q-table (increasing its statespace by factor 4).
         if not filename == None:
             self.qtable = np.load(filename)
             #print(self.qtable)
@@ -346,10 +346,15 @@ class QlearnPolicy(BaseAgentPolicy):
                 if q_max < self.q_Table.qtable[ownpos][opp1_bearing][opp2_bearing][b_flag][r_flag][i][self.pre_a]:
                     q_max = self.q_Table.qtable[ownpos][opp1_bearing][opp2_bearing][b_flag][r_flag][i][self.pre_a]
                     a_max = i
+                # to avoid bias for one action in particular when multiple actions have the same q-value, randomness is added for equal expected rewards.
+                elif q_max == self.q_Table.qtable[ownpos][opp1_bearing][opp2_bearing][b_flag][r_flag][i][self.pre_a] and np.random.random() < (1/(4-i)): #(random tie-breaking) 1/4 chance for each action
+                    a_max = i
             # Otherwise, standard setting without previous action memory:
             else:
                 if q_max < self.q_Table.qtable[ownpos][opp1_bearing][opp2_bearing][b_flag][r_flag][i]:
                     q_max = self.q_Table.qtable[ownpos][opp1_bearing][opp2_bearing][b_flag][r_flag][i]
+                    a_max = i
+                elif q_max == self.q_Table.qtable[ownpos][opp1_bearing][opp2_bearing][b_flag][r_flag][i] and np.random.random() < (1/(4-i)):
                     a_max = i
         #actions = [[1.0, 0], [1.0, 90], [1.0, 180], [1.0, -90]] #(forward, right, backward, left) 90° turns
         if self.q_Table.sharpturns:

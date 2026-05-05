@@ -99,10 +99,10 @@ def doTraining(parameterset: ParameterSet, number_jobs):
         #stepstest_single_aggressive_rew_nothing_lrate0.1_discount0.9_initq10.0_1nrs_1000ep_no_pre
         # qtableee = QTable(parameterset.LEARNING_RATE, parameterset.DISCOUNT_FACTOR, parameterset.INITIAL_Q_VALUE, 'qtrainlog/batch 3/stepstest_single_aggressive_rew_nothing_lrate0.1_discount0.9_initq10.0_1nrs_1000ep_no_pre_nr0_q_table.npy', boolchange=parameterset.boolchange)
         #enhancegrab_single_aggressive26_hard_lrate0.1_discount0.9_initq10.0_1nrs_300ep_no_pre
-        qtableee = QTable(parameterset.LEARNING_RATE, parameterset.DISCOUNT_FACTOR, parameterset.INITIAL_Q_VALUE, parameterset.qtablefromfile, boolchange=parameterset.boolchange, sharpturns=parameterset.sharpturns, pre_action=parameterset.previous_action)
+        qtableee = QTable(parameterset.LEARNING_RATE, parameterset.DISCOUNT_FACTOR, parameterset.INITIAL_Q_VALUE, parameterset.qtablefromfile, boolchange=parameterset.boolchange, sharpturns=parameterset.sharpturns, prev_action=parameterset.previous_action)
     else:
         # print("Setting up Q-Table")
-        qtableee = QTable(parameterset.LEARNING_RATE, parameterset.DISCOUNT_FACTOR, parameterset.INITIAL_Q_VALUE, boolchange=parameterset.boolchange, sharpturns=parameterset.sharpturns, pre_action=parameterset.previous_action)
+        qtableee = QTable(parameterset.LEARNING_RATE, parameterset.DISCOUNT_FACTOR, parameterset.INITIAL_Q_VALUE, boolchange=parameterset.boolchange, sharpturns=parameterset.sharpturns, prev_action=parameterset.previous_action)
     if parameterset.previous_action:
         s_table = np.zeros((4, 4, 4, 4, 2, 2), dtype=np.uint32) #larger statecount-table if more states (due to previous action requiring 4x the q-values)
     else:
@@ -173,6 +173,8 @@ def doTraining(parameterset: ParameterSet, number_jobs):
         # discard logstructure now, so memory does not leak
         #logstructure = []
         index += 1
+        if index % 100 == 99:
+            print(f"Completed training run {index} of {parameterset.create_name()} at time ", datetime.now().strftime("%d-%m-%Y %H:%M:%S"), flush=True)
         # print(f"Completed training run {index}")
 
     # Epilog (saving q-table and reward curve to file)
@@ -433,10 +435,11 @@ if __name__ == "__main__":
 
         # batch 7a (experimenting with previous_action)
         # testing to verify code:
-        parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "previoustest0", "qtrainlog/batch 7a/", 0, boolchange=False, nrs=1, ep=100, teamsize3=True, timelimit=600., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
-        # nrs = 10
-        # for i in range(nrs):
-        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "previoustest1", "qtrainlog/batch 7a/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
+        # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "previoustest0", "qtrainlog/batch 7a/", 0, boolchange=False, nrs=1, ep=10, teamsize3=True, timelimit=60., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
+        nrs = 20
+        for i in range(nrs):
+            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "previoustest1", "qtrainlog/batch 7a/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
+        # TODO add prev_act to create name
 
         #########################################
         #rewardchoice = "single_aggressive_rew"
@@ -493,12 +496,12 @@ if __name__ == "__main__":
         sys.exit(0)
 
     # Check if batch folder exists, else create it (checks first parameterset of the queue)
-    if not os.path.isdir(parametersets[0].foldername): #TODO test if this works correctly
+    if not os.path.isdir(parametersets[0].foldername):
         print("Creating folder "+parametersets[0].foldername)
         os.makedirs(parametersets[0].foldername)
 
-    # TODO TODO remove this, just to skip already computed calculations (first 30 were computed in last batch)
-    parametersets = parametersets[30:] #keep a close eye if this works as intended...
+    # TODO remove this, just to skip already computed calculations (first 30 were computed in last batch)
+    # parametersets = parametersets[30:] #keep a close eye if this works as intended...
 
     # Run all scheduled parameters in parallel
     num_jobs = len(parametersets)
