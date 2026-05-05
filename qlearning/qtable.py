@@ -28,7 +28,7 @@ FLAG_DELIVERY_POS = np.array([10., 70.]) # (upper left corner)
 # the flag in the 26env has to be delivered to one of the two bases in the corners of the own side, not just to the own side anymore.
 
 class QTable:
-    def __init__(self, LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, filename=None, boolchange=True, sharpturns=True):
+    def __init__(self, LEARNING_RATE, DISCOUNT_FACTOR, INITIAL_Q_VALUE, filename=None, boolchange=True, sharpturns=True, previous_action):
         self.LEARNING_RATE = LEARNING_RATE
         self.DISCOUNT_FACTOR = DISCOUNT_FACTOR
         self.INITIAL_Q_VALUE = INITIAL_Q_VALUE

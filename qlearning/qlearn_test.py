@@ -42,7 +42,8 @@ def train_qlearn(
     q_table: QTable = None, #str = None #Not a string?! Is already a QTable!
     teamsize3: bool = False,
     ignoreseed = True,
-    sim_speed = 3
+    sim_speed = 3,
+    prev_act = False
 ):
     #make sure seed is random
     seed=np.random.randint(0, 100000)
@@ -119,7 +120,7 @@ def train_qlearn(
     if teamsize3: #3v3
         # Base_combine agents
         # H_one = Heuristic_CTF_Agent('agent_3', env, mode=difficulty, continuous=False)
-        # H_two = Heuristic_CTF_Agent('agent_4', env, mode=difficulty, continuous=False)
+        # H_two = Heuristic_CTF_Agent('agent_4', env, mode=difficulty, continuous=False)            #TODO TODO continue implementing the prev_act variant
         # H_three = Heuristic_CTF_Agent('agent_5', env, mode=difficulty, continuous=False)
         H_one = BaseAttacker('agent_3', env, mode=difficulty, continuous=False)
         H_two = BaseAttacker('agent_4', env, mode=difficulty, continuous=False)
