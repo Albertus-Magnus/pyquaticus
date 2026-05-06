@@ -440,20 +440,20 @@ def circle_detection(positions: np.ndarray) -> bool:
 
 if __name__ == "__main__":
 
-    print("Circledetector test")
-    print(circle_detection(example_positions))
-    print(circle_detection(example2))
+    # print("Circledetector test")
+    # print(circle_detection(example_positions))
+    # print(circle_detection(example2))
 
-    v1 = np.load("qtrainlog/batch 6c/parameterconfirm18_newbool_aggressive_tags_26_hard_lrate0.15_discount0.95_initq10.0_5nrs_1000ep_no_pre_nr0_scores.npy")
-    # for i in range(len(v1)):
-        # print(i,": ", v1[i])
-    # TODO CONCLUSION: All 5 parallel training experiments resulted in the exact same results (qtable, scores, reward, ...), thus rendering 4 out of 5 calculations trash.
-    # WHY is that so? It looks like ignoreseed is set correctly, and it definitely works in principal in the new 26env. 
+    # v1 = np.load("qtrainlog/batch 6c/parameterconfirm18_newbool_aggressive_tags_26_hard_lrate0.15_discount0.95_initq10.0_5nrs_1000ep_no_pre_nr0_scores.npy")
+    # # for i in range(len(v1)):
+    #     # print(i,": ", v1[i])
+    # # DONE (hardcoded to be random starts) CONCLUSION: All 5 parallel training experiments resulted in the exact same results (qtable, scores, reward, ...), thus rendering 4 out of 5 calculations trash.
+    # # WHY is that so? It looks like ignoreseed is set correctly, and it definitely works in principal in the new 26env. 
     
-    # Also, I don't have time to re-run the calculations before the competition deadline, but I can (TODO) rerun it before the meeting (nrs 20)...
+    # # Also, I don't have time to re-run the calculations before the competition deadline, but I can (DONE) rerun it before the meeting (nrs 20)...
 
-    import sys
-    sys.exit()
+    # import sys
+    # sys.exit()
     print("~ visualization 2.0 ~")
 
     #loading in realistic data from newest batch
@@ -511,6 +511,9 @@ if __name__ == "__main__":
     names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm11", "qtrainlog/batch 6e/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
     names.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, False, "parameterconfirm12", "qtrainlog/batch 6e/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
 
+    # batch 7a
+    names.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "previoustest0", "qtrainlog/batch 7a/", 0, boolchange=False, nrs=1, ep=10, teamsize3=True, timelimit=60., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
+    # names.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "previoustest1", "qtrainlog/batch 7a/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
 
 
     #####################################################################
