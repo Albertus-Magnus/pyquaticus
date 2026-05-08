@@ -45,8 +45,11 @@ def train_qlearn(
     sim_speed = 3,
     prev_act = False
 ):
-    #make sure seed is random
-    seed=np.random.randint(0, 100000)
+    # # Only enable for limited testing (do not enable for long training runs, will increase time a lot!)
+    render_mode = 'human'
+
+    #make sure seed is random #did not work because random instance was inherited from common source (train_qlearn main or imports?).
+    #seed=np.random.randint(0, 100000) #TESTING IN PROGRESS: did this break randomization between parallel runs? Something did, as they are equal rn... #No, this is not the cause...
     
     # Set score function to the selected reward (match statement syntax might require python version 3.10 or newer)
     match reward_choice:

@@ -330,6 +330,7 @@ class QlearnPolicy(BaseAgentPolicy):
         for i in range(4):
             # Account for experimental setting with extra memory (and 4x increased statespace)
             if self.q_Table.prev_action:
+                # print(f"DEBUG MARK {self.q_Table.qtable}\nshape: {np.shape(self.q_Table.qtable)}") #TODO TODO ownpos has 2 achsis but index 2 is passed here as ownpos? DEBUG!
                 if q_max < self.q_Table.qtable[ownpos][opp1_bearing][opp2_bearing][b_flag][r_flag][i][self.pre_a]:
                     q_max = self.q_Table.qtable[ownpos][opp1_bearing][opp2_bearing][b_flag][r_flag][i][self.pre_a]
                     a_max = i
