@@ -516,9 +516,9 @@ if __name__ == "__main__":
     # batch 7a
     # names.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "previoustest0", "qtrainlog/batch 7a/", 0, boolchange=False, nrs=1, ep=10, teamsize3=True, timelimit=60., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
     # names.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "previoustest1", "qtrainlog/batch 7a/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
-    # names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "previoustest2", "qtrainlog/batch 7a/", 0, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
+    names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "previoustest2", "qtrainlog/batch 7a/", 0, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
     # testing
-    names.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "deleteme", "qtrainlog/batch 7a/", i, boolchange=False, nrs=3, ep=3, teamsize3=True, timelimit=600., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
+    # names.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "deleteme", "qtrainlog/batch 7a/", i, boolchange=False, nrs=3, ep=3, teamsize3=True, timelimit=600., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
 
 
     #####################################################################
