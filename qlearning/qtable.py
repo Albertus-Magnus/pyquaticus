@@ -38,7 +38,18 @@ class QTable:
         if not filename == None:
             self.qtable = np.load(filename)
             #print(self.qtable)
-            print("Q-Table loaded, size",self.qtable.size)
+            print("Q-Table loaded, size",self.qtable.size, "shape",np.shape(self.qtable))
+            if self.prev_action and np.shape(self.qtable) == (4, 4, 4, 2, 2, 4): # Shape of qtable without previous action variable (1024 q-values)
+                # print("Error: Q-table shape does not match expected shape for previous action setting.")
+                # The qtable now has the shape (4,4,4,2,2,4) and we want to have the previous action as a separate last axis, so we need to reshape it to (4,4,4,2,2,4,4) where the last axis is for the previous action. We can do this by first adding a new axis for the previous action and then tiling the qtable along this new axis.
+                # So the new table will be qtable[][][][][][][i] where any value is the same for every i (in the last axis)
+                # print(f"Element 0: {self.qtable[0][0][0][0][0][0]}") 
+                # print(f"Element z: {self.qtable[1][1][1][1][0][3]}") 
+                self.qtable = np.expand_dims(self.qtable, axis=-1) # add new axis for previous action
+                self.qtable = np.tile(self.qtable, (1, 1, 1, 1, 1, 1, 4)) # tile along the new axis
+                print("Q-Table inflated, size",self.qtable.size, "shape",np.shape(self.qtable)) # Was verified to reshape the correct qtable (same values for each previous action, to be finetuned in training)
+                # print(f"Element 0: {self.qtable[0][0][0][0][0][0]}") 
+                # print(f"Element z: {self.qtable[1][1][1][1][0][3]}") 
             return
         #self.statesize = 4^4 # = 256 results in 1024 q-values
         # 2 booleans (for flag grabbed status), 2 headings (four angle-options each) for opp. agents and one self-position variable (four values, either area-based or objective-angle based, see below)

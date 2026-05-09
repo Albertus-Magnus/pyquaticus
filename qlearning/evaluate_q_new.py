@@ -23,7 +23,7 @@ def plot_anythingelse(scorearray, foldername, name, attribute_name):
     lowdata = meandata - stddata
     highdata = meandata + stddata
     visualize_curve(meandata, lowdata, highdata, foldername, name, attribute_name)
-    visualize_many_curves(scorearray, foldername, name, attribute_name)
+    #visualize_many_curves(scorearray, foldername, name, attribute_name)
 #End of plot_rewards()
 
 
@@ -48,7 +48,7 @@ def visualize_curve(meandata, lowdata, highdata, foldername, name, attribute_nam
     # plt.gca().set_xticklabels([f'{int(x*bagsize)}' for x in ticks])
     plt.legend()
     # Save figure to file:
-    plt.savefig(f"{foldername}figures/{name}_{attribute_name}.png", dpi=300, bbox_inches='tight')
+    plt.savefig(f"qtrainlog/Figures/batch 7a/{name}_{attribute_name}.png", dpi=300, bbox_inches='tight') #NOTE changed output folder for different structure: figures and 
     # plt.show()
     plt.close()
 #End of visualize_curve()
@@ -128,7 +128,7 @@ def load_and_call_helper(name, nrs, folder):
     rewardcurve = np.array([np.load(folder + reward_name[i]) for i in range(len(reward_name))])
     scorelist = np.array([np.load(folder + scores_name[i]) for i in range(len(scores_name))])
 
-    print("rewardcurve:", rewardcurve) #TODO issue: the arrays of different parallel trainings are the same?!? THIS IS BAD!
+    # print("rewardcurve:", rewardcurve) #debug print
 
     #shortening dimensions for readable test prints:    (should be removed after testing)
     # rewardcurve = rewardcurve[:, 5:10, :]#.copy() #copy not necessary?
@@ -138,8 +138,15 @@ def load_and_call_helper(name, nrs, folder):
         print("Creating folder "+folder+"figures/")
         os.makedirs(folder+"figures/")
 
-    plot_rewards(rewardcurve, folder, reward_name[0][:-(len("_nr0_reward_curve.npy"))])
-    plot_anythingelse(scorelist, folder, scores_name[0][:-(len("_nr0_scores.npy"))], "Score")
+    plot_rewards(rewardcurve, folder, reward_name[0][:-(len("_reward_curve.npy"))])
+    plot_anythingelse(scorelist, folder, scores_name[0][:-(len("_scores.npy"))], "Score")
+
+    # Compute for every i (0 to 19) the average team score for the last 100 episodes and print it, to get a quick overview of the final performance of the training.
+    for i in range(len(scorelist)):
+        final_scores = scorelist[i][-100:] # last 100 episodes
+        avg_team_score = np.mean(final_scores, axis=0) # average over episodes, resulting in average score for team blue and team red
+        print(f"Final average team scores for {name_indexed[i]}: Team Blue: {avg_team_score[0]:.2f}, Team Red: {avg_team_score[1]:.2f}")
+    print(f"\nHighest final average team score for {name}: {max(np.mean(scorelist[i][-100:], axis=0)[0] for i in range(len(scorelist))):.2f} (Team Blue), smallest opponent score was {min(np.mean(scorelist[i][-100:], axis=0)[1] for i in range(len(scorelist))):.2f} (Team Red Minimum)")
 
     print(scores_name[0])
 
@@ -516,9 +523,13 @@ if __name__ == "__main__":
     # batch 7a
     # names.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "previoustest0", "qtrainlog/batch 7a/", 0, boolchange=False, nrs=1, ep=10, teamsize3=True, timelimit=60., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
     # names.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "previoustest1", "qtrainlog/batch 7a/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
-    names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "previoustest2", "qtrainlog/batch 7a/", 0, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
+    # names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "previoustest2", "qtrainlog/batch 7a/", 0, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
     # testing
     # names.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "deleteme", "qtrainlog/batch 7a/", i, boolchange=False, nrs=3, ep=3, teamsize3=True, timelimit=600., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
+    names.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "previoustest1", "qtrainlog/batch 7a/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
+    names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.95, 10.0, False, "previoustest2", "qtrainlog/batch 7a/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
+    names.append(ParameterSet("aggressive_tags_26", "hard", 0.01, 0.99, 10.0, False, "previoustest3", "qtrainlog/batch 7a/", i, boolchange=True, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
+    names.append(ParameterSet("aggressive_tags_26", "hard", 0.15, 0.95, 10.0, False, "previoustest4", "qtrainlog/batch 7a/", i, boolchange=True, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
 
 
     #####################################################################
