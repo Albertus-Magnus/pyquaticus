@@ -89,7 +89,17 @@ class BaseAttacker(BaseAgentPolicy):
 
             # If I or someone on my team has the flag, go back home
             if self.has_flag or self.my_team_has_flag:
-                return self.action_from_vector(self.home_loc, 0.5)
+                # return self.action_from_vector(self.home_loc, 0.5)
+                #####################start of 26change###
+                #preliminary data
+                global_state = info[self.id]["global_state"]
+                my_pos = global_state[(self.id, "pos")]
+                my_heading = global_state[(self.id, "heading")]
+
+                target_loc = angle180(  global_rect_to_abs_bearing( np.array([150.,70.]) - my_pos ) - my_heading  ) #reference taken from update_state, should be a valid bearing...
+                goal_vect = 1.25 * rel_bearing_to_local_unit_rect(target_loc) #TODO test and verify 26changes
+                return self.action_from_vector(goal_vect, 0.5)
+                #####################end of 26change####
 
             # Otherwise go get the opponents flag
             else:
@@ -164,7 +174,16 @@ class BaseAttacker(BaseAgentPolicy):
             if self.has_flag or self.my_team_has_flag:
 
                 # Weighted to follow goal more than avoiding others
-                goal_vect = 2 * rel_bearing_to_local_unit_rect(self.home_bearing)
+                # goal_vect = 2 * rel_bearing_to_local_unit_rect(self.home_bearing) 26change to get correct goal_vect if heading home
+                #####################start of 26change###
+                #preliminary data
+                global_state = info[self.id]["global_state"]
+                my_pos = global_state[(self.id, "pos")]
+                my_heading = global_state[(self.id, "heading")]
+
+                target_loc = angle180(  global_rect_to_abs_bearing( np.array([150.,70.]) - my_pos ) - my_heading  ) #reference taken from update_state, should be a valid bearing...
+                goal_vect = 1.25 * rel_bearing_to_local_unit_rect(target_loc) #TODO test and verify 26changes
+                #####################end of 26change####
                 avoid_vect = get_avoid_vect(self.opp_team_pos)
                 my_action = goal_vect + avoid_vect
 
