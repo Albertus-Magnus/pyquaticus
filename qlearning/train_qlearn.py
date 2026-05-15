@@ -155,7 +155,7 @@ def doTraining(parameterset: ParameterSet, number_jobs):
         tagslist.append(tag_entry) #zB [ 2 16]
 
         # Print all important data (especially the q-table!) regularly to file:
-        if (index % 50) == 49: 
+        if (index % 100) == 99: 
             # print(f"(Pre-storing q-table to file \"{parameterset.foldername + parameterset.create_name()}_q_table.npy\" at index {index}.)")
             qtableee.toFile(f"{parameterset.foldername + parameterset.create_name()}_q_table_i{index}.npy") #this might be excessive file creation...
             # print(f"(Pre-storing rewardcurve to file \"{parameterset.foldername + parameterset.create_name()}_reward_curve.npy\" at index {index}.)")
