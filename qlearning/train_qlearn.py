@@ -479,10 +479,11 @@ if __name__ == "__main__":
             parametersets.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, True, "pretr2", "qtrainlog/batch 8a/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
             parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, True, "pretr3", "qtrainlog/batch 8a/", i, boolchange=True, nrs=20, ep=1000)) 
             parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.99, 10.0, True, "pretr4", "qtrainlog/batch 8a/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
-            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "defender1", "qtrainlog/batch 8a/", i, boolchange=True, nrs=20, ep=1000))
-            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.99, 10.0, False, "defender2", "qtrainlog/batch 8a/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
-            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.15, 0.95, 10.0, False, "defender3", "qtrainlog/batch 8a/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
-
+            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "defender1", "qtrainlog/batch 8a/", i, boolchange=True, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
+            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.99, 10.0, False, "defender2", "qtrainlog/batch 8a/", i, boolchange=True, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
+            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.15, 0.95, 10.0, False, "defender3", "qtrainlog/batch 8a/", i, boolchange=True, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
+            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.99, 10.0, False, "defender4", "qtrainlog/batch 8a/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
+            parametersets.append(ParameterSet("caps_and_tags", "hard", 0.15, 0.95, 10.0, False, "defender5", "qtrainlog/batch 8a/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
 
         #########################################
         #rewardchoice = "single_aggressive_rew"
