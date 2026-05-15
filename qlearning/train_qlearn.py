@@ -85,7 +85,7 @@ class ParameterSet:
         else:               pa = ""
         # the name of all files (qtable, stats, s-table,...):   ("_qtable" etc are appended)
         #n = self.name + "_" + str(self.rewardchoice) + "_" + self.dif + "_lrate"+ str(self.LEARNING_RATE) + "_discount" + str(self.DISCOUNT_FACTOR) + "_initq" + str(self.INITIAL_Q_VALUE) + "_" + "1000ep_" + pre #old name scheme, before nrs and ep (batch 10c and before)
-        n = self.name + nb + "_" + pa + "_" + sh + str(self.rewardchoice) + "_" + self.dif + "_lrate"+ str(self.LEARNING_RATE) + "_discount" + str(self.DISCOUNT_FACTOR) + "_initq" + str(self.INITIAL_Q_VALUE) + "_" +str(self.nrs)+"nrs_" + str(self.ep) + "ep_" + pre
+        n = self.name + nb + pa + "_" + sh + str(self.rewardchoice) + "_" + self.dif + "_lrate"+ str(self.LEARNING_RATE) + "_discount" + str(self.DISCOUNT_FACTOR) + "_initq" + str(self.INITIAL_Q_VALUE) + "_" +str(self.nrs)+"nrs_" + str(self.ep) + "ep_" + pre
         #number of episodes (and 500-pretrained?) has to be hand-adjusted, perhaps change that...
         return n
 
