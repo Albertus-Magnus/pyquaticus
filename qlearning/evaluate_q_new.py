@@ -21,11 +21,14 @@ def plot_rewards(rewarray, foldername, name):
 def plot_anythingelse(scorearray, foldername, name, attribute_name):
     """General visualization, scorearray is a list, that contains lists of scores (per-episode) where each entry consists of 2 entries for the 2 teams of a game.
     """
-    print("plotting anythingelse")
-    meandata = np.mean(np.array(scorearray), 0)
-    stddata = np.std(np.array(scorearray), 0) 
+    # The non-boxplot visualization is too cluttered with 1-4000 datapoints, so bags lead to a nice simple visualization, the more sophisticated one is the boxplots.
+    scorearray_bagged = average_multiple_runs(scorearray, bagsize=BAGSIZE)
+
+    meandata = np.mean(np.array(scorearray_bagged), 0)
+    stddata = np.std(np.array(scorearray_bagged), 0) 
     lowdata = meandata - stddata
     highdata = meandata + stddata
+    # I still like the old avg+std visualization curve but I don't need two of the same and boxplots are superior here
     visualize_curve(meandata, lowdata, highdata, foldername, name, attribute_name)
     visualize_curve_boxplots(scorearray, foldername, name, attribute_name, bagsize=BAGSIZE)
     #visualize_many_curves(scorearray, foldername, name, attribute_name)
@@ -159,6 +162,7 @@ def load_and_call_helper(name, nrs, folder):
         name_indexed.append(name + f"_nr{i}")
     reward_name = [f"{nam}_reward_curve.npy" for nam in name_indexed]
     scores_name = [f"{nam}_scores.npy" for nam in name_indexed]
+    tagslist_name = [f"{nam}_tagslist.npy" for nam in name_indexed]
 
     # test names, now redundant
     # reward_name = ["shortpara1_sharpturns_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_1nrs_600ep_no_pre_nr0_reward_curve.npy", 
@@ -169,7 +173,7 @@ def load_and_call_helper(name, nrs, folder):
     # load data from file
     rewardcurve = np.array([np.load(folder + reward_name[i]) for i in range(len(reward_name))])
     scorelist = np.array([np.load(folder + scores_name[i]) for i in range(len(scores_name))])
-
+    tagslist = np.array([np.load(folder + tagslist_name[i]) for i in range(len(tagslist_name))])
     # print("rewardcurve:", rewardcurve) #debug print
 
     #shortening dimensions for readable test prints:    (should be removed after testing)
@@ -182,6 +186,7 @@ def load_and_call_helper(name, nrs, folder):
 
     plot_rewards(rewardcurve, folder, reward_name[0][:-(len("_reward_curve.npy"))])
     plot_anythingelse(scorelist, folder, scores_name[0][:-(len("_scores.npy"))], "Score")
+    plot_anythingelse(tagslist, folder, tagslist_name[0][:-(len("_tagslist.npy"))], "Tags")
 
     # Compute for every i (0 to 19) the average team score for the last 100 episodes and print it, to get a quick overview of the final performance of the training.
     for i in range(len(scorelist)):
