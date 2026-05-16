@@ -186,7 +186,10 @@ def load_and_call_helper(name, nrs, folder):
 
     plot_rewards(rewardcurve, folder, reward_name[0][:-(len("_reward_curve.npy"))])
     plot_anythingelse(scorelist, folder, scores_name[0][:-(len("_scores.npy"))], "Score")
+    # Blue and red should be swapped for tags specifically
+    tagslist = tagslist[:, :, ::-1]  # Swap blue and red teams
     plot_anythingelse(tagslist, folder, tagslist_name[0][:-(len("_tagslist.npy"))], "Tags")
+    
 
     # Compute for every i (0 to 19) the average team score for the last 100 episodes and print it, to get a quick overview of the final performance of the training.
     for i in range(len(scorelist)):
@@ -658,7 +661,7 @@ if __name__ == "__main__":
     names: list[ParameterSet] = []
     i = 0
     ######################################################################
-    if True: #enable when re-running already generated figures or their score prints
+    if False: #enable when re-running already generated figures or their score prints
         # # batch 6b
         # #load_and_call_helper("shortpara1_sharpturns_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_1nrs_600ep_no_pre", 1)#_nr0") #alternative way to call the visualization
         names.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "shortpara1", "qtrainlog/batch 6b/", 0, boolchange=False, nrs=1, ep=600, teamsize3=True, timelimit=600., ignoreseed=False, sharpturns=True, sim_speedup=3))
