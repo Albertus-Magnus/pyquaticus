@@ -9,6 +9,7 @@ def plot_rewards(rewarray, foldername, name):
     """Rewardcurve visualization, rewarray is a list, that contains lists of rewards (per-episode) where each entry consists of 3 entries for the 3 agents of a game.
     Current method is to sum up the 3 agents rewards, removing the last dimension from the above and using a team reward thus.
     """
+    #print("SHAPE", np.shape(rewarray)) #0,
     sum_array = np.sum(np.array(rewarray), 2)
     meandata = np.mean(np.array(sum_array), 0) 
     lowdata = meandata - np.std(sum_array, 0)
@@ -45,7 +46,12 @@ def visualize_curve(meandata, lowdata, highdata, foldername, name, attribute_nam
     plt.fill_between(range(len(lowdata)), [lowdata[i][0] for i in range(len(lowdata))], [highdata[i][0] for i in range(len(highdata))], alpha=0.4, color='blue', label='Standard Deviation between training attempts')
     plt.plot([meandata[i][1] for i in range(len(meandata))], label='Team Red', color='red', alpha=0.9)
     plt.fill_between(range(len(lowdata)), [lowdata[i][1] for i in range(len(lowdata))], [highdata[i][1] for i in range(len(highdata))], alpha=0.4, color='red', label='Standard Deviation between training attempts')
-    plt.xlabel("Episodes")
+    plt.xlabel("Episodes (averaged over each {} episodes)".format(BAGSIZE))
+    # Scale x-axis labels to represent actual episodes (multiply by bagsize):
+    ticks = plt.gca().get_xticks()
+    ticks = ticks[ticks >= 0]  # Remove negative ticks
+    plt.gca().set_xticks(ticks)
+    plt.gca().set_xticklabels([f'{int(x*BAGSIZE)}' for x in ticks])
     plt.ylabel(attribute_name)
     plt.title(f"{attribute_name}\n{name}")
     plt.grid(True)
@@ -74,6 +80,7 @@ def visualize_many_curves(data, foldername, name, attribute_name):
     # plt.fill_between(range(len(lowdata)), [lowdata[i][0] for i in range(len(lowdata))], [highdata[i][0] for i in range(len(highdata))], alpha=0.2, color='blue', label='Standard Deviation between training attempts')
     plt.plot([data[p][i][1] for i in range(len(data[p]))], color='red', alpha=0.6)
     # plt.fill_between(range(len(lowdata)), [lowdata[i][1] for i in range(len(lowdata))], [highdata[i][1] for i in range(len(highdata))], alpha=0.2, color='red', label='Standard Deviation between training attempts')
+    # plt.xlabel("Episodes (averaged over each {} episodes)".format(BAGSIZE)) #not currently averaged...
     plt.xlabel("Episodes")
     plt.ylabel(attribute_name)
     plt.title(f"{attribute_name}\n{name}")
@@ -170,10 +177,71 @@ def load_and_call_helper(name, nrs, folder):
     # scores_name = ["shortpara1_sharpturns_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_1nrs_600ep_no_pre_nr0_scores.npy", 
     #             "shortpara2_newbool_aggressive_tags_26_hard_lrate0.01_discount0.99_initq10.0_1nrs_600ep_no_pre_nr0_scores.npy"]
 
+    # # TODO remove below, bugfixing
+    # for e in scores_name + reward_name + tagslist_name:
+    #     if not os.path.isfile(folder + e):
+    #         print(f"Error: File {folder + e} does not exist. Please check the folder and file names.")
+    # # NOTE: this means all files are available, but the data (column) for ~3 of the parallel training runs must be missing.
+    # # Fixing requires making the code more robust to missing values...
+    # import sys
+    # sys.exit()
+
+    # # DEBUG: Check shapes of all loaded files
+    # # print(f"\nChecking file shapes for {name}...")
+    # shapes = {}
+    # for i in range(len(reward_name)):
+    #     try:
+    #         data = np.load(folder + reward_name[i])
+    #         shapes[i] = data.shape
+    #         print(f"  {reward_name[i]}: {data.shape}")
+    #     except Exception as e:
+    #         print(f"  {reward_name[i]}: ERROR - {e}")
+
+    # # Find mismatched shapes
+    # expected_shape = shapes[0]
+    # mismatched = [i for i in shapes if shapes[i] != expected_shape]
+    # if mismatched:
+    #     print(f"\nWARNING: {len(mismatched)} files have different shapes!")
+    #     for i in mismatched:
+    #         print(f"  Run {i}: {shapes[i]} (expected {expected_shape})")
+    """
+    Above: utility to detect missing computation logs from training experiments.
+
+    600 out of 1000 episodes terminated:
+    defender1_newbool_caps_and_tags_hard_lrate0.1_discount0.9_initq10.0_20nrs_1000ep_no_pre_nr15_reward_curve.npy
+
+    700 out of 1000 episodes terminated:
+    pretr2_single_aggressive26_hard_lrate0.15_discount0.95_initq10.0_20nrs_1000ep_500-pretrained_nr10_reward_curve.npy
+
+    Presumeably missing data in a lot of other runs as well... Need to deal with this elegantly.
+    3 options:  1) set missing items to average (this effectively removes them but may cause trouble with boxplot metrics?)
+                2) remove runs with missing data (in most cases still 19 runs, so acceptable?)
+                3) treat runs as shorter (although 600 out of 1000 episodes is not really acceptable)
+                4) use the q-table from the last checkpoint of that run(s!) and complete missing data. (maybe later, for now lets use 2))
+    """
+
     # load data from file
-    rewardcurve = np.array([np.load(folder + reward_name[i]) for i in range(len(reward_name))])
-    scorelist = np.array([np.load(folder + scores_name[i]) for i in range(len(scores_name))])
-    tagslist = np.array([np.load(folder + tagslist_name[i]) for i in range(len(tagslist_name))])
+    rewardcurve_list = []
+    valid_indices = []
+    for i in range(len(reward_name)):
+        try:
+            data = np.load(folder + reward_name[i])
+            # print(f"#+#Loaded {reward_name[i]} with shape {data.shape[0]}")
+            if data.shape[0] == 1000:  # Your expected episode count
+                rewardcurve_list.append(data)
+                valid_indices.append(i)
+        except:
+            pass
+
+    # print(f"Valid reward curve files: {len(valid_indices)}/{len(reward_name)}")
+    rewardcurve = np.array(rewardcurve_list)
+    print(f"Loaded {len(valid_indices)}/{len(reward_name)} valid files")
+    
+    # rewardcurve = np.array([np.load(folder + reward_name[i]) for i in range(len(reward_name))])
+    # scorelist = np.array([np.load(folder + scores_name[i]) for i in range(len(scores_name))])
+    # tagslist = np.array([np.load(folder + tagslist_name[i]) for i in range(len(tagslist_name))])
+    scorelist = np.array([np.load(folder + scores_name[i]) for i in valid_indices])
+    tagslist = np.array([np.load(folder + tagslist_name[i]) for i in valid_indices])
     # print("rewardcurve:", rewardcurve) #debug print
 
     #shortening dimensions for readable test prints:    (should be removed after testing)
@@ -184,9 +252,12 @@ def load_and_call_helper(name, nrs, folder):
         print("Creating folder "+folder+"figures/")
         os.makedirs(folder+"figures/")
 
+    # print(f"visualizing reward curve for {reward_name[0]}...")
     plot_rewards(rewardcurve, folder, reward_name[0][:-(len("_reward_curve.npy"))])
+    # print(f"visualizing scores for {scores_name[0]}...")
     plot_anythingelse(scorelist, folder, scores_name[0][:-(len("_scores.npy"))], "Score")
     # Blue and red should be swapped for tags specifically
+    # print(f"visualizing tags for {tagslist_name[0]}...")
     tagslist = tagslist[:, :, ::-1]  # Swap blue and red teams
     plot_anythingelse(tagslist, folder, tagslist_name[0][:-(len("_tagslist.npy"))], "Tags")
     
@@ -198,7 +269,7 @@ def load_and_call_helper(name, nrs, folder):
         print(f"Final average team scores for {name_indexed[i]}: Team Blue: {avg_team_score[0]:.2f}, Team Red: {avg_team_score[1]:.2f}")
     print(f"\nHighest final average team score for {name}: {max(np.mean(scorelist[i][-100:], axis=0)[0] for i in range(len(scorelist))):.2f} (Team Blue), smallest opponent score was {min(np.mean(scorelist[i][-100:], axis=0)[1] for i in range(len(scorelist))):.2f} (Team Red Minimum)")
 
-    print(scores_name[0])
+    # print(scores_name[0]) #either more information to print or let it be...
 
 
 # lines 145-333 ergo ~150 positions that result in correct circle detection
@@ -661,7 +732,7 @@ if __name__ == "__main__":
     names: list[ParameterSet] = []
     i = 0
     ######################################################################
-    if True: #enable when re-running already generated figures or their score prints
+    if False: #enable when re-running already generated figures or their score prints
         # # batch 6b
         # #load_and_call_helper("shortpara1_sharpturns_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_1nrs_600ep_no_pre", 1)#_nr0") #alternative way to call the visualization
         names.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "shortpara1", "qtrainlog/batch 6b/", 0, boolchange=False, nrs=1, ep=600, teamsize3=True, timelimit=600., ignoreseed=False, sharpturns=True, sim_speedup=3))
@@ -725,10 +796,20 @@ if __name__ == "__main__":
         names.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "prevcontinue1", "qtrainlog/batch 7b/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True, qtable_suffix="qtrainlog/batch 7a/previoustest1__prevact_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_20nrs_1000ep_no_pre_nr10_q_table.npy"))
         names.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "prevcontinue2", "qtrainlog/batch 7b/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True, qtable_suffix="qtrainlog/batch 7a/previoustest1__prevact_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_20nrs_1000ep_no_pre_nr8_q_table.npy"))
         names.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "prevcontinue3", "qtrainlog/batch 7b/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True, qtable_suffix="qtrainlog/batch 6e/parameterconfirm9_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_20nrs_1000ep_no_pre_nr0_q_table.npy"))
-    # batch 7c
-    names.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "prevcontinue4", "qtrainlog/batch 7c/", i, boolchange=False, nrs=20, ep=4000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
-    names.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, False, "prevcontinue5", "qtrainlog/batch 7c/", i, boolchange=False, nrs=20, ep=4000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
-    names.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, False, "prevcontinue6", "qtrainlog/batch 7c/", i, boolchange=False, nrs=20, ep=4000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True, qtable_suffix="qtrainlog/batch 6e/parameterconfirm9_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_20nrs_1000ep_no_pre_nr0_q_table.npy"))
+        # batch 7c
+        names.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "prevcontinue4", "qtrainlog/batch 7c/", i, boolchange=False, nrs=20, ep=4000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
+        names.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, False, "prevcontinue5", "qtrainlog/batch 7c/", i, boolchange=False, nrs=20, ep=4000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
+        names.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, False, "prevcontinue6", "qtrainlog/batch 7c/", i, boolchange=False, nrs=20, ep=4000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True, qtable_suffix="qtrainlog/batch 6e/parameterconfirm9_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_20nrs_1000ep_no_pre_nr0_q_table.npy"))
+    # batch 8a
+    names.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, True, "pretr1", "qtrainlog/batch 8a/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
+    names.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, True, "pretr2", "qtrainlog/batch 8a/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
+    names.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, True, "pretr3", "qtrainlog/batch 8a/", i, boolchange=True, nrs=20, ep=1000)) 
+    names.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.99, 10.0, True, "pretr4", "qtrainlog/batch 8a/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
+    names.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "defender1", "qtrainlog/batch 8a/", i, boolchange=True, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
+    names.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.99, 10.0, False, "defender2", "qtrainlog/batch 8a/", i, boolchange=True, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
+    names.append(ParameterSet("caps_and_tags", "hard", 0.15, 0.95, 10.0, False, "defender3", "qtrainlog/batch 8a/", i, boolchange=True, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
+    names.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.99, 10.0, False, "defender4", "qtrainlog/batch 8a/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
+    names.append(ParameterSet("caps_and_tags", "hard", 0.15, 0.95, 10.0, False, "defender5", "qtrainlog/batch 8a/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
 
 
     #####################################################################
