@@ -232,7 +232,7 @@ def load_and_call_helper(name, nrs, folder):
                 valid_indices.append(i)
         except:
             pass
-
+    # TODO TODO need to document missing values (e.g. batch 8a)
     # print(f"Valid reward curve files: {len(valid_indices)}/{len(reward_name)}")
     rewardcurve = np.array(rewardcurve_list)
     print(f"Loaded {len(valid_indices)}/{len(reward_name)} valid files")
