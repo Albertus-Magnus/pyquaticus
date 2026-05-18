@@ -489,7 +489,7 @@ if __name__ == "__main__":
         nrs = 20
         for i in range(nrs):
             parametersets.append(ParameterSet("aggressive_tags_26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm17", "qtrainlog/batch 6f/", i, boolchange=True, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
-        nrs = 20
+        nrs = 20                            #TODO timelimit is too high? need to have it at 1200 for best comparability...
         for i in range(nrs):
             parametersets.append(ParameterSet("aggressive_tags_26", "hard", 0.15, 0.95, 10.0, False, "parameterconfirm18", "qtrainlog/batch 6f/", i, boolchange=True, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
         nrs = 20
@@ -504,6 +504,13 @@ if __name__ == "__main__":
         nrs = 20
         for i in range(nrs):
             parametersets.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, False, "parameterconfirm12", "qtrainlog/batch 6f/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        #batch 6g (boolchange control group)
+        nrs = 20
+        for i in range(nrs):
+            parametersets.append(ParameterSet("aggressive_tags_26", "hard", 0.01, 0.99, 10.0, False, "boolctrl1", "qtrainlog/batch 6g/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        nrs = 20
+        for i in range(nrs):
+            parametersets.append(ParameterSet("aggressive_tags_26", "hard", 0.15, 0.95, 10.0, False, "boolctrl2", "qtrainlog/batch 6g/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
 
         #########################################
         #rewardchoice = "single_aggressive_rew"
@@ -558,7 +565,23 @@ if __name__ == "__main__":
         st = np.zeros((4, 4, 4, 2, 2), dtype=np.int32) #dangerous int8-hazard (int8 is insufficient here)
         seed = np.random.randint(0, 100000)
         print(f"Using seed: {seed}")
-        rewardsteps, score, grabs, tags, u_table  = train_qlearn(st, seed=seed, difficulty="easy", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt, teamsize3=True, ignoreseed=True, sim_speed=10)
+        ##(old line:)
+        ##rewardsteps, score, grabs, tags, u_table  = train_qlearn(st, seed=seed, difficulty="easy", reward_choice=rewardchoice, render_mode='human', timelimit=600., q_table=qt, teamsize3=True, ignoreseed=True, sim_speed=10)
+        # Set this True to use the solution policy in opponents/25/solution.py as the opponent
+        use_solution_policy = True
+        rewardsteps, score, grabs, tags, u_table  = train_qlearn(
+            st,
+            seed=seed,
+            difficulty="easy",
+            reward_choice=rewardchoice,
+            render_mode='human',
+            timelimit=600.,
+            q_table=qt,
+            teamsize3=True,
+            ignoreseed=True,
+            sim_speed=10,
+            opponent_solution=use_solution_policy,
+        )
         print(f"score: {grabs}, grabs: {grabs}")
         timestamp = datetime.now()
         print("Ending experiment at ",timestamp.now().strftime("%d-%m-%Y %H:%M:%S"))
@@ -568,9 +591,7 @@ if __name__ == "__main__":
     if not os.path.isdir(parametersets[0].foldername):
         print("Creating folder "+parametersets[0].foldername)
         os.makedirs(parametersets[0].foldername)
-
-    # TODO remove this, just to skip already computed calculations (first 30 were computed in last batch)
-    # parametersets = parametersets[30:] #keep a close eye if this works as intended...
+        
 
     # Run all scheduled parameters in parallel
     num_jobs = len(parametersets)

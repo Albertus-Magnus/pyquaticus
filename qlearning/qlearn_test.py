@@ -15,6 +15,8 @@ from pyquaticus.base_policies.base_attack26 import BaseAttacker
 # from pyquaticus.base_policies.ultra_def_policy import UltraDefender
 from qtable import QlearnPolicy, QTable
 from pyquaticus.utils.rewards import caps_and_grabs, single_aggressive_rew, caps_and_tags, aggressive_tags_26, single_aggressive26
+import os
+import importlib.util
 from pyquaticus.mctf26_config import config_dict_std as mctf_config
 #from multiprocessing import Pool, Value, Lock #i don't need any parallel processing (is qlearn even compatible?), i just need to run 10 scripts in different terminals...
 
@@ -43,7 +45,8 @@ def train_qlearn(
     teamsize3: bool = False,
     ignoreseed = True,
     sim_speed = 3,
-    prev_act = False
+    prev_act = False,
+    opponent_solution: bool = False,
 ):
     # # Only enable for limited testing (do not enable for long training runs, will increase time a lot!)
     # print("Warning: rendering is ON (only for randomization tests intended)")
@@ -105,13 +108,40 @@ def train_qlearn(
     # temp_tags = env.state["tags"]
     
     if teamsize3: #3v3
-        # Base_combine agents
-        # H_one = Heuristic_CTF_Agent('agent_3', env, mode=difficulty, continuous=False)
-        # H_two = Heuristic_CTF_Agent('agent_4', env, mode=difficulty, continuous=False)            #TODO TODO continue implementing the prev_act variant
-        # H_three = Heuristic_CTF_Agent('agent_5', env, mode=difficulty, continuous=False)
-        H_one = BaseAttacker('agent_3', env, mode=difficulty, continuous=False)
-        H_two = BaseAttacker('agent_4', env, mode=difficulty, continuous=False)
-        H_three = BaseAttacker('agent_5', env, mode=difficulty, continuous=False)
+        # Base_combine agents or external solution policy
+        if opponent_solution:#TODO test this
+            print("using opponent from solution folder")
+            # Load external solution policy from opponents/25/solution.py
+            sol_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '..', 'opponents', '22', 'solution.py')
+            sol_path = os.path.normpath(sol_path)
+            if not os.path.isfile(sol_path):
+                # fallback to repo-root relative path
+                sol_path = os.path.join(os.getcwd(), 'opponents', '25', 'solution.py')
+            spec = importlib.util.spec_from_file_location('opponents_25_solution', sol_path)
+            sol_mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(sol_mod)
+            sol_inst = sol_mod.solution()
+
+            class _SolutionWrapper:
+                def __init__(self, agent_id, solver):
+                    self._agent_id = agent_id
+                    self._solver = solver
+
+                def compute_action(self, obs, info):
+                    # solution.compute_action(agent_id, full_obs_normalized, full_obs, global_state)
+                    return self._solver.compute_action(self._agent_id, None, obs, info)
+
+            H_one = _SolutionWrapper('agent_3', sol_inst)
+            H_two = _SolutionWrapper('agent_4', sol_inst)
+            H_three = _SolutionWrapper('agent_5', sol_inst)
+        else:
+            # Base_combine agents
+            # H_one = Heuristic_CTF_Agent('agent_3', env, mode=difficulty, continuous=False)
+            # H_two = Heuristic_CTF_Agent('agent_4', env, mode=difficulty, continuous=False)            #TODO TODO continue implementing the prev_act variant
+            # H_three = Heuristic_CTF_Agent('agent_5', env, mode=difficulty, continuous=False)
+            H_one = BaseAttacker('agent_3', env, mode=difficulty, continuous=False)
+            H_two = BaseAttacker('agent_4', env, mode=difficulty, continuous=False)
+            H_three = BaseAttacker('agent_5', env, mode=difficulty, continuous=False)
         
         # print("Setting up q-learn agents")
         if q_table == None: print("Error: q-table not set up before agents are created.")
@@ -122,9 +152,32 @@ def train_qlearn(
         R_two = QlearnPolicy('agent_1', env, q_table, u_table)
         R_three = QlearnPolicy('agent_2', env, q_table, u_table)
     else: #2v2
-        # Base_combine agents
-        H_one = Heuristic_CTF_Agent('agent_2', env, mode=difficulty, continuous=False)
-        H_two = Heuristic_CTF_Agent('agent_3', env, mode=difficulty, continuous=False)
+        # Base_combine agents or external solution policy
+        if opponent_solution:
+            # load same solution instance as opponents for 2v2
+            sol_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '..', 'opponents', '25', 'solution.py')
+            sol_path = os.path.normpath(sol_path)
+            if not os.path.isfile(sol_path):
+                sol_path = os.path.join(os.getcwd(), 'opponents', '25', 'solution.py')
+            spec = importlib.util.spec_from_file_location('opponents_25_solution', sol_path)
+            sol_mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(sol_mod)
+            sol_inst = sol_mod.solution()
+
+            class _SolutionWrapper:
+                def __init__(self, agent_id, solver):
+                    self._agent_id = agent_id
+                    self._solver = solver
+
+                def compute_action(self, obs, info):
+                    return self._solver.compute_action(self._agent_id, None, obs, info)
+
+            H_one = _SolutionWrapper('agent_2', sol_inst)
+            H_two = _SolutionWrapper('agent_3', sol_inst)
+        else:
+            # Code without solution opponent:
+            H_one = Heuristic_CTF_Agent('agent_2', env, mode=difficulty, continuous=False)
+            H_two = Heuristic_CTF_Agent('agent_3', env, mode=difficulty, continuous=False)
         
         # print("Setting up q-learn agents")
         if q_table == None: print("Error: q-table not set up before agents are created.")
