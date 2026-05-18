@@ -205,6 +205,7 @@ def doTraining(parameterset: ParameterSet, number_jobs):
 #End of doTraining
 
 if __name__ == "__main__":
+    print("-Q-Training experiment commenced.-")
     timestamp = datetime.now()
     print("Starting experiments at ",timestamp.now().strftime("%d-%m-%Y %H:%M:%S"))
     #if len(sys.argv) > 1:
