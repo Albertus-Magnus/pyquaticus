@@ -223,7 +223,6 @@ def load_and_call_helper(name, nrs, folder, ep):
                 3) treat runs as shorter (although 600 out of 1000 episodes is not really acceptable)
                 4) use the q-table from the last checkpoint of that run(s!) and complete missing data. (maybe later, for now lets use 2))
     """
-
     # load data from file
     rewardcurve_list = []
     valid_indices = []
@@ -736,6 +735,11 @@ if __name__ == "__main__":
     names: list[ParameterSet] = []
     i = 0
     ######################################################################
+    names.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parametersearch1", "qtrainlog/batch 5/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False, sim_speedup=1)) #before this trained with simspeed 10
+    names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.9, 10.0, False, "parametersearch2", "qtrainlog/batch 5/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
+    names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parametersearch3", "qtrainlog/batch 5/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
+    names.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, False, "parametersearch4", "qtrainlog/batch 5/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
+    names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.95, 10.0, False, "parametersearch5", "qtrainlog/batch 5/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
     if False: #enable when re-running already generated figures or their score prints
         # # batch 6b
         # #load_and_call_helper("shortpara1_sharpturns_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_1nrs_600ep_no_pre", 1)#_nr0") #alternative way to call the visualization
