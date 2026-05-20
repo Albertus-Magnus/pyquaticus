@@ -174,6 +174,7 @@ def load_and_call_helper(name, nrs, folder, ep):
     reward_name = [f"{nam}_reward_curve.npy" for nam in name_indexed]
     scores_name = [f"{nam}_scores.npy" for nam in name_indexed]
     tagslist_name = [f"{nam}_tagslist.npy" for nam in name_indexed]
+    grabslist_name = [f"{nam}_grabslist.npy" for nam in name_indexed]
 
     # test names, now redundant
     # reward_name = ["shortpara1_sharpturns_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_1nrs_600ep_no_pre_nr0_reward_curve.npy", 
@@ -181,11 +182,11 @@ def load_and_call_helper(name, nrs, folder, ep):
     # scores_name = ["shortpara1_sharpturns_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_1nrs_600ep_no_pre_nr0_scores.npy", 
     #             "shortpara2_newbool_aggressive_tags_26_hard_lrate0.01_discount0.99_initq10.0_1nrs_600ep_no_pre_nr0_scores.npy"]
 
-    # # TODO remove below, bugfixing
+    # #  remove below, bugfixing
     # for e in scores_name + reward_name + tagslist_name:
     #     if not os.path.isfile(folder + e):
     #         print(f"Error: File {folder + e} does not exist. Please check the folder and file names.")
-    # # NOTE: this means all files are available, but the data (column) for ~3 of the parallel training runs must be missing.
+    # # : this means all files are available, but the data (column) for ~3 of the parallel training runs must be missing.
     # # Fixing requires making the code more robust to missing values...
     # import sys
     # sys.exit()
@@ -256,13 +257,15 @@ def load_and_call_helper(name, nrs, folder, ep):
         os.makedirs(folder+"figures/")
 
     # print(f"visualizing reward curve for {reward_name[0]}...")
-    plot_rewards(rewardcurve, folder, reward_name[0][:-(len("_reward_curve.npy"))])
+    plot_rewards(rewardcurve, folder, reward_name[0][:-(len("_nr0_reward_curve.npy"))])
     # print(f"visualizing scores for {scores_name[0]}...")
-    plot_anythingelse(scorelist, folder, scores_name[0][:-(len("_scores.npy"))], "Score")
+    plot_anythingelse(scorelist, folder, scores_name[0][:-(len("_nr0_scores.npy"))], "Score")
     # Blue and red should be swapped for tags specifically
     # print(f"visualizing tags for {tagslist_name[0]}...")
     tagslist = tagslist[:, :, ::-1]  # Swap blue and red teams
-    plot_anythingelse(tagslist, folder, tagslist_name[0][:-(len("_tagslist.npy"))], "Tags")
+    plot_anythingelse(tagslist, folder, tagslist_name[0][:-(len("_nr0_tagslist.npy"))], "Tags")
+    # Sometimes we want to know the number of grabs:
+    plot_anythingelse(tagslist, folder, grabslist_name[0][:-(len("_nr0_grabslist.npy"))], "Grabs")
     
 
     # Compute for every i (0 to 19) the average team score for the last 100 episodes and print it, to get a quick overview of the final performance of the training.
@@ -735,11 +738,12 @@ if __name__ == "__main__":
     names: list[ParameterSet] = []
     i = 0
     ######################################################################
-    names.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parametersearch1", "qtrainlog/batch 5/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False, sim_speedup=1)) #before this trained with simspeed 10
-    names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.9, 10.0, False, "parametersearch2", "qtrainlog/batch 5/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
-    names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parametersearch3", "qtrainlog/batch 5/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
-    names.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, False, "parametersearch4", "qtrainlog/batch 5/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
-    names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.95, 10.0, False, "parametersearch5", "qtrainlog/batch 5/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
+    # # batch 5
+    # names.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parametersearch1", "qtrainlog/batch 5/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False, sim_speedup=1)) #before this trained with simspeed 10
+    # names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.9, 10.0, False, "parametersearch2", "qtrainlog/batch 5/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
+    # names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parametersearch3", "qtrainlog/batch 5/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
+    # names.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, False, "parametersearch4", "qtrainlog/batch 5/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
+    # names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.95, 10.0, False, "parametersearch5", "qtrainlog/batch 5/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
     if False: #enable when re-running already generated figures or their score prints
         # # batch 6b
         # #load_and_call_helper("shortpara1_sharpturns_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_1nrs_600ep_no_pre", 1)#_nr0") #alternative way to call the visualization
@@ -822,6 +826,16 @@ if __name__ == "__main__":
     names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.9, 10.0, False, "parameterconfirm10", "qtrainlog/batch 6f/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
     names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm11", "qtrainlog/batch 6f/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
     names.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, False, "parameterconfirm12", "qtrainlog/batch 6f/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
+    # batch 6g (control groups)
+    names.append(ParameterSet("aggressive_tags_26", "hard", 0.01, 0.99, 10.0, False, "boolctrl1", "qtrainlog/batch 6g/", i, boolchange=True, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+    names.append(ParameterSet("aggressive_tags_26", "hard", 0.15, 0.95, 10.0, False, "boolctrl2", "qtrainlog/batch 6g/", i, boolchange=True, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+    names.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parameterconfirm9", "qtrainlog/batch 6g/", i, boolchange=True, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+    names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.9, 10.0, False, "parameterconfirm10", "qtrainlog/batch 6g/", i, boolchange=True, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+    names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm11", "qtrainlog/batch 6g/", i, boolchange=True, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+    names.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, False, "parameterconfirm12", "qtrainlog/batch 6g/", i, boolchange=True, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+    names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.9, 10.0, False, "parameterconfirm10", "qtrainlog/batch 6g/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=True, sim_speedup=3))
+    names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm11", "qtrainlog/batch 6g/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=True, sim_speedup=3))
+    names.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, False, "parameterconfirm12", "qtrainlog/batch 6g/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=True, sim_speedup=3))
 
 
     #####################################################################
