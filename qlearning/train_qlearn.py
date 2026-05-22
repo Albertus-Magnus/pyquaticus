@@ -209,6 +209,7 @@ if __name__ == "__main__":
     timestamp = datetime.now()
     print("Starting experiments at ",timestamp.now().strftime("%d-%m-%Y %H:%M:%S"))
     #if len(sys.argv) > 1:
+    eval = False
     # Selecting preset of training parameters ("train" to make sure the files are not overwritten by mistake)
     parametersets = []
     if len(sys.argv) > 1 and sys.argv[1] == "train":
@@ -523,7 +524,7 @@ if __name__ == "__main__":
         # batch 6h (getting a confirmation that certain parameters do not result in training success on average; only good parameters were run in breadth so far)
         nrs = 20
         for i in range(nrs):
-            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.85, 10.0, False, "unsuitable_param1", "qtrainlog/batch 6f/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.85, 10.0, False, "unsuitable_param1", "qtrainlog/batch 6h/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
 
         #########################################
         #rewardchoice = "single_aggressive_rew"
@@ -531,8 +532,23 @@ if __name__ == "__main__":
         #rewardchoice = "caps_and_grabs" (outdated)
         #rewardchoice = "caps_and_tags"
     elif len(sys.argv) > 1 and sys.argv[1] == "eval":
-        print("evaluation pipeline not yet implemented")
-        sys.exit(0)
+        print("Evaluation pipeline selected.")
+        eval = True #marker so q-table will not be modified and data will be output.
+
+        timestamp = datetime.now()
+        print("Starting experiments at ",timestamp.now().strftime("%d-%m-%Y %H:%M:%S"))
+        
+        parametersets = []
+        #########################################
+        # running quantifying games (50x) for selected parameters
+        
+        for i in range(50):
+            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, False, "quanttest1", "qtrainlog/eval1/", i))
+
+
+
+
+        #sys.exit(0) #once this works we do not exit here anymore...
     else:
         ####################################### TEST AREA #######################################
         # Do visual test match here.
