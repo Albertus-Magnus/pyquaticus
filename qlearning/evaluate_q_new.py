@@ -5,9 +5,9 @@ import numpy as np
 from train_qlearn import ParameterSet
 
 BAGSIZE = 50 # number of episodes to average over for boxplot visualization, default 50
-AXISFONT = 20
-LEGENDFONT = 16
-NUMBERSFONT = 16
+AXISFONT = 22
+LEGENDFONT = 17
+NUMBERSFONT = 18
 
 def plot_rewards(rewarray, foldername, name):
     """Rewardcurve visualization, rewarray is a list, that contains lists of rewards (per-episode) where each entry consists of 3 entries for the 3 agents of a game.
