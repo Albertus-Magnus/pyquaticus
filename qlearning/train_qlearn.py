@@ -528,6 +528,10 @@ if __name__ == "__main__":
         # nrs = 20
         # for i in range(nrs):
         #     parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.3, 0.8, 10.0, False, "unsuitable_param2", "qtrainlog/batch 6h/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        # batch 6g (aggressive_tags but without newbool as comparison, not sure if i need it for including in thesis but either this or with newbool...)
+        nrs = 20
+        for i in range(nrs):
+            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.3, 0.8, 10.0, False, "aggrtagsnobool", "qtrainlog/batch 6g/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
 
         #########################################
         #rewardchoice = "single_aggressive_rew"
