@@ -532,16 +532,16 @@ if __name__ == "__main__":
         # nrs = 20
         # for i in range(nrs):
         #     parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.01, 0.99, 10.0, False, "aggrtagsnobool", "qtrainlog/batch 6g/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
-        # batch 6i (rerunning 6h and 6g2 because single_aggressive_rew was used instead of single_aggressive26 which is not compatible with the env26 and thus can not deliver comparable results)
-        nrs = 20
-        for i in range(nrs):
-            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.2, 0.85, 10.0, False, "unsuitable_param1", "qtrainlog/batch 6h/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
-        nrs = 20
-        for i in range(nrs):
-            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.3, 0.8, 10.0, False, "unsuitable_param2", "qtrainlog/batch 6h/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
-        nrs = 20
-        for i in range(nrs):
-            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "aggrtagsnobool", "qtrainlog/batch 6g/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        # # batch 6i (rerunning 6h and 6g2 because single_aggressive_rew was used instead of single_aggressive26 which is not compatible with the env26 and thus can not deliver comparable results)
+        # nrs = 20
+        # for i in range(nrs):
+        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.2, 0.85, 10.0, False, "unsuitable_param1", "qtrainlog/batch 6h/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        # nrs = 20
+        # for i in range(nrs):
+        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.3, 0.8, 10.0, False, "unsuitable_param2", "qtrainlog/batch 6h/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        # nrs = 20
+        # for i in range(nrs):
+        #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "aggrtagsnobool", "qtrainlog/batch 6g/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
 
         #########################################
         #rewardchoice = "single_aggressive_rew"
@@ -606,7 +606,10 @@ if __name__ == "__main__":
         #testing a 1024 policy (or The policy?) on the 4x statespace, before further traininig for this space:
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 6e/parameterconfirm9_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_20nrs_1000ep_no_pre_nr0_q_table.npy", boolchange=False, prev_action=True, sharpturns=False)
         ##parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.3, 0.8, 10.0, False, "unsuitable_param2", "qtrainlog/batch 6h/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
-        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 6h/unsuitable_param2_single_aggressive_rew_hard_lrate0.3_discount0.8_initq10.0_20nrs_1000ep_no_pre_nr0_q_table.npy", boolchange=False, prev_action=False, sharpturns=False)
+        # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 6h/unsuitable_param2_single_aggressive_rew_hard_lrate0.3_discount0.8_initq10.0_20nrs_1000ep_no_pre_nr0_q_table.npy", boolchange=False, prev_action=False, sharpturns=False)
+        # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 6f/parameterconfirm17_newbool_aggressive_tags_26_hard_lrate0.01_discount0.99_initq10.0_20nrs_1000ep_no_pre_nr0_q_table.npy", boolchange=True, prev_action=False, sharpturns=False)
+        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 6f/parameterconfirm9_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_20nrs_1000ep_no_pre_nr0_q_table.npy", boolchange=False, prev_action=False, sharpturns=False)
+    
         # Muster:
         #qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 2/_nr0_q_table.npy")
         st = np.zeros((4, 4, 4, 2, 2), dtype=np.int32) #dangerous int8-hazard (int8 is insufficient here)

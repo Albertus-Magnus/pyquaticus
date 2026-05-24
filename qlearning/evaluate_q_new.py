@@ -477,7 +477,7 @@ if __name__ == "__main__":
     # names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parametersearch3", "qtrainlog/batch 5/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
     # names.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, False, "parametersearch4", "qtrainlog/batch 5/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
     # names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.95, 10.0, False, "parametersearch5", "qtrainlog/batch 5/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
-    if True: #enable when re-running already generated figures or their score prints
+    if False: #enable when re-running already generated figures or their score prints
         if False: #these are not necessary to run ever again, too small sample size or ran before important updates to the code (not suited for comparability)
             # # batch 6b
             # #load_and_call_helper("shortpara1_sharpturns_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_1nrs_600ep_no_pre", 1)#_nr0") #alternative way to call the visualization
@@ -570,10 +570,13 @@ if __name__ == "__main__":
         names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.9, 10.0, False, "parameterconfirm10", "qtrainlog/batch 6g/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=True, sim_speedup=3))
         names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm11", "qtrainlog/batch 6g/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=True, sim_speedup=3))
         names.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, False, "parameterconfirm12", "qtrainlog/batch 6g/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=True, sim_speedup=3))
-    # batch 6h (getting a confirmation that certain parameters do not result in training success on average; only good parameters were run in breadth so far)
-    names.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.85, 10.0, False, "unsuitable_param1", "qtrainlog/batch 6h/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
-    names.append(ParameterSet("single_aggressive_rew", "hard", 0.3, 0.8, 10.0, False, "unsuitable_param2", "qtrainlog/batch 6h/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
-
+        # batch 6h (getting a confirmation that certain parameters do not result in training success on average; only good parameters were run in breadth so far)
+        names.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.85, 10.0, False, "unsuitable_param1", "qtrainlog/batch 6h/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        names.append(ParameterSet("single_aggressive_rew", "hard", 0.3, 0.8, 10.0, False, "unsuitable_param2", "qtrainlog/batch 6h/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+    # batch 6i re-run of wrong reward
+    names.append(ParameterSet("single_aggressive26", "hard", 0.2, 0.85, 10.0, False, "unsuitable_param1", "qtrainlog/batch 6h/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+    names.append(ParameterSet("single_aggressive26", "hard", 0.3, 0.8, 10.0, False, "unsuitable_param2", "qtrainlog/batch 6h/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+    names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "aggrtagsnobool", "qtrainlog/batch 6g/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
 
     #####################################################################
     # for name in names:
