@@ -3,6 +3,7 @@ import os
 from matplotlib import pyplot as plt
 import numpy as np
 from train_qlearn import ParameterSet
+from evaluate_q import matrix_to_heatmap
 
 BAGSIZE = 50 # number of episodes to average over for boxplot visualization, default 50
 AXISFONT = 22
@@ -30,6 +31,12 @@ def plot_rewards(rewarray, foldername, name):
 def plot_anythingelse(scorearray, foldername, name, attribute_name):
     """General visualization, scorearray is a list, that contains lists of scores (per-episode) where each entry consists of 2 entries for the 2 teams of a game.
     """
+    # Statecount heatmap special case:
+    if attribute_name == "Statecount":
+        # heatmap is not helpful, too cluttered and labeling clearly is almost impossible with the current version.
+        # matrix_to_heatmap(scorearray, attribute_name, foldername + name + "qheatmap.png", attribute_name)
+        return
+
     # The non-boxplot visualization is too cluttered with 1-4000 datapoints, so bags lead to a nice simple visualization, the more sophisticated one is the boxplots.
     scorearray_bagged = average_multiple_runs(scorearray, bagsize=BAGSIZE)
     meandata = np.mean(np.array(scorearray_bagged), 0)
@@ -192,6 +199,7 @@ def load_and_call_helper(parameterset: ParameterSet):
     scores_name = [f"{nam}_scores.npy" for nam in name_indexed]
     tagslist_name = [f"{nam}_tagslist.npy" for nam in name_indexed]
     grabslist_name = [f"{nam}_grabslist.npy" for nam in name_indexed]
+    statecount_name = [f"{nam}_statecount.npy" for nam in name_indexed]
 
     # test names, now redundant
     # reward_name = ["shortpara1_sharpturns_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_1nrs_600ep_no_pre_nr0_reward_curve.npy", 
@@ -263,7 +271,8 @@ def load_and_call_helper(parameterset: ParameterSet):
     # tagslist = np.array([np.load(folder + tagslist_name[i]) for i in range(len(tagslist_name))])
     scorelist = np.array([np.load(folder + scores_name[i]) for i in valid_indices])
     tagslist = np.array([np.load(folder + tagslist_name[i]) for i in valid_indices])
-    # print("rewardcurve:", rewardcurve) #debug print
+    grabslist = np.array([np.load(folder + grabslist_name[i]) for i in valid_indices])
+    statecountlist = np.array([np.load(folder + statecount_name[i]) for i in valid_indices])
 
     #shortening dimensions for readable test prints:    (should be removed after testing)
     # rewardcurve = rewardcurve[:, 5:10, :]#.copy() #copy not necessary?
@@ -282,7 +291,9 @@ def load_and_call_helper(parameterset: ParameterSet):
     tagslist = tagslist[:, :, ::-1]  # Swap blue and red teams
     plot_anythingelse(tagslist, folder, tagslist_name[0][:-(len("_nr0_tagslist.npy"))], "Tags")
     # Sometimes we want to know the number of grabs:
-    plot_anythingelse(tagslist, folder, grabslist_name[0][:-(len("_nr0_grabslist.npy"))], "Grabs")
+    plot_anythingelse(grabslist, folder, grabslist_name[0][:-(len("_nr0_grabslist.npy"))], "Grabs")
+    ## plot one state-visit heatmap:
+    #plot_anythingelse(statecountlist, folder, grabslist_name[0][:-(len("_statecount.npy"))], "Statecount")
     
 
     # Compute for every i (0 to 19) the average team score for the last 100 episodes and print it, to get a quick overview of the final performance of the training.
@@ -477,7 +488,7 @@ if __name__ == "__main__":
     # names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parametersearch3", "qtrainlog/batch 5/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
     # names.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, False, "parametersearch4", "qtrainlog/batch 5/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
     # names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.95, 10.0, False, "parametersearch5", "qtrainlog/batch 5/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
-    if False: #enable when re-running already generated figures or their score prints
+    if True: #enable when re-running already generated figures or their score prints
         if False: #these are not necessary to run ever again, too small sample size or ran before important updates to the code (not suited for comparability)
             # # batch 6b
             # #load_and_call_helper("shortpara1_sharpturns_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_1nrs_600ep_no_pre", 1)#_nr0") #alternative way to call the visualization
@@ -520,15 +531,14 @@ if __name__ == "__main__":
             # names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm11", "qtrainlog/batch 6c/", i, boolchange=False, nrs=2, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
             # names.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, False, "parameterconfirm12", "qtrainlog/batch 6c/", i, boolchange=False, nrs=2, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
 
-            # # batch 6e    #NOTE these look strange, perhaps the timelimit normalized performances? Weird for an entire batch to be like this, TODO look into before using them in the thesis...
+            # # batch 6e    # these look strange, perhaps the timelimit normalized performances? Weird for an entire batch to be like this, [fixed and reran]
             names.append(ParameterSet("aggressive_tags_26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm17", "qtrainlog/batch 6e/", i, boolchange=True, nrs=20, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
-            #if False: #TODO reenable after bugtest
+            #if False: 
             names.append(ParameterSet("aggressive_tags_26", "hard", 0.15, 0.95, 10.0, False, "parameterconfirm18", "qtrainlog/batch 6e/", i, boolchange=True, nrs=20, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
             names.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parameterconfirm9", "qtrainlog/batch 6e/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
             names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.9, 10.0, False, "parameterconfirm10", "qtrainlog/batch 6e/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
             names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm11", "qtrainlog/batch 6e/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
             names.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, False, "parameterconfirm12", "qtrainlog/batch 6e/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
-
         # batch 7a
         # names.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "previoustest0", "qtrainlog/batch 7a/", 0, boolchange=False, nrs=1, ep=10, teamsize3=True, timelimit=60., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
         names.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "previoustest1", "qtrainlog/batch 7a/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
@@ -573,10 +583,11 @@ if __name__ == "__main__":
         # batch 6h (getting a confirmation that certain parameters do not result in training success on average; only good parameters were run in breadth so far)
         names.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.85, 10.0, False, "unsuitable_param1", "qtrainlog/batch 6h/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
         names.append(ParameterSet("single_aggressive_rew", "hard", 0.3, 0.8, 10.0, False, "unsuitable_param2", "qtrainlog/batch 6h/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
-    # batch 6i re-run of wrong reward
-    names.append(ParameterSet("single_aggressive26", "hard", 0.2, 0.85, 10.0, False, "unsuitable_param1", "qtrainlog/batch 6h/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
-    names.append(ParameterSet("single_aggressive26", "hard", 0.3, 0.8, 10.0, False, "unsuitable_param2", "qtrainlog/batch 6h/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
-    names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "aggrtagsnobool", "qtrainlog/batch 6g/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+    if False:
+        # batch 6i re-run of wrong reward
+        names.append(ParameterSet("single_aggressive26", "hard", 0.2, 0.85, 10.0, False, "unsuitable_param1", "qtrainlog/batch 6h/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        names.append(ParameterSet("single_aggressive26", "hard", 0.3, 0.8, 10.0, False, "unsuitable_param2", "qtrainlog/batch 6h/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "aggrtagsnobool", "qtrainlog/batch 6g/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
 
     #####################################################################
     # for name in names:
@@ -591,14 +602,10 @@ if __name__ == "__main__":
     print(f"Rendering plots with {num_workers} workers.")
 
     with Pool(processes=num_workers) as pool:
-        # pool.map(doTraining, parametersets)
-        # Need strange partial to fix the num_jobs number into the doTraining calls, just for a counter ("job 4 of 80")
-        #doTrainingWithCounter = partial(doTraining, number_jobs=num_jobs)
-        # Now map the function
-        # pool.map(doTrainingWithCounter, parametersets)
         pool.map(load_and_call_helper, names)
+    # for nam in names:
+    #     load_and_call_helper(nam)
 
-    #print(f"Finished rendering all plots at time {datetime.now()}.")
 
 
 

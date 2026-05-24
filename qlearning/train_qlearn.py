@@ -126,8 +126,9 @@ def doTraining(parameterset: ParameterSet, number_jobs):
         #logstructure = []
         timel = parameterset.timelimit#600.#2000. #600. #TODO think about how much timelimit we should use (right now less because training is longer else)
         # timelimit was computed to be 2000 seconds for 2000 q-updates (and steps), which is the number of updates 24env policies needed to train for
-        if index < 500 and parameterset.pretrain: #pretraininng with easy opponents, for more exploration on opponent base  [pretraining"easy" disabled for now, all training against easy(now hard)]
-            rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty="easy", reward_choice=parameterset.rewardchoice, render_mode=None, timelimit=timel, q_table=qtableee, teamsize3=True, ignoreseed=parameterset.ignoreseed, sim_speed=parameterset.sim_speedup, prev_act=parameterset.previous_action) #might make timelimit a parameterset choice too...
+        #NOTE this was <500, should set it back after the extra-large training run...
+        if index < 1000 and parameterset.pretrain: #pretraininng with easy opponents, for more exploration on opponent base  [pretraining"easy" disabled for now, all training against easy(now hard)]
+            rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty="easy", reward_choice=parameterset.rewardchoice, render_mode=None, timelimit=timel, q_table=qtableee, teamsize3=True, ignoreseed=parameterset.ignoreseed, sim_speed=parameterset.sim_speedup, prev_act=parameterset.previous_action)
             qtableee.qtable = u_table.qtable
             # tags, rewardlist, captures, grabs are all for [0] and [1] (the two teams)
             # After each episode update the values of q-table. For this purpose updates are calculated during the episode into the u-table. Afterwards it gets switched with q-table.
@@ -542,6 +543,12 @@ if __name__ == "__main__":
         # nrs = 20
         # for i in range(nrs):
         #     parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "aggrtagsnobool", "qtrainlog/batch 6g/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        # batch 7d (continuing with the prevact training to see if this results in a super-qlearning, or is at least able to surpass base-aggr)
+        nrs = 20
+        for i in range(nrs):
+            # pre-training is enabled for half of the attempts. (NOTE pre-training was set to a higher episode limit for this 4k ep run)
+            prtr: bool = (nrs > 9)
+            parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, prtr, "prevcontinue7", "qtrainlog/batch 7d/", i, boolchange=False, nrs=nrs, ep=4000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True, qtable_suffix=f"qtrainlog/batch 7c/prevcontinue4_prevact_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_20nrs_4000ep_no_pre_nr{i}_q_table.npy"))
 
         #########################################
         #rewardchoice = "single_aggressive_rew"
@@ -608,7 +615,9 @@ if __name__ == "__main__":
         ##parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.3, 0.8, 10.0, False, "unsuitable_param2", "qtrainlog/batch 6h/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 6h/unsuitable_param2_single_aggressive_rew_hard_lrate0.3_discount0.8_initq10.0_20nrs_1000ep_no_pre_nr0_q_table.npy", boolchange=False, prev_action=False, sharpturns=False)
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 6f/parameterconfirm17_newbool_aggressive_tags_26_hard_lrate0.01_discount0.99_initq10.0_20nrs_1000ep_no_pre_nr0_q_table.npy", boolchange=True, prev_action=False, sharpturns=False)
-        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 6f/parameterconfirm9_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_20nrs_1000ep_no_pre_nr0_q_table.npy", boolchange=False, prev_action=False, sharpturns=False)
+        # op baseline 6f:
+        # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 6f/parameterconfirm9_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_20nrs_1000ep_no_pre_nr0_q_table.npy", boolchange=False, prev_action=False, sharpturns=False)
+        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 7c/prevcontinue4_prevact_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_20nrs_4000ep_no_pre_nr0_q_table.npy", boolchange=False, prev_action=True, sharpturns=False)
     
         # Muster:
         #qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 2/_nr0_q_table.npy")
