@@ -1,14 +1,516 @@
 from multiprocessing import Pool
 import os
+import sys
 from matplotlib import pyplot as plt
 import numpy as np
-from train_qlearn import ParameterSet
+from scipy.spatial import Voronoi
 from evaluate_q import matrix_to_heatmap
 
 BAGSIZE = 50 # number of episodes to average over for boxplot visualization, default 50
 AXISFONT = 22
 LEGENDFONT = 17
 NUMBERSFONT = 18
+
+
+# ===== Metric Computation Helper Functions =====
+
+def compute_total_distance(episode_stats, team_agents):
+    """
+    Compute sum of distances between consecutive positions for a team.
+    team_agents: list of agent IDs (e.g., ['agent_0', 'agent_1', 'agent_2'])
+    Returns: total distance traveled by all agents in team
+    """
+    total_dist = 0.0
+    for agent_id in team_agents:
+        if agent_id in episode_stats['agent_positions']:
+            positions = episode_stats['agent_positions'][agent_id]
+            if len(positions) > 1:
+                for i in range(1, len(positions)):
+                    pos1 = np.array(positions[i-1])
+                    pos2 = np.array(positions[i])
+                    total_dist += np.linalg.norm(pos2 - pos1)
+    return total_dist
+
+
+def compute_area_coverage(episode_stats, team_agents):
+    """
+    Compute triangle area between 3 agents per frame, averaged across frames.
+    Uses shoelace formula for triangle area.
+    Returns: average area coverage
+    """
+    if len(team_agents) != 3:
+        return 0.0
+    
+    areas = []
+    positions_by_agent = {agent_id: episode_stats['agent_positions'].get(agent_id, []) for agent_id in team_agents}
+    
+    # Determine number of frames
+    num_frames = min(len(pos) for pos in positions_by_agent.values() if len(pos) > 0)
+    if num_frames == 0:
+        return 0.0
+    
+    for frame in range(num_frames):
+        try:
+            p0 = np.array(positions_by_agent[team_agents[0]][frame])
+            p1 = np.array(positions_by_agent[team_agents[1]][frame])
+            p2 = np.array(positions_by_agent[team_agents[2]][frame])
+            
+            # Shoelace formula for triangle area (2D)
+            area = 0.5 * abs((p1[0] - p0[0]) * (p2[1] - p0[1]) - (p2[0] - p0[0]) * (p1[1] - p0[1]))
+            areas.append(area)
+        except (IndexError, TypeError):
+            continue
+    
+    return np.mean(areas) if areas else 0.0
+
+
+def compute_distance_coverage(episode_stats, team_agents):
+    """
+    Compute summed pairwise distances between all agents in team, averaged over frames.
+    Measure of how well the team is spreading out.
+    Returns: average pairwise distance
+    """
+    if len(team_agents) < 2:
+        return 0.0
+    
+    positions_by_agent = {agent_id: episode_stats['agent_positions'].get(agent_id, []) for agent_id in team_agents}
+    
+    # Determine number of frames
+    num_frames = min(len(pos) for pos in positions_by_agent.values() if len(pos) > 0)
+    if num_frames == 0:
+        return 0.0
+    
+    pairwise_distances = []
+    for frame in range(num_frames):
+        try:
+            frame_dist = 0.0
+            for i, agent1 in enumerate(team_agents):
+                for agent2 in team_agents[i+1:]:
+                    pos1 = np.array(positions_by_agent[agent1][frame])
+                    pos2 = np.array(positions_by_agent[agent2][frame])
+                    frame_dist += np.linalg.norm(pos2 - pos1)
+            pairwise_distances.append(frame_dist)
+        except (IndexError, TypeError):
+            continue
+    
+    return np.mean(pairwise_distances) if pairwise_distances else 0.0
+
+
+def compute_voronoi_coverage(episode_stats, team_agents):
+    """
+    Compute Voronoi cell uniformity for a team using scipy.spatial.Voronoi.
+    Metric: std dev / mean of cell sizes, averaged over frames.
+    Lower value = more uniform coverage.
+    Returns: average voronoi uniformity metric
+    """
+    if len(team_agents) != 3:
+        return 0.0
+    
+    positions_by_agent = {agent_id: episode_stats['agent_positions'].get(agent_id, []) for agent_id in team_agents}
+    num_frames = min(len(pos) for pos in positions_by_agent.values() if len(pos) > 0)
+    if num_frames < 3:
+        return 0.0
+    
+    uniformity_scores = []
+    for frame in range(0, num_frames, max(1, num_frames // 10)):  # Sample every 10% of frames to save computation
+        try:
+            points = []
+            for agent_id in team_agents:
+                pos = np.array(positions_by_agent[agent_id][frame])
+                points.append(pos)
+            
+            points = np.array(points)
+            
+            # Add boundary points to avoid infinite regions
+            boundary_offset = 100.0
+            points_with_boundary = np.vstack([points, [
+                [-boundary_offset, -boundary_offset],
+                [boundary_offset, -boundary_offset],
+                [boundary_offset, boundary_offset],
+                [-boundary_offset, boundary_offset]
+            ]])
+            
+            vor = Voronoi(points_with_boundary)
+            
+            # Compute cell areas for the 3 actual agents (indices 0, 1, 2)
+            cell_areas = []
+            for agent_idx in range(3):
+                region_idx = vor.point_region[agent_idx]
+                region = vor.regions[region_idx]
+                if -1 not in region and len(region) > 0:
+                    vertices = vor.vertices[region]
+                    if len(vertices) > 2:
+                        # Compute polygon area (shoelace formula)
+                        area = 0.5 * abs(sum(vertices[i][0] * vertices[(i+1) % len(vertices)][1] - 
+                                             vertices[(i+1) % len(vertices)][0] * vertices[i][1] 
+                                             for i in range(len(vertices))))
+                        cell_areas.append(area)
+            
+            if len(cell_areas) == 3 and np.mean(cell_areas) > 0:
+                uniformity = np.std(cell_areas) / np.mean(cell_areas)
+                uniformity_scores.append(uniformity)
+        except Exception:
+            continue
+    
+    return np.mean(uniformity_scores) if uniformity_scores else 0.0
+
+
+def compute_defensive_distance(episode_stats, own_team_agents, opponent_team_agents, own_flag_pos_key, opp_flag_pos_key):
+    """
+    Compute average distance between opponent agent closest to own flag 
+    and own agent closest to that opponent.
+    Measure of defense effectiveness.
+    Returns: average defensive distance
+    """
+    if len(own_team_agents) == 0 or len(opponent_team_agents) == 0:
+        return 0.0
+    
+    own_positions = {agent_id: episode_stats['agent_positions'].get(agent_id, []) for agent_id in own_team_agents}
+    opp_positions = {agent_id: episode_stats['agent_positions'].get(agent_id, []) for agent_id in opponent_team_agents}
+    own_flag = episode_stats['flag_positions'].get(own_flag_pos_key, [])
+    
+    num_frames = min(
+        min((len(pos) for pos in own_positions.values() if len(pos) > 0), default=0),
+        min((len(pos) for pos in opp_positions.values() if len(pos) > 0), default=0),
+        len(own_flag)
+    )
+    if num_frames == 0:
+        return 0.0
+    
+    defensive_distances = []
+    for frame in range(num_frames):
+        try:
+            flag_pos = np.array(own_flag[frame]) if frame < len(own_flag) else None
+            if flag_pos is None:
+                continue
+            
+            # Find opponent closest to own flag
+            min_opp_dist = float('inf')
+            closest_opp_pos = None
+            for agent_id in opponent_team_agents:
+                if frame < len(opp_positions[agent_id]):
+                    opp_pos = np.array(opp_positions[agent_id][frame])
+                    dist_to_flag = np.linalg.norm(opp_pos - flag_pos)
+                    if dist_to_flag < min_opp_dist:
+                        min_opp_dist = dist_to_flag
+                        closest_opp_pos = opp_pos
+            
+            if closest_opp_pos is None:
+                continue
+            
+            # Find own agent closest to that opponent
+            min_own_dist = float('inf')
+            for agent_id in own_team_agents:
+                if frame < len(own_positions[agent_id]):
+                    own_pos = np.array(own_positions[agent_id][frame])
+                    dist_to_opponent = np.linalg.norm(own_pos - closest_opp_pos)
+                    min_own_dist = min(min_own_dist, dist_to_opponent)
+            
+            if min_own_dist < float('inf'):
+                defensive_distances.append(min_own_dist)
+        except (IndexError, TypeError):
+            continue
+    
+    return np.mean(defensive_distances) if defensive_distances else 0.0
+
+
+def compute_aggressive_distance(episode_stats, own_team_agents, opp_flag_pos_key):
+    """
+    Compute average distance from own agent closest to opponent flag to opponent flag.
+    Measure of attack reach.
+    Returns: average aggressive distance
+    """
+    if len(own_team_agents) == 0:
+        return 0.0
+    
+    own_positions = {agent_id: episode_stats['agent_positions'].get(agent_id, []) for agent_id in own_team_agents}
+    opp_flag = episode_stats['flag_positions'].get(opp_flag_pos_key, [])
+    
+    num_frames = min(
+        min((len(pos) for pos in own_positions.values() if len(pos) > 0), default=0),
+        len(opp_flag)
+    )
+    if num_frames == 0:
+        return 0.0
+    
+    aggressive_distances = []
+    for frame in range(num_frames):
+        try:
+            flag_pos = np.array(opp_flag[frame]) if frame < len(opp_flag) else None
+            if flag_pos is None:
+                continue
+            
+            # Find own agent closest to opponent flag
+            min_dist = float('inf')
+            for agent_id in own_team_agents:
+                if frame < len(own_positions[agent_id]):
+                    own_pos = np.array(own_positions[agent_id][frame])
+                    dist = np.linalg.norm(own_pos - flag_pos)
+                    min_dist = min(min_dist, dist)
+            
+            if min_dist < float('inf'):
+                aggressive_distances.append(min_dist)
+        except (IndexError, TypeError):
+            continue
+    
+    return np.mean(aggressive_distances) if aggressive_distances else 0.0
+
+
+def compute_combined_position_score(def_dist, agg_dist, normalize_scale=100.0):
+    """
+    Compute combined position score: 1 - (defensive_distance + aggressive_distance) * 0.5 / normalize_scale
+    Higher score = better positioning.
+    Returns: combined score (0-1 range approximately)
+    """
+    combined = (def_dist + agg_dist) * 0.5 / normalize_scale
+    return max(0.0, 1.0 - combined)
+
+
+def compute_score_tag_ratio(episode_stats):
+    """
+    Compute score / tags ratio for both teams.
+    Represents offensive efficiency.
+    Returns: [blue_ratio, red_ratio]
+    """
+    captures = episode_stats.get('final_score', [0, 0])
+    tags = episode_stats.get('tags', [0, 0])
+    
+    ratios = []
+    for i in range(2):
+        # Add 1 to avoid division by zero
+        ratio = captures[i] / (tags[i] + 1)
+        ratios.append(ratio)
+    
+    return ratios
+
+
+def compute_aggr_def_percentage(episode_stats, team_agents):
+    """
+    Compute percentage of frames where team agents are on their own side.
+    Measure of tactical positioning.
+    Returns: percentage (0-100)
+    """
+    if len(team_agents) == 0:
+        print("Warning: No agents in team for aggr_def_percentage metric.")
+        return 0.0
+    
+    on_own_side_data = {agent_id: episode_stats['on_own_side'].get(agent_id, []) for agent_id in team_agents}
+    
+    num_frames = min(len(data) for data in on_own_side_data.values() if len(data) > 0)
+    if num_frames == 0:
+        print("Warning: No frame data for on_own_side metric.")
+        return 0.0
+    
+    total_on_own_side = 0
+    total_frames = 0
+    
+    for frame in range(num_frames):
+        for agent_id in team_agents:
+            if frame < len(on_own_side_data[agent_id]):
+                try:
+                    on_side = on_own_side_data[agent_id][frame]
+                    if on_side:  # Assuming it's boolean True/False
+                        total_on_own_side += 1
+                    total_frames += 1
+                except (IndexError, TypeError):
+                    continue
+    
+    if total_frames == 0:
+        print("Warning: No frame data for on_own_side metric.")
+        return 0.0
+    
+    return 100.0 * total_on_own_side / total_frames
+
+
+def compute_all_metrics(episode_stats):
+    """
+    Compute all 9 metrics for a single episode.
+    Returns: dict with all metric values for blue and red teams
+    """
+    blue_agents = ['agent_0', 'agent_1', 'agent_2']
+    red_agents = ['agent_3', 'agent_4', 'agent_5']
+    
+    metrics = {
+        'total_distance': [
+            compute_total_distance(episode_stats, blue_agents),
+            compute_total_distance(episode_stats, red_agents)
+        ],
+        'area_coverage': [
+            compute_area_coverage(episode_stats, blue_agents),
+            compute_area_coverage(episode_stats, red_agents)
+        ],
+        'distance_coverage': [
+            compute_distance_coverage(episode_stats, blue_agents),
+            compute_distance_coverage(episode_stats, red_agents)
+        ],
+        'voronoi_coverage': [
+            compute_voronoi_coverage(episode_stats, blue_agents),
+            compute_voronoi_coverage(episode_stats, red_agents)
+        ],
+        'defensive_distance': [
+            compute_defensive_distance(episode_stats, blue_agents, red_agents, 'blue_flag', 'red_flag'),
+            compute_defensive_distance(episode_stats, red_agents, blue_agents, 'red_flag', 'blue_flag')
+        ],
+        'aggressive_distance': [
+            compute_aggressive_distance(episode_stats, blue_agents, 'red_flag'),
+            compute_aggressive_distance(episode_stats, red_agents, 'blue_flag')
+        ],
+        'score_tag_ratio': compute_score_tag_ratio(episode_stats),
+        'aggr_def_percentage': [
+            compute_aggr_def_percentage(episode_stats, blue_agents),
+            compute_aggr_def_percentage(episode_stats, red_agents)
+        ]
+    }
+    
+    # Compute combined position score from def and agg distances
+    metrics['combined_position_score'] = [
+        compute_combined_position_score(metrics['defensive_distance'][0], metrics['aggressive_distance'][0]),
+        compute_combined_position_score(metrics['defensive_distance'][1], metrics['aggressive_distance'][1])
+    ]
+    
+    return metrics
+
+
+
+
+def evalrender(foldername, parameterset_name):
+    # This function is called for each parameter set, it loads the statistics from the specified file and creates visualizations.
+    # The visualizations are saved to files in a "figures" subfolder of the parameter set's folder.
+    # The name of the output files is based on the parameter set's name and the type of data being visualized (score, etc.).
+    
+    # Load data from file
+    para_file = foldername + parameterset_name + "_eval.npy"
+    data = np.load(para_file, allow_pickle=True)
+
+    # print(data)
+    # sys.exit()
+
+    # Visualization folder
+    vis_folder = foldername + "figures/"
+    if not os.path.isdir(vis_folder):
+        os.makedirs(vis_folder)
+
+    # Team Blue is 'agent_0', 'agent_1', 'agent_2' and Team Red is 'agent_3', 'agent_4', 'agent_5'
+    
+    print(f"\n{'='*60}")
+    print(f"Computing metrics for {parameterset_name}")
+    print(f"Evaluating {len(data)} matches")
+    print(f"{'='*60}\n")
+
+    # ===== Computing metrics for all 60 matches =====
+    all_metrics = {
+        'total_distance': [],
+        'area_coverage': [],
+        'distance_coverage': [],
+        'voronoi_coverage': [],
+        'defensive_distance': [],
+        'aggressive_distance': [],
+        'combined_position_score': [],
+        'score_tag_ratio': [],
+        'aggr_def_percentage': []
+    }
+    
+    for match_idx, episode_stats in enumerate(data):
+        metrics = compute_all_metrics(episode_stats)
+        
+        for metric_name in all_metrics.keys():
+            all_metrics[metric_name].append(metrics[metric_name])
+        
+        if (match_idx + 1) % 10 == 0:
+            print(f"  Processed {match_idx + 1}/{len(data)} matches")
+    
+    # Convert lists to numpy arrays: shape (num_matches, 2 teams) for each metric
+    metric_arrays = {}
+    for metric_name, values in all_metrics.items():
+        metric_arrays[metric_name] = np.array(values)
+    
+    print(f"\nMetric computation complete. Computing statistics...\n")
+
+    # ===== Print summary statistics =====
+    team_names = ['Team Blue', 'Team Red']
+    metric_display_names = {
+        'total_distance': 'Total Distance',
+        'area_coverage': 'Area Coverage',
+        'distance_coverage': 'Distance Coverage',
+        'voronoi_coverage': 'Voronoi Uniformity (std/mean)',
+        'defensive_distance': 'Defensive Distance',
+        'aggressive_distance': 'Aggressive Distance',
+        'combined_position_score': 'Combined Position Score',
+        'score_tag_ratio': 'Score/Tag Ratio',
+        'aggr_def_percentage': 'Aggr-Def Percentage'
+    }
+    
+    print(f"{'Metric':<40} {'Team Blue':<25} {'Team Red':<25}")
+    print(f"{'-'*90}")
+    
+    for metric_name, display_name in metric_display_names.items():
+        arr = metric_arrays[metric_name]
+        blue_mean = np.mean(arr[:, 0])
+        blue_std = np.std(arr[:, 0])
+        red_mean = np.mean(arr[:, 1])
+        red_std = np.std(arr[:, 1])
+        print(f"{display_name:<40} {blue_mean:>8.3f} - {blue_std:<8.3f}   {red_mean:>8.3f} - {red_std:<8.3f}")
+    
+    print(f"{'-'*90}\n")
+
+    # ===== Generate boxplot visualizations for each metric =====
+    for metric_name, display_name in metric_display_names.items():
+        arr = metric_arrays[metric_name]
+        # arr shape: (num_matches, 2)
+        visualize_metric_boxplot(arr, foldername, parameterset_name, metric_name, display_name)
+    
+    # ===== Save metrics to file =====
+    metrics_file = foldername + parameterset_name + "_metrics.npy"
+    np.save(metrics_file, metric_arrays)
+    print(f"Metrics saved to: {metrics_file}")
+    print(f"Shape: {len(data)} matches x 9 metrics x 2 teams")
+    
+    print(f"\nVisualizations saved to: {vis_folder}\n")
+
+
+def visualize_metric_boxplot(metric_array, foldername, parameterset_name, metric_name, metric_display_name):
+    """
+    Create a boxplot visualization for a metric across 60 evaluation matches.
+    metric_array: shape (60, 2) where columns are [blue_team, red_team]
+    """
+    fig, ax = plt.subplots(figsize=(10, 6))
+    
+    # Prepare data for boxplot
+    data_to_plot = [metric_array[:, 0], metric_array[:, 1]]  # Blue and Red teams
+    
+    # Create boxplot
+    bp = ax.boxplot(data_to_plot, labels=['Team Blue', 'Team Red'], patch_artist=True, widths=0.6)
+    
+    # Color the boxes
+    colors = ['lightblue', 'lightcoral']
+    for patch, color in zip(bp['boxes'], colors):
+        patch.set_facecolor(color)
+    
+    # Customize appearance
+    for median in bp['medians']:
+        median.set(color='black', linewidth=2)
+    for whisker in bp['whiskers']:
+        whisker.set(linewidth=1.5)
+    for cap in bp['caps']:
+        cap.set(linewidth=1.5)
+    
+    ax.set_ylabel(metric_display_name, fontsize=AXISFONT)
+    ax.set_title(f"{metric_display_name}\n{parameterset_name}", fontsize=AXISFONT)
+    ax.grid(True, alpha=0.3, axis='y')
+    
+    # Add individual points
+    for i, team_data in enumerate(data_to_plot):
+        x = np.random.normal(i+1, 0.04, size=len(team_data))
+        ax.scatter(x, team_data, alpha=0.3, s=30)
+    
+    plt.tight_layout()
+    
+    # Save figure
+    output_file = f"{foldername}figures/{parameterset_name}_metric_{metric_name}.png"
+    plt.savefig(output_file, dpi=300, bbox_inches='tight')
+    plt.close()
+
+
 
 def plot_rewards(rewarray, foldername, name):
     """Rewardcurve visualization, rewarray is a list, that contains lists of rewards (per-episode) where each entry consists of 3 entries for the 3 agents of a game.
@@ -186,7 +688,8 @@ def visualize_reward_boxplots(data, foldername, name):  #TODO TODO decide if box
 
 
 # def load_and_call_helper(name, nrs, folder, ep):
-def load_and_call_helper(parameterset: ParameterSet):
+def load_and_call_helper(parameterset):
+    from train_qlearn import ParameterSet  # Local import to avoid circular dependency
     name = parameterset.create_name_without_index()
     nrs = parameterset.nrs
     folder = parameterset.foldername
@@ -460,6 +963,34 @@ def visualize_curve_boxplots(fulldata, foldername, name, attribute_name, show_ou
 #End of visualize_curve_boxplots()
 
 if __name__ == "__main__":
+
+    print("Eval Render mode selected.")
+
+    parametersets: list[ParameterSet] = []
+    i = 0
+    nrs = 20
+    #########################################
+    # The policies that are referred to and shown in the thesis q-results section:
+    parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parameterconfirm9", "qtrainlog/batch 6f/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
+    # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.3, 0.8, 10.0, False, "unsuitable_param2", "qtrainlog/batch 6h/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+    # parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.01, 0.99, 10.0, False, "aggrtagsnobool", "qtrainlog/batch 6g/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+    # parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.99, 10.0, False, "defender4", "qtrainlog/batch 8a/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
+    # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm11", "qtrainlog/batch 6g/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=True, sim_speedup=3))
+    # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parameterconfirm9", "qtrainlog/batch 6g/", i, boolchange=True, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+    # parametersets.append(ParameterSet("aggressive_tags_26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm17", "qtrainlog/batch 6f/", i, boolchange=True, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
+    # parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "defender1", "qtrainlog/batch 8a/", i, boolchange=True, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
+    # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, True, "pretr1", "qtrainlog/batch 8a/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
+    # parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, True, "pretr3", "qtrainlog/batch 8a/", i, boolchange=True, nrs=20, ep=1000)) 
+    # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "prevcontinue4", "qtrainlog/batch 7c/", i, boolchange=False, nrs=nrs, ep=4000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
+
+
+    #########################################
+
+    for para in parametersets:
+        evalrender(para.foldername, para.create_name_without_index())
+    print("All visualizations completed.")
+    sys.exit()
+
     # print("Circledetector test")
     # print(circle_detection(example_positions))
     # print(circle_detection(example2))

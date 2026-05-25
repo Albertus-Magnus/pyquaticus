@@ -671,6 +671,79 @@ if __name__ == "__main__":
         timer = datetime.now() - timestamp
         print(f"Finished evaluation of {len(parametersets)} policies in {timer}")
         sys.exit(0) 
+
+
+
+    elif len(sys.argv) > 1 and sys.argv[1] == "render":
+        from evaluate_q_new import evalrender  # Local import to avoid circular dependency
+        print("Eval Render mode selected.")
+
+        parametersets: list[ParameterSet] = []
+        i = 0
+        nrs = 20
+        #########################################
+        # The policies that are referred to and shown in the thesis q-results section:
+        parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parameterconfirm9", "qtrainlog/batch 6f/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        parametersets.append(ParameterSet("single_aggressive26", "hard", 0.3, 0.8, 10.0, False, "unsuitable_param2", "qtrainlog/batch 6h/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.01, 0.99, 10.0, False, "aggrtagsnobool", "qtrainlog/batch 6g/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.99, 10.0, False, "defender4", "qtrainlog/batch 8a/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
+        parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm11", "qtrainlog/batch 6g/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=True, sim_speedup=3))
+        parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parameterconfirm9", "qtrainlog/batch 6g/", i, boolchange=True, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        parametersets.append(ParameterSet("aggressive_tags_26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm17", "qtrainlog/batch 6f/", i, boolchange=True, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "defender1", "qtrainlog/batch 8a/", i, boolchange=True, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
+        parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, True, "pretr1", "qtrainlog/batch 8a/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
+        parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, True, "pretr3", "qtrainlog/batch 8a/", i, boolchange=True, nrs=20, ep=1000)) 
+        parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "prevcontinue4", "qtrainlog/batch 7c/", i, boolchange=False, nrs=nrs, ep=4000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
+
+
+        #########################################
+
+
+        para_file = parametersets[0].foldername + parametersets[0].create_name_without_index() + "_eval.npy"
+        data = np.load(para_file, allow_pickle=True)
+        # for debugging, print the keys and numbers of entries for the keys:
+        # currently not right, TypeError: object of type 'NoneType' has no len(), 
+        # but should be a dict with keys 'rewards', 'captures', 'steps', 'timeouts' and each key should have a list of 60 entries (for the 60 evaluation seeds)
+        data0 = data[0]
+        """ data[0] should be a dict with the following keys:
+        agent_positions
+        agent_headings
+        flag_positions
+        scrimmage_line_distances
+        carrying_flag
+        on_own_side
+        is_tagged
+        tag_cooldowns
+        flag_status
+        bearings_to_flag
+        agent_speeds
+        final_score
+        captures
+        grabs
+        tags
+        reward"""
+        # for key in data0.keys():
+        #     print(f"Key: {key}, Number of entries: {len(data0[key])}")
+        for tedseser in ["agent_positions", "flag_positions", "on_own_side"]: #agent positions are there, but flag positions is [] and onownside is list of None's. Need to recompute eval data after TODO bugfix
+            print(f"{data0[tedseser]}") # print the first 5 entries for these keys to check if they look correct
+        sys.exit()
+        for para in parametersets:
+            evalrender(para.foldername, para.create_name_without_index())
+
+
+        # # Visualize all scheduled parameters in parallel <-first sequentially, this maybe later...
+        # num_jobs = len(parametersets)
+
+        # if num_jobs <= max(1, os.cpu_count()):
+        #     num_workers = num_jobs
+        # else:
+        #     num_workers = max(1, os.cpu_count() + 2)
+        # print(f"Selecting {num_workers} as num_workers.", flush=True)
+
+        # with Pool(processes=num_workers) as pool:
+        #     pool.map(doEval, parametersets)
+
+        sys.exit(0) 
     else:
         ####################################### TEST AREA #######################################
         # Do visual test match here.

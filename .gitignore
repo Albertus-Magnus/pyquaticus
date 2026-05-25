@@ -12,4 +12,6 @@ _version.py
 *.png
 *.mp4
 *.avi
+*eval.npy
+*metrics.npy
 __mapcache__/
