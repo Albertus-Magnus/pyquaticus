@@ -2,6 +2,7 @@ from datetime import datetime
 #import logging
 from functools import partial
 import os
+from random import random
 import sys
 #import os
 #import os.path
@@ -15,7 +16,7 @@ from pyquaticus.base_policies.base_combined import Heuristic_CTF_Agent
 # from pyquaticus.base_policies.ultra_def_policy import UltraDefender
 from qtable import QlearnPolicy, QTable
 # from pyquaticus.utils.rewards import caps_and_grabs, defensive_rew, double_aggressive_rew, single_aggressive_rew, caps_and_tags, aggressive_tags, aggressive_tags_26
-from qlearn_test import train_qlearn
+from qlearn_test import train_qlearn, eval_qlearn
 from multiprocessing import Pool, Lock, Value #i don't need any parallel processing (is qlearn even compatible?), i just need to run 10 scripts in different terminals...
 
 lock = Lock()
@@ -35,7 +36,7 @@ thesis (March 2026).
 # this class is just there to select (and store for some time) the right parameters and generate filenames (to log the data reliably)
 class ParameterSet:
     #def __init__(self, rewardchoice: str, lrate: float, discount: float, initialq: float, pretrain: bool, name: str, fodler: str, index: int): #test first without type
-    def __init__(self, rewardchoice, dif, lrate, discount, initialq, pretrain, name, folder, index, boolchange=True, nrs=20, ep=1000, teamsize3=False, ignoreseed=True, timelimit=600., qtable_suffix=None, sharpturns=True, sim_speedup=3, previous_action=False):
+    def __init__(self, rewardchoice, dif, lrate, discount, initialq, pretrain, name, folder, index, boolchange=True, nrs=20, ep=1000, teamsize3=False, ignoreseed=True, timelimit=600., qtable_suffix=None, sharpturns=True, sim_speedup=3, previous_action=False, seed=[]):
         self.rewardchoice = rewardchoice #zB "single_aggressive_rew"
         self.dif = dif
         self.foldername = folder # "lrate0.1_discount0.9_initialq10.0_single_aggressive_rew_bicheck1"
@@ -53,6 +54,7 @@ class ParameterSet:
         self.sharpturns = sharpturns
         self.sim_speedup = sim_speedup
         self.previous_action = previous_action
+        self.evalseed = seed # seed is a list of seeds, one for every game of the evaluation (~50 thus?)
 
     # Create a string for file storage that contains all important info about parameters (as well as an index if parameters are used more than once).
     def create_name(self):
@@ -127,7 +129,7 @@ def doTraining(parameterset: ParameterSet, number_jobs):
         timel = parameterset.timelimit#600.#2000. #600. #TODO think about how much timelimit we should use (right now less because training is longer else)
         # timelimit was computed to be 2000 seconds for 2000 q-updates (and steps), which is the number of updates 24env policies needed to train for
         #NOTE this was <500, should set it back after the extra-large training run...
-        if index < 1000 and parameterset.pretrain: #pretraininng with easy opponents, for more exploration on opponent base  [pretraining"easy" disabled for now, all training against easy(now hard)]
+        if index < 500 and parameterset.pretrain: #pretraininng with easy opponents, for more exploration on opponent base  [pretraining"easy" disabled for now, all training against easy(now hard)]
             rewardsteps, capture_entry, grab_entry, tag_entry, u_table = train_qlearn(s_table, seed=seeed, difficulty="easy", reward_choice=parameterset.rewardchoice, render_mode=None, timelimit=timel, q_table=qtableee, teamsize3=True, ignoreseed=parameterset.ignoreseed, sim_speed=parameterset.sim_speedup, prev_act=parameterset.previous_action)
             qtableee.qtable = u_table.qtable
             # tags, rewardlist, captures, grabs are all for [0] and [1] (the two teams)
@@ -205,12 +207,75 @@ def doTraining(parameterset: ParameterSet, number_jobs):
         # print(f"Concluded job {counter} out of {number_jobs}")
 #End of doTraining
 
+
+def doEval(parameterset: ParameterSet):
+    # Run evaluation loop for multiple iterations (one setting, repeated with the same qtable)
+    # seed is part of parameterset (list), to use same seeds for all evaluation runs
+    #np.random.seed(None)   # thus no numpy reset necessary
+
+    eval_length = 60
+    
+    # statecount table
+    if parameterset.previous_action:
+        s_table = np.zeros((4, 4, 4, 4, 2, 2), dtype=np.uint32) #larger statecount-table if more states (due to previous action requiring 4x the q-values)
+    else:
+        s_table = np.zeros((4, 4, 4, 2, 2), dtype=np.uint32)
+    
+    # rewardcurve = []
+    # scorelist = []
+    # grabslist = []
+    # tagslist = []
+
+    # for this parameter, each episodes stats are stored in this strucute:
+    # parameter_stats = {
+    #     'parameter': {
+    #         'agent_0': [], 'agent_1': [], 'agent_2': [],
+    #         'agent_3': [], 'agent_4': [], 'agent_5': []
+    #     },
+    parameter_stats = [] #(list of dictionaries is best?)
+
+    for i in range(eval_length): 
+        # need index modulo 20 because filenames are numbered only up to nr19:
+        i_file = i % 20
+        # each file is evaluated thrice, should result in nice average for each parameterset
+
+        # Check if file exists (at least one nr19 file is missing from the data):
+        print("Loading Q-Table from file")
+        q_file = f"{parameterset.foldername + parameterset.create_name_without_index()}_nr{i_file}_q_table.npy"
+        if not os.path.isfile(q_file):
+            print(f"\nFile \"{q_file}\" not found. Using fallback file nr0.\n")
+            q_file = f"{parameterset.foldername + parameterset.create_name_without_index()}_nr0_q_table.npy"
+
+        qtableee = QTable(parameterset.LEARNING_RATE, parameterset.DISCOUNT_FACTOR, parameterset.INITIAL_Q_VALUE, q_file, boolchange=parameterset.boolchange, sharpturns=parameterset.sharpturns, prev_action=parameterset.previous_action)
+
+        seeed = parameterset.evalseed[i]
+        
+        ##########EVAL. TIMELIMNIT
+        # timel = 600. # Evaluation has one time-limit for all tested policies. Could be 1200, but 600 is more consistent with mctf26 results? <-maybe this is not important since mctf ranking uses 100x games anyways...
+        timel = 1200. #using this because more consistent with prelim. training data
+        
+        # Running every episode, getting back a list/dictionary of values for each
+        episode_stats = eval_qlearn(s_table, seed=seeed, difficulty=parameterset.dif, reward_choice=parameterset.rewardchoice, render_mode=None, timelimit=timel, q_table=qtableee, teamsize3=True, ignoreseed=parameterset.ignoreseed, sim_speed=parameterset.sim_speedup, prev_act=parameterset.previous_action)
+        
+        #Storing each episodes values in parameter_stats
+        parameter_stats.append(episode_stats)
+
+    # Print all important data to file in the end
+    # example:
+    # np.save(f"{parameterset.foldername + parameterset.create_name()}_reward_curve.npy", rewardcurve)
+    np.save(f"{parameterset.foldername + parameterset.create_name_without_index()}_eval.npy", parameter_stats)
+    print(f"Saving evaluation data to file \"{parameterset.foldername + parameterset.create_name_without_index()}_eval.npy\".")
+    # print(f"Eval episode length: {datetime.now() - time_s} (h:min:sec)", flush=True)
+        # print(f"latest score: {scorelist[len(scorelist)-1]}")
+        # print(f"Concluded job {counter} out of {number_jobs}")    #TODO need to select different index than 0 for all parameters? For now i=0 is evaluated only, can update that later.
+#End of doEval
+
+
 if __name__ == "__main__":
     print("-Q-Training experiment commenced.-")
     timestamp = datetime.now()
     print("Starting experiments at ",timestamp.now().strftime("%d-%m-%Y %H:%M:%S"))
     #if len(sys.argv) > 1:
-    eval = False
     # Selecting preset of training parameters ("train" to make sure the files are not overwritten by mistake)
     parametersets = []
     if len(sys.argv) > 1 and sys.argv[1] == "train":
@@ -557,22 +622,55 @@ if __name__ == "__main__":
         #rewardchoice = "caps_and_tags"
     elif len(sys.argv) > 1 and sys.argv[1] == "eval":
         print("Evaluation pipeline selected.")
-        eval = True #marker so q-table will not be modified and data will be output.
 
         timestamp = datetime.now()
         print("Starting experiments at ",timestamp.now().strftime("%d-%m-%Y %H:%M:%S"))
         
-        parametersets = []
+        parametersets: list[ParameterSet] = []
+        i = 0
+        nrs = 20
+        #########################################
+        # The policies that are referred to and shown in the thesis q-results section:
+        parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parameterconfirm9", "qtrainlog/batch 6f/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        parametersets.append(ParameterSet("single_aggressive26", "hard", 0.3, 0.8, 10.0, False, "unsuitable_param2", "qtrainlog/batch 6h/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.01, 0.99, 10.0, False, "aggrtagsnobool", "qtrainlog/batch 6g/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.99, 10.0, False, "defender4", "qtrainlog/batch 8a/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
+        parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm11", "qtrainlog/batch 6g/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=True, sim_speedup=3))
+        parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parameterconfirm9", "qtrainlog/batch 6g/", i, boolchange=True, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        parametersets.append(ParameterSet("aggressive_tags_26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm17", "qtrainlog/batch 6f/", i, boolchange=True, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "defender1", "qtrainlog/batch 8a/", i, boolchange=True, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
+        parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, True, "pretr1", "qtrainlog/batch 8a/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
+        parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, True, "pretr3", "qtrainlog/batch 8a/", i, boolchange=True, nrs=20, ep=1000)) 
+        parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "prevcontinue4", "qtrainlog/batch 7c/", i, boolchange=False, nrs=nrs, ep=4000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
+
+
         #########################################
         # running quantifying games (50x) for selected parameters
-        
-        for i in range(50):
-            parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.1, 0.9, 10.0, False, "quanttest1", "qtrainlog/eval1/", i))
 
+        seeds = []
+        # generate 50 random seeds for evaluation
+        for _ in range(60):
+            seeds.append(np.random.randint(0, 1000000))
+        print("seeds: ", seeds)
 
+        for para in parametersets:
+            para.evalseed = seeds
 
+        # Run all scheduled parameters in parallel
+        num_jobs = len(parametersets)
 
-        #sys.exit(0) #once this works we do not exit here anymore...
+        if num_jobs <= max(1, os.cpu_count()):
+            num_workers = num_jobs
+        else:
+            num_workers = max(1, os.cpu_count() + 2)
+        print(f"Selecting {num_workers} as num_workers.", flush=True)
+
+        with Pool(processes=num_workers) as pool:
+            pool.map(doEval, parametersets)
+
+        timer = datetime.now() - timestamp
+        print(f"Finished evaluation of {len(parametersets)} policies in {timer}")
+        sys.exit(0) 
     else:
         ####################################### TEST AREA #######################################
         # Do visual test match here.
@@ -617,7 +715,9 @@ if __name__ == "__main__":
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 6f/parameterconfirm17_newbool_aggressive_tags_26_hard_lrate0.01_discount0.99_initq10.0_20nrs_1000ep_no_pre_nr0_q_table.npy", boolchange=True, prev_action=False, sharpturns=False)
         # op baseline 6f:
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 6f/parameterconfirm9_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_20nrs_1000ep_no_pre_nr0_q_table.npy", boolchange=False, prev_action=False, sharpturns=False)
-        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 7c/prevcontinue4_prevact_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_20nrs_4000ep_no_pre_nr0_q_table.npy", boolchange=False, prev_action=True, sharpturns=False)
+        # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 7c/prevcontinue4_prevact_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_20nrs_4000ep_no_pre_nr0_q_table.npy", boolchange=False, prev_action=True, sharpturns=False)
+        # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 8a/defender4_caps_and_tags_hard_lrate0.1_discount0.99_initq10.0_20nrs_1000ep_no_pre_nr0_q_table.npy", boolchange=False, prev_action=False, sharpturns=False)
+        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 8a/defender1_newbool_caps_and_tags_hard_lrate0.1_discount0.9_initq10.0_20nrs_1000ep_no_pre_nr1_q_table.npy", boolchange=True, prev_action=False, sharpturns=False)
     
         # Muster:
         #qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 2/_nr0_q_table.npy")

@@ -43,7 +43,7 @@ def train_qlearn(
     #logname: str = "match.log",
     q_table: QTable = None, #str = None #Not a string?! Is already a QTable!
     teamsize3: bool = False,
-    ignoreseed = True,
+    ignoreseed = False,
     sim_speed = 3,
     prev_act = False,
     opponent_solution: bool = False,
@@ -264,3 +264,257 @@ def train_qlearn(
     env.close()
     return rewardsteps, env.state['captures'], env.state['grabs'], env.state['tags'], u_table 
 #End of train_qlearn()
+
+def eval_qlearn(
+    s_table: NDArray,
+    seed: int = 12345,
+    difficulty: str = "hard",
+    reward_choice: str = "none selected",
+    render_mode: str = None,
+    timelimit: float = mctf_config["max_time"],
+    q_table: QTable = None, 
+    teamsize3: bool = False,
+    ignoreseed = False,
+    sim_speed = 3,
+    prev_act = False,
+    opponent_solution: bool = False,
+):
+    match reward_choice:
+        case "caps_and_grabs":
+            reward_method = caps_and_grabs
+        # case "double_aggressive_rew":
+        #     reward_method = double_aggressive_rew
+        case "single_aggressive_rew":
+            reward_method = single_aggressive_rew
+        # case "defensive_rew":
+        #     reward_method = defensive_rew
+        case "caps_and_tags":
+            reward_method = caps_and_tags
+        case "single_aggressive26":
+            reward_method = single_aggressive26
+        case "aggressive_tags_26":
+            reward_method = aggressive_tags_26
+        case _:
+            print("Error: Invalid reward choice. Please select a valid reward function.")
+            return
+
+    # teamsize is assumed 3
+
+    mctf_config["sim_speedup_factor"] = sim_speed#1 #20 #for faster visual test rendering (currently set to 1, since this appears to be the setting for the mctf26 configuration)
+    mctf_config["max_time"] = timelimit #6000.#timelimit #6000.
+    mctf_config["default_init"] = False #ignoreseed# This was changed to always be random, since non-random starts (still with seed) are without merrit for our purposes.
+    
+    env = CompPyquaticusEnv(action_space="discrete", config_dict=mctf_config, reward_config={'agent_0': reward_method, 'agent_1': reward_method, 'agent_2': reward_method, 'agent_3': reward_method, 'agent_4': reward_method, 'agent_5': reward_method}, render_mode=render_mode)
+    term_g = {'agent_0':False,'agent_1':False,'agent_2':False} 
+    truncated_g = {'agent_0':False,'agent_1':False,'agent_2':False}
+    term = term_g
+    trunc = truncated_g
+    reset_opts = {'normalize_obs': False, 'normalize_state': False}
+    obs, info = env.reset(options=reset_opts, seed=seed)
+
+    # Initialize episode statistics
+    episode_stats = {
+        'agent_positions': {
+            'agent_0': [], 'agent_1': [], 'agent_2': [],
+            'agent_3': [], 'agent_4': [], 'agent_5': []
+        },
+        'agent_headings': {
+            'agent_0': [], 'agent_1': [], 'agent_2': [],
+            'agent_3': [], 'agent_4': [], 'agent_5': []
+        },
+        'flag_positions': {
+            'blue_flag': [],
+            'red_flag': []
+        },
+        'scrimmage_line_distances': {
+            'agent_0': [], 'agent_1': [], 'agent_2': [],
+            'agent_3': [], 'agent_4': [], 'agent_5': []
+        },
+        'carrying_flag': {
+            'agent_0': [], 'agent_1': [], 'agent_2': [],
+            'agent_3': [], 'agent_4': [], 'agent_5': []
+        },
+        'on_own_side': {
+            'agent_0': [], 'agent_1': [], 'agent_2': [],
+            'agent_3': [], 'agent_4': [], 'agent_5': []
+        },
+        'is_tagged': {
+            'agent_0': [], 'agent_1': [], 'agent_2': [],
+            'agent_3': [], 'agent_4': [], 'agent_5': []
+        },
+        'tag_cooldowns': {
+            'agent_0': [], 'agent_1': [], 'agent_2': [],
+            'agent_3': [], 'agent_4': [], 'agent_5': []
+        },
+        'flag_status': [], #(whether flag is being carried)
+        'bearings_to_flag': {
+            'agent_0': [], 'agent_1': [], 'agent_2': [],
+            'agent_3': [], 'agent_4': [], 'agent_5': []
+        },
+        'agent_speeds': {
+            'agent_0': [], 'agent_1': [], 'agent_2': [],
+            'agent_3': [], 'agent_4': [], 'agent_5': []
+        },
+        'final_score': None,
+        'captures': None,
+        'grabs': None,
+        'tags': None,
+        'reward': None
+    }
+
+    # temp_captures = env.state["captures"]
+    # temp_grabs = env.state["grabs"]
+    # temp_tags = env.state["tags"]
+    
+    # Base_combine agents or external solution policy
+    if opponent_solution:#TODO test this, opponents from mctf26 are not working in this yet
+        print("using opponent from solution folder")
+        # Load external solution policy from opponents/25/solution.py
+        sol_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '..', 'opponents', '22', 'solution.py')
+        sol_path = os.path.normpath(sol_path)
+        if not os.path.isfile(sol_path):
+            # fallback to repo-root relative path
+            sol_path = os.path.join(os.getcwd(), 'opponents', '25', 'solution.py')
+        spec = importlib.util.spec_from_file_location('opponents_25_solution', sol_path)
+        sol_mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(sol_mod)
+        sol_inst = sol_mod.solution()
+
+        class _SolutionWrapper:
+            def __init__(self, agent_id, solver):
+                self._agent_id = agent_id
+                self._solver = solver
+
+            def compute_action(self, obs, info):
+                # solution.compute_action(agent_id, full_obs_normalized, full_obs, global_state)
+                return self._solver.compute_action(self._agent_id, None, obs, info)
+
+        H_one = _SolutionWrapper('agent_3', sol_inst)
+        H_two = _SolutionWrapper('agent_4', sol_inst)
+        H_three = _SolutionWrapper('agent_5', sol_inst)
+    else:
+        # Base_combine agents
+        # H_one = Heuristic_CTF_Agent('agent_3', env, mode=difficulty, continuous=False)
+        # H_two = Heuristic_CTF_Agent('agent_4', env, mode=difficulty, continuous=False)
+        # H_three = Heuristic_CTF_Agent('agent_5', env, mode=difficulty, continuous=False)
+        # Base_attacker agents
+        H_one = BaseAttacker('agent_3', env, mode=difficulty, continuous=False)
+        H_two = BaseAttacker('agent_4', env, mode=difficulty, continuous=False)
+        H_three = BaseAttacker('agent_5', env, mode=difficulty, continuous=False)
+    
+    # print("Setting up q-learn agents")
+    if q_table == None: print("Error: q-table not set up before agents are created.")
+    u_table = QTable(q_table.LEARNING_RATE, q_table.DISCOUNT_FACTOR, q_table.INITIAL_Q_VALUE, prev_action=q_table.prev_action) #since only the q-table and its values are used, it is not necessary to set all parameters (like sharpturns) here. Careful though, prev_action is necessary...
+    u_table.qtable = np.copy(q_table.qtable)
+    # q-learn agents
+    R_one = QlearnPolicy('agent_0', env, q_table, u_table)
+    R_two = QlearnPolicy('agent_1', env, q_table, u_table)
+    R_three = QlearnPolicy('agent_2', env, q_table, u_table)
+
+    step = 0
+    #rewardsteps = []   # [[], [], []] ?
+    # sum of reward is stored per episode (agents 0-2)
+    episode_reward = 0.
+
+    # Game-loop (executed every frame of the game):
+    while True:
+        # Base_combine agents
+        three = H_one.compute_action(obs, info)
+        four = H_two.compute_action(obs, info)
+        five = H_three.compute_action(obs, info)
+        # QPolicy agents
+        zero = R_one.compute_action(obs, info)
+        one = R_two.compute_action(obs, info)
+        two = R_three.compute_action(obs, info)
+        
+        # 3v3 step
+        obs, reward, term, trunc, info = env.step({'agent_0':zero,'agent_1':one, 'agent_2':two, 'agent_3':three, 'agent_4':four, 'agent_5':five})
+        # print("heading global or not?: ",info['agent_0']['global_state'][('agent_0', "heading")])
+        # print("Reward:",reward)#Reward: {'agent_0': 0.2734431070341813, 'agent_1': 0.2208806900959132, 'agent_2': -0.12809429110777018, 'agent_3': 0.0, 'agent_4': 0.0, 'agent_5': 0.0}
+        # print(reward["agent_0"],reward["agent_1"],reward["agent_2"])
+        
+        # Collect comprehensive agent statistics for this frame
+        for agent_id in ['agent_0', 'agent_1', 'agent_2', 'agent_3', 'agent_4', 'agent_5']:
+            if agent_id in info and 'global_state' in info[agent_id]:
+                global_state = info[agent_id]['global_state']
+                
+                # Position
+                pos = global_state[(agent_id, 'pos')]
+                episode_stats['agent_positions'][agent_id].append(pos)
+                
+                # Heading
+                heading = global_state[(agent_id, 'heading')]
+                episode_stats['agent_headings'][agent_id].append(heading)
+                
+                # Scrimmage line distance
+                scrimmage_dist = global_state.get((agent_id, 'scrimmage_line_distance'), None)
+                episode_stats['scrimmage_line_distances'][agent_id].append(scrimmage_dist)
+                
+                # On own side
+                on_own_side = global_state.get((agent_id, 'on_own_side'), None)
+                episode_stats['on_own_side'][agent_id].append(on_own_side)
+                
+                # Tag cooldown
+                tag_cooldown = global_state.get((agent_id, 'tag_cooldown'), None)
+                episode_stats['tag_cooldowns'][agent_id].append(tag_cooldown)
+                
+                # Speed
+                speed = global_state.get((agent_id, 'speed'), None)
+                episode_stats['agent_speeds'][agent_id].append(speed)
+            
+            # Observation-based features
+            if agent_id in obs:
+                # Carrying flag
+                carrying_flag = obs[agent_id].get('has_flag', False)
+                episode_stats['carrying_flag'][agent_id].append(carrying_flag)
+                
+                # Is tagged (check observation data)
+                is_tagged = obs[agent_id].get('is_tagged', False)
+                episode_stats['is_tagged'][agent_id].append(is_tagged)
+                
+                # Bearing to flag
+                bearing_to_flag = obs[agent_id].get('own_home_bearing', None)
+                if bearing_to_flag is None:
+                    bearing_to_flag = obs[agent_id].get('opponent_home_bearing', None)
+                episode_stats['bearings_to_flag'][agent_id].append(bearing_to_flag)
+        
+        # Flag positions and status
+        if 'flag_blue' in env.state:
+            episode_stats['flag_positions']['blue_flag'].append(env.state['flag_blue'])
+        if 'flag_red' in env.state:
+            episode_stats['flag_positions']['red_flag'].append(env.state['flag_red'])
+        
+        # Flag status (whether carried)
+        flag_carried = any(obs[f'agent_{i}'].get('has_flag', False) for i in range(6) if f'agent_{i}' in obs)
+        episode_stats['flag_status'].append(flag_carried)
+        
+
+        # sum of reward is stored per episode (agents 0-2)
+        episode_reward += reward['agent_0'] + reward['agent_1'] + reward['agent_2']
+
+        k =  list(term.keys()) #Gameover check.
+
+        step += 1
+        if term[k[0]] == True or trunc[k[0]]==True:
+            # Game over
+            break
+    #End of while True (game loop)
+    
+    # Store final score and statistics
+    episode_stats['final_score'] = env.state['captures']
+    episode_stats['grabs'] = env.state['grabs']
+    episode_stats['tags'] = env.state['tags']
+
+    # rewardsum = [0., 0., 0.]
+    # for r in rewardsteps:
+    #     rewardsum[0] += r['agent_0']
+    #     rewardsum[1] += r['agent_1']
+    #     rewardsum[2] += r['agent_2']
+    # # rewardcurve.append(rewardsum) 
+    
+    episode_stats['reward'] = episode_reward
+    
+    env.close()
+
+    return episode_stats
+#End of eval_qlearn()
