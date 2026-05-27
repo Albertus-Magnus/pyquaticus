@@ -378,6 +378,25 @@ def compute_all_metrics(episode_stats):
     return metrics
 
 
+def extract_score_grabs_tags(data):
+    """
+    Extract score, grabs, and tags from all episodes in data array.
+    data: numpy array of episode_stats dictionaries
+    Returns: three numpy arrays, each with shape (num_episodes, 2) for [blue, red]
+        - scores: [blue_scores, red_scores]
+        - grabs: [blue_grabs, red_grabs]
+        - tags: [blue_tags, red_tags]
+    """
+    scores = []
+    grabs = []
+    tags = []
+    
+    for episode_stats in data:
+        scores.append(episode_stats.get('final_score', [0, 0]))
+        grabs.append(episode_stats.get('grabs', [0, 0]))
+        tags.append(episode_stats.get('tags', [0, 0]))
+    
+    return np.array(scores), np.array(grabs), np.array(tags)
 
 
 def evalrender(foldername, parameterset_name):
@@ -462,6 +481,11 @@ def evalrender(foldername, parameterset_name):
 
     # ===== Generate combined boxplot visualization for all metrics =====
     visualize_all_metrics_combined(metric_arrays, metric_display_names, foldername, parameterset_name)
+    
+    # ===== Generate score, grabs, tags boxplot =====
+    print(f"\nGenerating score, grabs, tags visualization...")
+    scores, grabs, tags = extract_score_grabs_tags(data)
+    visualize_score_grabs_tags_boxplot(scores, grabs, tags, foldername, parameterset_name)
     
     # ===== Save metrics to file =====
     metrics_file = foldername + parameterset_name + "_metrics.npy"
@@ -635,6 +659,67 @@ def visualize_metric_boxplot(metric_array, foldername, parameterset_name, metric
     plt.savefig(output_file, dpi=300, bbox_inches='tight')
     plt.close()
 
+
+def visualize_score_grabs_tags_boxplot(scores, grabs, tags, foldername, parameterset_name):
+    """
+    Create a boxplot visualization showing score, grabs, and tags for both teams.
+    Each metric has Blue and Red boxes displayed side-by-side.
+    scores, grabs, tags: numpy arrays with shape (num_episodes, 2)
+    """
+    fig, ax = plt.subplots(figsize=(14, 6))
+    
+    # Prepare data for boxplot: [Score_Blue, Score_Red, Grabs_Blue, Grabs_Red, Tags_Blue, Tags_Red]
+    data_to_plot = [
+        scores[:, 0], scores[:, 1],   # Score: Blue, Red
+        grabs[:, 0], grabs[:, 1],     # Grabs: Blue, Red
+        tags[:, 0], tags[:, 1]        # Tags: Blue, Red
+    ]
+    
+    # Create boxplot with custom positions for better spacing
+    positions = [1, 1.8, 3.5, 4.3, 6, 6.8]
+    bp = ax.boxplot(data_to_plot, positions=positions, labels=['Score\nBlue', 'Score\nRed', 'Grabs\nBlue', 'Grabs\nRed', 'Tags\nBlue', 'Tags\nRed'], 
+                    patch_artist=True, widths=0.6)
+    
+    # Color the boxes: alternating lightblue and lightcoral
+    colors = ['lightblue', 'lightcoral', 'lightblue', 'lightcoral', 'lightblue', 'lightcoral']
+    for patch, color in zip(bp['boxes'], colors):
+        patch.set_facecolor(color)
+    
+    # Customize appearance
+    for median in bp['medians']:
+        median.set(color='black', linewidth=1.5)
+    for whisker in bp['whiskers']:
+        whisker.set(linewidth=1)
+    for cap in bp['caps']:
+        cap.set(linewidth=1)
+    
+    # Add individual points with jitter
+    for i, (pos, team_data) in enumerate(zip(positions, data_to_plot)):
+        x = np.random.normal(pos, 0.04, size=len(team_data))
+        ax.scatter(x, team_data, alpha=0.25, s=20)
+    
+    # Customize axes
+    ax.set_ylabel('Count', fontsize=AXISFONT)
+    ax.set_title(f'Score, Grabs, Tags - {parameterset_name}', fontsize=AXISFONT)
+    ax.grid(True, alpha=0.3, axis='y')
+    ax.tick_params(axis='x', labelsize=AXISFONT)
+    ax.tick_params(axis='y', labelsize=AXISFONT)
+    
+    # Set x-axis to show metric group separations
+    ax.set_xlim(0, 7.8)
+    
+    # Add vertical separators between metric groups
+    ax.axvline(x=2.5, color='gray', linestyle='--', alpha=0.3, linewidth=1)
+    ax.axvline(x=5, color='gray', linestyle='--', alpha=0.3, linewidth=1)
+    
+    plt.tight_layout()
+    
+    # Save figure
+    output_file = f"{foldername}figures/{parameterset_name}_score_grabs_tags_boxplot.png"
+    plt.savefig(output_file, dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    print(f"Score/Grabs/Tags boxplot saved to: {output_file}")
 
 
 def plot_rewards(rewarray, foldername, name):
