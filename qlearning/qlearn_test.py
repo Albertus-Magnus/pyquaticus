@@ -85,6 +85,7 @@ def train_qlearn(
     
     # timelimit is changed if something was specified (else mctf_config value)
     mctf_config["max_time"] = timelimit #6000.#timelimit #6000.
+    # USE SEED y/N
     mctf_config["default_init"] = False #ignoreseed# This was changed to always be random, since non-random starts (still with seed) are without merrit for our purposes.
     # The speedup factor was observed to change the rendering of the agents. Thus it does affect rendered speed (probably every frame computed is rendered?, perhaps this explains why a "10-minute game" is rendered in ~4min...).
 
@@ -310,7 +311,9 @@ def eval_qlearn(
     term = term_g
     trunc = truncated_g
     reset_opts = {'normalize_obs': False, 'normalize_state': False}
+    print(f"Starting evaluation with seed {seed} and reward {reward_choice}")
     obs, info = env.reset(options=reset_opts, seed=seed)
+    #print(f"Ping") #error is in line 314 /\
 
     # Initialize episode statistics
     episode_stats = {
@@ -346,7 +349,8 @@ def eval_qlearn(
             'agent_0': [], 'agent_1': [], 'agent_2': [],
             'agent_3': [], 'agent_4': [], 'agent_5': []
         },
-        'flag_status': [], #(whether flag is being carried)
+        'blue_flag_status': [], #(whether flag is being carried)
+        'red_flag_status': [], #(whether flag is being carried)
         'bearings_to_flag': {
             'agent_0': [], 'agent_1': [], 'agent_2': [],
             'agent_3': [], 'agent_4': [], 'agent_5': []
@@ -432,6 +436,10 @@ def eval_qlearn(
         # print("heading global or not?: ",info['agent_0']['global_state'][('agent_0', "heading")])
         # print("Reward:",reward)#Reward: {'agent_0': 0.2734431070341813, 'agent_1': 0.2208806900959132, 'agent_2': -0.12809429110777018, 'agent_3': 0.0, 'agent_4': 0.0, 'agent_5': 0.0}
         # print(reward["agent_0"],reward["agent_1"],reward["agent_2"])
+
+        # print("info keys: ", info['agent_0']['global_state'].keys())
+        # print("obs keys: ", obs['agent_0'].keys())
+        # sys.exit() #TODOTEST
         
         # Collect comprehensive agent statistics for this frame
         for agent_id in ['agent_0', 'agent_1', 'agent_2', 'agent_3', 'agent_4', 'agent_5']:
@@ -447,46 +455,51 @@ def eval_qlearn(
                 episode_stats['agent_headings'][agent_id].append(heading)
                 
                 # Scrimmage line distance
-                scrimmage_dist = global_state.get((agent_id, 'scrimmage_line_distance'), None)
+                scrimmage_dist = global_state[(agent_id, 'scrimmage_line_distance')]
                 episode_stats['scrimmage_line_distances'][agent_id].append(scrimmage_dist)
                 
                 # On own side
-                on_own_side = global_state.get((agent_id, 'on_own_side'), None)
+                on_own_side = global_state[(agent_id, 'on_side')]
                 episode_stats['on_own_side'][agent_id].append(on_own_side)
                 
                 # Tag cooldown
-                tag_cooldown = global_state.get((agent_id, 'tag_cooldown'), None)
+                tag_cooldown = global_state[(agent_id, 'tagging_cooldown')]
                 episode_stats['tag_cooldowns'][agent_id].append(tag_cooldown)
                 
                 # Speed
-                speed = global_state.get((agent_id, 'speed'), None)
+                speed = global_state[(agent_id, 'speed')]
                 episode_stats['agent_speeds'][agent_id].append(speed)
             
             # Observation-based features
             if agent_id in obs:
                 # Carrying flag
-                carrying_flag = obs[agent_id].get('has_flag', False)
+                carrying_flag = obs[agent_id]['has_flag']
                 episode_stats['carrying_flag'][agent_id].append(carrying_flag)
                 
                 # Is tagged (check observation data)
-                is_tagged = obs[agent_id].get('is_tagged', False)
+                is_tagged = obs[agent_id]['is_tagged']
                 episode_stats['is_tagged'][agent_id].append(is_tagged)
                 
-                # Bearing to flag
-                bearing_to_flag = obs[agent_id].get('own_home_bearing', None)
-                if bearing_to_flag is None:
-                    bearing_to_flag = obs[agent_id].get('opponent_home_bearing', None)
-                episode_stats['bearings_to_flag'][agent_id].append(bearing_to_flag)
+                # # Bearing to flag     #I think this one is not necessary and is not available without computing it
+                # bearing_to_flag = obs[agent_id]['own_home_bearing']
+                # if bearing_to_flag is None:
+                #     bearing_to_flag = obs[agent_id].get('opponent_home_bearing', None)
+                # episode_stats['bearings_to_flag'][agent_id].append(bearing_to_flag)
         
         # Flag positions and status
-        if 'flag_blue' in env.state:
-            episode_stats['flag_positions']['blue_flag'].append(env.state['flag_blue'])
-        if 'flag_red' in env.state:
-            episode_stats['flag_positions']['red_flag'].append(env.state['flag_red'])
+        episode_stats['flag_positions']['blue_flag'].append(info['agent_0']['global_state']['blue_flag_pos'])
+        episode_stats['flag_positions']['red_flag'].append(info['agent_0']['global_state']['red_flag_pos'])
         
-        # Flag status (whether carried)
-        flag_carried = any(obs[f'agent_{i}'].get('has_flag', False) for i in range(6) if f'agent_{i}' in obs)
-        episode_stats['flag_status'].append(flag_carried)
+        episode_stats['blue_flag_status'].append(info['agent_0']['global_state']['blue_flag_pickup'])
+        episode_stats['red_flag_status'].append(info['agent_0']['global_state']['red_flag_pickup'])
+        # if 'flag_blue' in env.state:
+        #     episode_stats['flag_positions']['blue_flag'].append(env.state['flag_blue'])
+        # if 'flag_red' in env.state:
+        #     episode_stats['flag_positions']['red_flag'].append(env.state['flag_red'])
+        
+        # # Flag status (whether carried)
+        # flag_carried = any(obs[f'agent_{i}'].get('has_flag', False) for i in range(6) if f'agent_{i}' in obs)
+        # episode_stats['flag_status'].append(flag_carried)
         
 
         # sum of reward is stored per episode (agents 0-2)
@@ -515,6 +528,6 @@ def eval_qlearn(
     episode_stats['reward'] = episode_reward
     
     env.close()
-
+    # print("EPISODE STATS", episode_stats)
     return episode_stats
 #End of eval_qlearn()

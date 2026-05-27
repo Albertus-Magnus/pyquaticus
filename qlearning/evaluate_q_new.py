@@ -60,8 +60,9 @@ def compute_area_coverage(episode_stats, team_agents):
             areas.append(area)
         except (IndexError, TypeError):
             continue
-    
-    return np.mean(areas) if areas else 0.0
+
+    # normalized by half the map area (6400) because that would be the largest triangle (3 agents assumed)
+    return (np.mean(areas) / 6400.) if areas else compute_distance_coverage(episode_stats, team_agents) 
 
 
 def compute_distance_coverage(episode_stats, team_agents):
@@ -69,6 +70,7 @@ def compute_distance_coverage(episode_stats, team_agents):
     Compute summed pairwise distances between all agents in team, averaged over frames.
     Measure of how well the team is spreading out.
     Returns: average pairwise distance
+    normalize by maximum expected distance 180. (more 178,.. but is upper bound estimation anyways)
     """
     if len(team_agents) < 2:
         return 0.0
@@ -92,8 +94,8 @@ def compute_distance_coverage(episode_stats, team_agents):
             pairwise_distances.append(frame_dist)
         except (IndexError, TypeError):
             continue
-    
-    return np.mean(pairwise_distances) if pairwise_distances else 0.0
+    # 540 = 180 * 3 (max distance and number of pairs for normalization)
+    return np.mean(pairwise_distances) / 540. if pairwise_distances else 0.0
 
 
 def compute_voronoi_coverage(episode_stats, team_agents):
@@ -147,7 +149,7 @@ def compute_voronoi_coverage(episode_stats, team_agents):
                         cell_areas.append(area)
             
             if len(cell_areas) == 3 and np.mean(cell_areas) > 0:
-                uniformity = np.std(cell_areas) / np.mean(cell_areas)
+                uniformity = np.std(cell_areas) / np.mean(cell_areas) #working as described in report.
                 uniformity_scores.append(uniformity)
         except Exception:
             continue
@@ -161,6 +163,7 @@ def compute_defensive_distance(episode_stats, own_team_agents, opponent_team_age
     and own agent closest to that opponent.
     Measure of defense effectiveness.
     Returns: average defensive distance
+    Normalized by 180 (map diagonal)
     """
     if len(own_team_agents) == 0 or len(opponent_team_agents) == 0:
         return 0.0
@@ -211,7 +214,7 @@ def compute_defensive_distance(episode_stats, own_team_agents, opponent_team_age
         except (IndexError, TypeError):
             continue
     
-    return np.mean(defensive_distances) if defensive_distances else 0.0
+    return np.mean(defensive_distances) / 180. if defensive_distances else 0.0
 
 
 def compute_aggressive_distance(episode_stats, own_team_agents, opp_flag_pos_key):
@@ -253,16 +256,16 @@ def compute_aggressive_distance(episode_stats, own_team_agents, opp_flag_pos_key
         except (IndexError, TypeError):
             continue
     
-    return np.mean(aggressive_distances) if aggressive_distances else 0.0
+    return np.mean(aggressive_distances) / 180. if aggressive_distances else 0.0
 
 
-def compute_combined_position_score(def_dist, agg_dist, normalize_scale=100.0):
+def compute_combined_position_score(def_dist, agg_dist, normalize_scale=100.0, wd=1., wo=1.):
     """
     Compute combined position score: 1 - (defensive_distance + aggressive_distance) * 0.5 / normalize_scale
     Higher score = better positioning.
     Returns: combined score (0-1 range approximately)
     """
-    combined = (def_dist + agg_dist) * 0.5 / normalize_scale
+    combined = (wd * def_dist + wo * agg_dist) * 0.5 # / normalize_scale
     return max(0.0, 1.0 - combined)
 
 
@@ -278,7 +281,11 @@ def compute_score_tag_ratio(episode_stats):
     ratios = []
     for i in range(2):
         # Add 1 to avoid division by zero
-        ratio = captures[i] / (tags[i] + 1)
+        if tags[i] == 0:
+            ratio = captures[i]  * 2 # Not an expected case, but some reward is given for captures without tags.
+            print(f"Warning: No tags for team {i} in score/tag ratio metric.")
+        else:
+            ratio = captures[i] / (tags[i] + 1)
         ratios.append(ratio)
     
     return ratios
@@ -432,7 +439,7 @@ def evalrender(foldername, parameterset_name):
         'total_distance': 'Total Distance',
         'area_coverage': 'Area Coverage',
         'distance_coverage': 'Distance Coverage',
-        'voronoi_coverage': 'Voronoi Uniformity (std/mean)',
+        'voronoi_coverage': 'Voronoi Uniformity',
         'defensive_distance': 'Defensive Distance',
         'aggressive_distance': 'Aggressive Distance',
         'combined_position_score': 'Combined Position Score',
@@ -453,11 +460,8 @@ def evalrender(foldername, parameterset_name):
     
     print(f"{'-'*90}\n")
 
-    # ===== Generate boxplot visualizations for each metric =====
-    for metric_name, display_name in metric_display_names.items():
-        arr = metric_arrays[metric_name]
-        # arr shape: (num_matches, 2)
-        visualize_metric_boxplot(arr, foldername, parameterset_name, metric_name, display_name)
+    # ===== Generate combined boxplot visualization for all metrics =====
+    visualize_all_metrics_combined(metric_arrays, metric_display_names, foldername, parameterset_name)
     
     # ===== Save metrics to file =====
     metrics_file = foldername + parameterset_name + "_metrics.npy"
@@ -468,10 +472,131 @@ def evalrender(foldername, parameterset_name):
     print(f"\nVisualizations saved to: {vis_folder}\n")
 
 
+def group_metrics_by_unit():
+    """
+    Group metrics by unit type for visualization with appropriate scaling.
+    Returns: list of (metric_name, unit_group) tuples ordered for display
+    """
+    # Metrics grouped by unit type: (metric_name, unit_group, display_name)
+    metric_groups = [
+        # Total distance metric (group 0)
+        ('total_distance', 0, 'Total Distance'),
+        # Normalized metrics (group 1) - 0 to 1.0 value range
+        ('distance_coverage', 1, 'Distance Coverage'),
+        ('defensive_distance', 1, 'Defensive Distance'),
+        ('aggressive_distance', 1, 'Aggressive Distance'),
+        ('area_coverage', 1, 'Area Coverage'),
+        ('combined_position_score', 1, 'Combined Position Score'),
+        ('voronoi_coverage', 2, 'Voronoi Uniformity'),
+        ('score_tag_ratio', 2, 'Score/Tag Ratio'),
+        # Percentage metric (group 2) - 0-100 scale
+        ('aggr_def_percentage', 3, 'Aggr-Def Percentage'),
+    ]
+    return metric_groups
+
+
+def visualize_all_metrics_combined(metric_arrays, metric_display_names, foldername, parameterset_name):
+    """
+    Create a single figure with 9 subplots (1x9) showing all metrics as boxplots.
+    Metrics are grouped by unit type with separate y-axis scaling per group.
+    """
+    metric_groups = group_metrics_by_unit()
+    
+    # Create figure with 9 subplots in 1 row
+    fig, axes = plt.subplots(1, 9, figsize=(36, 6))
+    
+    # Track y-axis ranges for each unit group for dynamic scaling
+    y_ranges = {0: [], 1: [], 2: [], 3: []}  # group_id -> list of data for that group
+    
+    # First pass: collect data for each unit group to determine y-axis ranges
+    for metric_name, unit_group, _ in metric_groups:
+        arr = metric_arrays[metric_name]
+        y_ranges[unit_group].extend(arr[:, 0].tolist())  # Blue team
+        y_ranges[unit_group].extend(arr[:, 1].tolist())  # Red team
+    
+    # Compute y-axis limits for each group
+    y_limits = {}
+    for group_id in y_ranges:
+        if y_ranges[group_id] and group_id != 1:
+            data = np.array(y_ranges[group_id])
+            min_val = np.min(data)
+            max_val = np.max(data)
+            margin = (max_val - min_val) * 0.1  # 10% margin
+            y_limits[group_id] = (min_val - margin, max_val + margin)
+        else:
+            y_limits[group_id] = (0, 1)
+    
+    # Force percentage group (3) to be 0-100
+    y_limits[3] = (-5, 105)
+    
+    # Color the boxes
+    colors = ['lightblue', 'lightcoral']
+    
+    # Second pass: create subplots
+    for subplot_idx, (metric_name, unit_group, display_name) in enumerate(metric_groups):
+        ax = axes[subplot_idx]
+        arr = metric_arrays[metric_name]
+        
+        # Prepare data for boxplot
+        data_to_plot = [arr[:, 0], arr[:, 1]]  # Blue and Red teams
+        
+        # Create boxplot
+        bp = ax.boxplot(data_to_plot, labels=['Blue', 'Red'], patch_artist=True, widths=0.5)
+        
+        # Color the boxes
+        for patch, color in zip(bp['boxes'], colors):
+            patch.set_facecolor(color)
+        
+        # Customize appearance
+        for median in bp['medians']:
+            median.set(color='black', linewidth=1.5)
+        for whisker in bp['whiskers']:
+            whisker.set(linewidth=1)
+        for cap in bp['caps']:
+            cap.set(linewidth=1)
+        
+        # Add individual points
+        for i, team_data in enumerate(data_to_plot):
+            x = np.random.normal(i+1, 0.04, size=len(team_data))
+            ax.scatter(x, team_data, alpha=0.25, s=20)
+        
+        # AXISFONT = 22
+        # LEGENDFONT = 17
+        # NUMBERSFONT = 18
+        NAMEFONT = 25
+
+        # Set axis labels and limits
+        ax.set_title(display_name, fontsize=NAMEFONT)
+        ax.set_ylim(y_limits[unit_group])
+        ax.grid(True, alpha=0.3, axis='y')
+        ax.tick_params(axis='x', labelsize=AXISFONT)
+        ax.tick_params(axis='y', labelsize=AXISFONT)
+        
+        # Add subtle background color to separate unit groups TODO find better colors
+        if unit_group == 0:
+            ax.set_facecolor('#f0f0f0')  # Light gray for distance metrics
+        elif unit_group == 1:
+            ax.set_facecolor('#ffffff')  # White for unitless metrics
+        else:
+            ax.set_facecolor('#f8f8f0')  # Subtle beige for percentage
+
+    # Add title and adjust layout
+    # fig.suptitle(f'All Metrics - {parameterset_name}', fontsize=16, y=1.02)
+    plt.tight_layout()
+    
+    # Save figure
+    output_file = f"{foldername}figures/{parameterset_name}_metrics_combined.png"
+    plt.savefig(output_file, dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    print(f"Combined metrics visualization saved to: {output_file}")
+
+
 def visualize_metric_boxplot(metric_array, foldername, parameterset_name, metric_name, metric_display_name):
     """
     Create a boxplot visualization for a metric across 60 evaluation matches.
     metric_array: shape (60, 2) where columns are [blue_team, red_team]
+    Note: This function is kept for backward compatibility. New code should use visualize_all_metrics_combined().
     """
     fig, ax = plt.subplots(figsize=(10, 6))
     
@@ -963,33 +1088,6 @@ def visualize_curve_boxplots(fulldata, foldername, name, attribute_name, show_ou
 #End of visualize_curve_boxplots()
 
 if __name__ == "__main__":
-
-    print("Eval Render mode selected.")
-
-    parametersets: list[ParameterSet] = []
-    i = 0
-    nrs = 20
-    #########################################
-    # The policies that are referred to and shown in the thesis q-results section:
-    parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parameterconfirm9", "qtrainlog/batch 6f/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
-    # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.3, 0.8, 10.0, False, "unsuitable_param2", "qtrainlog/batch 6h/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
-    # parametersets.append(ParameterSet("single_aggressive_rew", "hard", 0.01, 0.99, 10.0, False, "aggrtagsnobool", "qtrainlog/batch 6g/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
-    # parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.99, 10.0, False, "defender4", "qtrainlog/batch 8a/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
-    # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm11", "qtrainlog/batch 6g/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=True, sim_speedup=3))
-    # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parameterconfirm9", "qtrainlog/batch 6g/", i, boolchange=True, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
-    # parametersets.append(ParameterSet("aggressive_tags_26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm17", "qtrainlog/batch 6f/", i, boolchange=True, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
-    # parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "defender1", "qtrainlog/batch 8a/", i, boolchange=True, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
-    # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, True, "pretr1", "qtrainlog/batch 8a/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
-    # parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, True, "pretr3", "qtrainlog/batch 8a/", i, boolchange=True, nrs=20, ep=1000)) 
-    # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "prevcontinue4", "qtrainlog/batch 7c/", i, boolchange=False, nrs=nrs, ep=4000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
-
-
-    #########################################
-
-    for para in parametersets:
-        evalrender(para.foldername, para.create_name_without_index())
-    print("All visualizations completed.")
-    sys.exit()
 
     # print("Circledetector test")
     # print(circle_detection(example_positions))

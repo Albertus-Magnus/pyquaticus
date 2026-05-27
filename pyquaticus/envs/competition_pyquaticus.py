@@ -133,7 +133,7 @@ class CompPyquaticusEnv(PyQuaticusEnv):
         power_slot_one = 0 
         power_slot_two = 0
 
-        self.power_play_length = self.max_cycles * self.power_play_percentage
+        self.power_play_length = int(self.max_cycles * self.power_play_percentage)
 
         #Attempt to find two random times x length apart
         for i in range(10):

@@ -214,6 +214,7 @@ def doEval(parameterset: ParameterSet):
     #np.random.seed(None)   # thus no numpy reset necessary
 
     eval_length = 60
+    # eval_length = 5 #TODOTEST set back after testing
     
     # statecount table
     if parameterset.previous_action:
@@ -252,7 +253,7 @@ def doEval(parameterset: ParameterSet):
         
         ##########EVAL. TIMELIMNIT
         # timel = 600. # Evaluation has one time-limit for all tested policies. Could be 1200, but 600 is more consistent with mctf26 results? <-maybe this is not important since mctf ranking uses 100x games anyways...
-        timel = 1200. #using this because more consistent with prelim. training data
+        timel = 1200.#TODOTEST#1200. #using this because more consistent with prelim. training data
         
         # Running every episode, getting back a list/dictionary of values for each
         episode_stats = eval_qlearn(s_table, seed=seeed, difficulty=parameterset.dif, reward_choice=parameterset.rewardchoice, render_mode=None, timelimit=timel, q_table=qtableee, teamsize3=True, ignoreseed=parameterset.ignoreseed, sim_speed=parameterset.sim_speedup, prev_act=parameterset.previous_action)
@@ -620,7 +621,7 @@ if __name__ == "__main__":
         #rewardchoice = "double_aggressive_rew" (outdated)
         #rewardchoice = "caps_and_grabs" (outdated)
         #rewardchoice = "caps_and_tags"
-    elif len(sys.argv) > 1 and sys.argv[1] == "eval":
+    elif len(sys.argv) > 1 and sys.argv[1] == "eval": ####
         print("Evaluation pipeline selected.")
 
         timestamp = datetime.now()
@@ -645,10 +646,10 @@ if __name__ == "__main__":
 
 
         #########################################
-        # running quantifying games (50x) for selected parameters
+        # running quantifying games (60x) for selected parameters
 
         seeds = []
-        # generate 50 random seeds for evaluation
+        # generate 60 random seeds for evaluation
         for _ in range(60):
             seeds.append(np.random.randint(0, 1000000))
         print("seeds: ", seeds)
@@ -674,7 +675,7 @@ if __name__ == "__main__":
 
 
 
-    elif len(sys.argv) > 1 and sys.argv[1] == "render":
+    elif len(sys.argv) > 1 and sys.argv[1] == "render": ####
         from evaluate_q_new import evalrender  # Local import to avoid circular dependency
         print("Eval Render mode selected.")
 
@@ -704,7 +705,7 @@ if __name__ == "__main__":
         # for debugging, print the keys and numbers of entries for the keys:
         # currently not right, TypeError: object of type 'NoneType' has no len(), 
         # but should be a dict with keys 'rewards', 'captures', 'steps', 'timeouts' and each key should have a list of 60 entries (for the 60 evaluation seeds)
-        data0 = data[0]
+        # data0 = data[0]
         """ data[0] should be a dict with the following keys:
         agent_positions
         agent_headings
@@ -724,9 +725,10 @@ if __name__ == "__main__":
         reward"""
         # for key in data0.keys():
         #     print(f"Key: {key}, Number of entries: {len(data0[key])}")
-        for tedseser in ["agent_positions", "flag_positions", "on_own_side"]: #agent positions are there, but flag positions is [] and onownside is list of None's. Need to recompute eval data after TODO bugfix
-            print(f"{data0[tedseser]}") # print the first 5 entries for these keys to check if they look correct
-        sys.exit()
+        # for tedseser in ["agent_positions", "flag_positions", "on_own_side"]: #agent positions are there, but flag positions is [] and onownside is list of None's. Need to recompute eval data after TODO bugfix
+        #     print(f"{data0[tedseser]}") # print the first 5 entries for these keys to check if they look correct
+        # print(data0) #much more promising now...
+        # sys.exit()
         for para in parametersets:
             evalrender(para.foldername, para.create_name_without_index())
 
@@ -787,10 +789,10 @@ if __name__ == "__main__":
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 6h/unsuitable_param2_single_aggressive_rew_hard_lrate0.3_discount0.8_initq10.0_20nrs_1000ep_no_pre_nr0_q_table.npy", boolchange=False, prev_action=False, sharpturns=False)
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 6f/parameterconfirm17_newbool_aggressive_tags_26_hard_lrate0.01_discount0.99_initq10.0_20nrs_1000ep_no_pre_nr0_q_table.npy", boolchange=True, prev_action=False, sharpturns=False)
         # op baseline 6f:
-        # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 6f/parameterconfirm9_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_20nrs_1000ep_no_pre_nr0_q_table.npy", boolchange=False, prev_action=False, sharpturns=False)
+        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 6f/parameterconfirm9_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_20nrs_1000ep_no_pre_nr0_q_table.npy", boolchange=False, prev_action=False, sharpturns=False)
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 7c/prevcontinue4_prevact_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_20nrs_4000ep_no_pre_nr0_q_table.npy", boolchange=False, prev_action=True, sharpturns=False)
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 8a/defender4_caps_and_tags_hard_lrate0.1_discount0.99_initq10.0_20nrs_1000ep_no_pre_nr0_q_table.npy", boolchange=False, prev_action=False, sharpturns=False)
-        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 8a/defender1_newbool_caps_and_tags_hard_lrate0.1_discount0.9_initq10.0_20nrs_1000ep_no_pre_nr1_q_table.npy", boolchange=True, prev_action=False, sharpturns=False)
+        # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 8a/defender1_newbool_caps_and_tags_hard_lrate0.1_discount0.9_initq10.0_20nrs_1000ep_no_pre_nr1_q_table.npy", boolchange=True, prev_action=False, sharpturns=False)
     
         # Muster:
         #qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 2/_nr0_q_table.npy")
@@ -804,7 +806,7 @@ if __name__ == "__main__":
         rewardsteps, score, grabs, tags, u_table  = train_qlearn(
             st,
             seed=seed,
-            difficulty="easy",
+            difficulty='hard',#"nothing",#"easy",
             reward_choice=rewardchoice,
             render_mode='human',
             timelimit=600.,
@@ -814,7 +816,7 @@ if __name__ == "__main__":
             sim_speed=10,
             opponent_solution=use_solution_policy,
         )
-        print(f"score: {grabs}, grabs: {grabs}")
+        print(f"score: {score}, grabs: {grabs}")
         timestamp = datetime.now()
         print("Ending experiment at ",timestamp.now().strftime("%d-%m-%Y %H:%M:%S"))
         sys.exit(0)
