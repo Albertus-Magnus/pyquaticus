@@ -5,11 +5,14 @@ from matplotlib import pyplot as plt
 import numpy as np
 from scipy.spatial import Voronoi
 from evaluate_q import matrix_to_heatmap
+# from qlearning.train_qlearn import ParameterSet
+from train_qlearn import ParameterSet
 
 BAGSIZE = 50 # number of episodes to average over for boxplot visualization, default 50
 AXISFONT = 22
 LEGENDFONT = 17
 NUMBERSFONT = 18
+NAMEFONT = 25
 
 
 # ===== Metric Computation Helper Functions =====
@@ -488,10 +491,10 @@ def evalrender(foldername, parameterset_name):
     visualize_score_grabs_tags_boxplot(scores, grabs, tags, foldername, parameterset_name)
     
     # ===== Save metrics to file =====
-    metrics_file = foldername + parameterset_name + "_metrics.npy"
-    np.save(metrics_file, metric_arrays)
-    print(f"Metrics saved to: {metrics_file}")
-    print(f"Shape: {len(data)} matches x 9 metrics x 2 teams")
+    # metrics_file = foldername + parameterset_name + "_metrics.npy"
+    # np.save(metrics_file, metric_arrays)
+    # print(f"Metrics saved to: {metrics_file}")
+    # print(f"Shape: {len(data)} matches x 9 metrics x 2 teams")
     
     print(f"\nVisualizations saved to: {vis_folder}\n")
 
@@ -512,9 +515,9 @@ def group_metrics_by_unit():
         ('area_coverage', 1, 'Area Coverage'),
         ('combined_position_score', 1, 'Combined Position Score'),
         ('voronoi_coverage', 2, 'Voronoi Uniformity'),
-        ('score_tag_ratio', 2, 'Score/Tag Ratio'),
-        # Percentage metric (group 2) - 0-100 scale
-        ('aggr_def_percentage', 3, 'Aggr-Def Percentage'),
+        ('score_tag_ratio', 3, 'Score/Tag Ratio'),
+        # Percentage metric (group 4) - 0-100 scale
+        ('aggr_def_percentage', 4, 'Aggr-Def Percentage'),
     ]
     return metric_groups
 
@@ -530,7 +533,7 @@ def visualize_all_metrics_combined(metric_arrays, metric_display_names, folderna
     fig, axes = plt.subplots(1, 9, figsize=(36, 6))
     
     # Track y-axis ranges for each unit group for dynamic scaling
-    y_ranges = {0: [], 1: [], 2: [], 3: []}  # group_id -> list of data for that group
+    y_ranges = {0: [], 1: [], 2: [], 3: [], 4: []}  # group_id -> list of data for that group
     
     # First pass: collect data for each unit group to determine y-axis ranges
     for metric_name, unit_group, _ in metric_groups:
@@ -541,7 +544,13 @@ def visualize_all_metrics_combined(metric_arrays, metric_display_names, folderna
     # Compute y-axis limits for each group
     y_limits = {}
     for group_id in y_ranges:
-        if y_ranges[group_id] and group_id != 1:
+        if group_id == 0:
+            # For distance metrics, set a fixed range based on expected values (0 to 2000)
+            y_limits[group_id] = (0, 6300)
+        elif group_id == 2:
+            # For Voronoi metrics, set a fixed range based on expected values (0 to 1)
+            y_limits[group_id] = (0, 2)
+        elif y_ranges[group_id] and group_id != 1:
             data = np.array(y_ranges[group_id])
             min_val = np.min(data)
             max_val = np.max(data)
@@ -549,9 +558,8 @@ def visualize_all_metrics_combined(metric_arrays, metric_display_names, folderna
             y_limits[group_id] = (min_val - margin, max_val + margin)
         else:
             y_limits[group_id] = (0, 1)
-    
-    # Force percentage group (3) to be 0-100
-    y_limits[3] = (-5, 105)
+    # Force percentage group (4) to be 0-100
+    y_limits[4] = (-5, 105)
     
     # Color the boxes
     colors = ['lightblue', 'lightcoral']
@@ -564,8 +572,10 @@ def visualize_all_metrics_combined(metric_arrays, metric_display_names, folderna
         # Prepare data for boxplot
         data_to_plot = [arr[:, 0], arr[:, 1]]  # Blue and Red teams
         
-        # Create boxplot
-        bp = ax.boxplot(data_to_plot, labels=['Blue', 'Red'], patch_artist=True, widths=0.5)
+        # Create boxplot with custom tight positioning
+        positions = [0.85, 1.15]  # Bring boxes closer together
+        bp = ax.boxplot(data_to_plot, positions=positions, labels=['', ''], patch_artist=True, widths=0.2) #TIGHTMARK
+        # (Removed Team Blue and Team Red labels for cleaner look.)
         
         # Color the boxes
         for patch, color in zip(bp['boxes'], colors):
@@ -579,22 +589,29 @@ def visualize_all_metrics_combined(metric_arrays, metric_display_names, folderna
         for cap in bp['caps']:
             cap.set(linewidth=1)
         
-        # Add individual points
-        for i, team_data in enumerate(data_to_plot):
-            x = np.random.normal(i+1, 0.04, size=len(team_data))
+        # # Add individual points (tightmark)
+        # for i, team_data in enumerate(data_to_plot):
+        #     x = np.random.normal(i+1, 0.04, size=len(team_data))
+        #     ax.scatter(x, team_data, alpha=0.25, s=20)
+        # Add individual points with tighter jitter
+        for i, (pos, team_data) in enumerate(zip(positions, data_to_plot)): #TIGHTMARK
+            x = np.random.normal(pos, 0.025, size=len(team_data))
             ax.scatter(x, team_data, alpha=0.25, s=20)
+        
+        # Set tight x-axis limits
+        ax.set_xlim(0.4, 1.6) #TIGHTMARK
         
         # AXISFONT = 22
         # LEGENDFONT = 17
         # NUMBERSFONT = 18
-        NAMEFONT = 25
+        # NAMEFONT = 25
 
         # Set axis labels and limits
         ax.set_title(display_name, fontsize=NAMEFONT)
         ax.set_ylim(y_limits[unit_group])
         ax.grid(True, alpha=0.3, axis='y')
-        ax.tick_params(axis='x', labelsize=AXISFONT)
-        ax.tick_params(axis='y', labelsize=AXISFONT)
+        ax.tick_params(axis='x', labelsize=AXISFONT)# should not be displayed now...
+        ax.tick_params(axis='y', labelsize=NAMEFONT+1)
         
         # Add subtle background color to separate unit groups TODO find better colors
         if unit_group == 0:
@@ -616,48 +633,48 @@ def visualize_all_metrics_combined(metric_arrays, metric_display_names, folderna
     print(f"Combined metrics visualization saved to: {output_file}")
 
 
-def visualize_metric_boxplot(metric_array, foldername, parameterset_name, metric_name, metric_display_name):
-    """
-    Create a boxplot visualization for a metric across 60 evaluation matches.
-    metric_array: shape (60, 2) where columns are [blue_team, red_team]
-    Note: This function is kept for backward compatibility. New code should use visualize_all_metrics_combined().
-    """
-    fig, ax = plt.subplots(figsize=(10, 6))
+# def visualize_metric_boxplot(metric_array, foldername, parameterset_name, metric_name, metric_display_name):
+#     """
+#     Create a boxplot visualization for a metric across 60 evaluation matches.
+#     metric_array: shape (60, 2) where columns are [blue_team, red_team]
+#     Note: This function is kept for backward compatibility. New code should use visualize_all_metrics_combined().
+#     """
+#     fig, ax = plt.subplots(figsize=(10, 6))
     
-    # Prepare data for boxplot
-    data_to_plot = [metric_array[:, 0], metric_array[:, 1]]  # Blue and Red teams
+#     # Prepare data for boxplot
+#     data_to_plot = [metric_array[:, 0], metric_array[:, 1]]  # Blue and Red teams
     
-    # Create boxplot
-    bp = ax.boxplot(data_to_plot, labels=['Team Blue', 'Team Red'], patch_artist=True, widths=0.6)
+#     # Create boxplot
+#     bp = ax.boxplot(data_to_plot, labels=['Team Blue', 'Team Red'], patch_artist=True, widths=0.6)
     
-    # Color the boxes
-    colors = ['lightblue', 'lightcoral']
-    for patch, color in zip(bp['boxes'], colors):
-        patch.set_facecolor(color)
+#     # Color the boxes
+#     colors = ['lightblue', 'lightcoral']
+#     for patch, color in zip(bp['boxes'], colors):
+#         patch.set_facecolor(color)
     
-    # Customize appearance
-    for median in bp['medians']:
-        median.set(color='black', linewidth=2)
-    for whisker in bp['whiskers']:
-        whisker.set(linewidth=1.5)
-    for cap in bp['caps']:
-        cap.set(linewidth=1.5)
+#     # Customize appearance
+#     for median in bp['medians']:
+#         median.set(color='black', linewidth=2)
+#     for whisker in bp['whiskers']:
+#         whisker.set(linewidth=1.5)
+#     for cap in bp['caps']:
+#         cap.set(linewidth=1.5)
     
-    ax.set_ylabel(metric_display_name, fontsize=AXISFONT)
-    ax.set_title(f"{metric_display_name}\n{parameterset_name}", fontsize=AXISFONT)
-    ax.grid(True, alpha=0.3, axis='y')
+#     ax.set_ylabel(metric_display_name, fontsize=AXISFONT)
+#     ax.set_title(f"{metric_display_name}\n{parameterset_name}", fontsize=AXISFONT)
+#     ax.grid(True, alpha=0.3, axis='y')
     
-    # Add individual points
-    for i, team_data in enumerate(data_to_plot):
-        x = np.random.normal(i+1, 0.04, size=len(team_data))
-        ax.scatter(x, team_data, alpha=0.3, s=30)
+#     # Add individual points
+#     for i, team_data in enumerate(data_to_plot):
+#         x = np.random.normal(i+1, 0.04, size=len(team_data))
+#         ax.scatter(x, team_data, alpha=0.3, s=30)
     
-    plt.tight_layout()
+#     plt.tight_layout()
     
-    # Save figure
-    output_file = f"{foldername}figures/{parameterset_name}_metric_{metric_name}.png"
-    plt.savefig(output_file, dpi=300, bbox_inches='tight')
-    plt.close()
+#     # Save figure
+#     output_file = f"{foldername}figures/{parameterset_name}_metric_{metric_name}.png"
+#     plt.savefig(output_file, dpi=300, bbox_inches='tight')
+#     plt.close()
 
 
 def visualize_score_grabs_tags_boxplot(scores, grabs, tags, foldername, parameterset_name):
@@ -677,8 +694,10 @@ def visualize_score_grabs_tags_boxplot(scores, grabs, tags, foldername, paramete
     
     # Create boxplot with custom positions for better spacing
     positions = [1, 1.8, 3.5, 4.3, 6, 6.8]
-    bp = ax.boxplot(data_to_plot, positions=positions, labels=['Score\nBlue', 'Score\nRed', 'Grabs\nBlue', 'Grabs\nRed', 'Tags\nBlue', 'Tags\nRed'], 
+    bp = ax.boxplot(data_to_plot, positions=positions, labels=['Score', '', 'Grabs', '', 'Tags', ''], #is this the best way to reduce to 3 labels? Acually lets add another x-axis with score names.
                     patch_artist=True, widths=0.6)
+    ax.set_xticks(positions) #Is this correct? bugtesting not yet done.
+    # ax.set_xticklabels(['Score', 'Grabs', 'Tags'], fontsize=NAMEFONT) # Add second x-axis with metric names
     
     # Color the boxes: alternating lightblue and lightcoral
     colors = ['lightblue', 'lightcoral', 'lightblue', 'lightcoral', 'lightblue', 'lightcoral']
@@ -699,11 +718,10 @@ def visualize_score_grabs_tags_boxplot(scores, grabs, tags, foldername, paramete
         ax.scatter(x, team_data, alpha=0.25, s=20)
     
     # Customize axes
-    ax.set_ylabel('Count', fontsize=AXISFONT)
-    ax.set_title(f'Score, Grabs, Tags - {parameterset_name}', fontsize=AXISFONT)
+    # ax.set_title(f'Score, Grabs, Tags - {parameterset_name}', fontsize=AXISFONT) #No title necessary
     ax.grid(True, alpha=0.3, axis='y')
-    ax.tick_params(axis='x', labelsize=AXISFONT)
-    ax.tick_params(axis='y', labelsize=AXISFONT)
+    ax.tick_params(axis='x', labelsize=NAMEFONT)
+    ax.tick_params(axis='y', labelsize=NAMEFONT)
     
     # Set x-axis to show metric group separations
     ax.set_xlim(0, 7.8)
@@ -1139,9 +1157,9 @@ def visualize_curve_boxplots(fulldata, foldername, name, attribute_name, show_ou
     if attribute_name == "Score":
         ax.set_ylim(0, 8)
     elif attribute_name == "Tags":
-        ax.set_ylim(0, 8) #TODO adjust?
+        ax.set_ylim(0, 10) #TODO adjust?
     elif attribute_name == "Grabs":
-        ax.set_ylim(0, 8) #TODO adjust?
+        ax.set_ylim(0, 13) #TODO adjust?
 
     ax.grid(True, alpha=0.3)
     #ax.tick_params(axis='y', labelsize=NUMBERSFONT)
@@ -1202,7 +1220,7 @@ if __name__ == "__main__":
     # names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parametersearch3", "qtrainlog/batch 5/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
     # names.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, False, "parametersearch4", "qtrainlog/batch 5/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
     # names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.95, 10.0, False, "parametersearch5", "qtrainlog/batch 5/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
-    if False: #enable when re-running already generated figures or their score prints
+    if True: #enable when re-running already generated figures or their score prints
         if False: #these are not necessary to run ever again, too small sample size or ran before important updates to the code (not suited for comparability)
             # # batch 6b
             # #load_and_call_helper("shortpara1_sharpturns_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_1nrs_600ep_no_pre", 1)#_nr0") #alternative way to call the visualization
@@ -1295,8 +1313,8 @@ if __name__ == "__main__":
         names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm11", "qtrainlog/batch 6g/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=True, sim_speedup=3))
         names.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, False, "parameterconfirm12", "qtrainlog/batch 6g/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=True, sim_speedup=3))
         # batch 6h (getting a confirmation that certain parameters do not result in training success on average; only good parameters were run in breadth so far)
-        names.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.85, 10.0, False, "unsuitable_param1", "qtrainlog/batch 6h/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
-        names.append(ParameterSet("single_aggressive_rew", "hard", 0.3, 0.8, 10.0, False, "unsuitable_param2", "qtrainlog/batch 6h/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        # names.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.85, 10.0, False, "unsuitable_param1", "qtrainlog/batch 6h/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        # names.append(ParameterSet("single_aggressive_rew", "hard", 0.3, 0.8, 10.0, False, "unsuitable_param2", "qtrainlog/batch 6h/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
     if True:
         # batch 6i re-run of wrong reward
         names.append(ParameterSet("single_aggressive26", "hard", 0.2, 0.85, 10.0, False, "unsuitable_param1", "qtrainlog/batch 6h/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
