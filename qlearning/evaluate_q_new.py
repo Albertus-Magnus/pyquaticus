@@ -1,6 +1,8 @@
+from datetime import datetime
 from multiprocessing import Pool
 import os
 import sys
+from time import time
 from matplotlib import pyplot as plt
 import numpy as np
 from scipy.spatial import Voronoi
@@ -406,10 +408,14 @@ def evalrender(foldername, parameterset_name):
     # This function is called for each parameter set, it loads the statistics from the specified file and creates visualizations.
     # The visualizations are saved to files in a "figures" subfolder of the parameter set's folder.
     # The name of the output files is based on the parameter set's name and the type of data being visualized (score, etc.).
-    
+
+    starttime = datetime.now()
+        
     # Load data from file
     para_file = foldername + parameterset_name + "_eval.npy"
     data = np.load(para_file, allow_pickle=True)
+
+    print(f"Data loaded from: {para_file} in {datetime.now() - starttime} (h:min:sec)", flush=True)
 
     # print(data)
     # sys.exit()
@@ -437,6 +443,7 @@ def evalrender(foldername, parameterset_name):
         'combined_position_score': [],
         'score_tag_ratio': [],
         'aggr_def_percentage': []
+        #'combined_quantification' can be computed...
     }
     
     for match_idx, episode_stats in enumerate(data):
@@ -483,20 +490,26 @@ def evalrender(foldername, parameterset_name):
     print(f"{'-'*90}\n")
 
     # ===== Generate combined boxplot visualization for all metrics =====
-    visualize_all_metrics_combined(metric_arrays, metric_display_names, foldername, parameterset_name)
+    # visualize_all_metrics_combined(metric_arrays, metric_display_names, foldername, parameterset_name)
     
     # ===== Generate score, grabs, tags boxplot =====
-    print(f"\nGenerating score, grabs, tags visualization...")
+    # print(f"\nGenerating score, grabs, tags visualization...")
     scores, grabs, tags = extract_score_grabs_tags(data)
-    visualize_score_grabs_tags_boxplot(scores, grabs, tags, foldername, parameterset_name)
+    # visualize_score_grabs_tags_boxplot(scores, grabs, tags, foldername, parameterset_name)
+    # Add scores, grabs, tags to metric_arrays for saving to file
+    metric_arrays['scores'] = scores
+    metric_arrays['grabs'] = grabs
+    metric_arrays['tags'] = tags
     
     # ===== Save metrics to file =====
-    # metrics_file = foldername + parameterset_name + "_metrics.npy"
-    # np.save(metrics_file, metric_arrays)
-    # print(f"Metrics saved to: {metrics_file}")
-    # print(f"Shape: {len(data)} matches x 9 metrics x 2 teams")
+    metrics_file = foldername + parameterset_name + "_metrics.npy"
+    np.save(metrics_file, metric_arrays)
+    print(f"Metrics saved to: {metrics_file}")
+    print(f"Shape: {len(data)} matches x 9 metrics x 2 teams")
     
     print(f"\nVisualizations saved to: {vis_folder}\n")
+
+    print(f"Total evaluation and rendering time for {parameterset_name}: {(datetime.now() - starttime).total_seconds():.2f} seconds\n")
 
 
 def group_metrics_by_unit():

@@ -635,14 +635,14 @@ if __name__ == "__main__":
         # adjust code and rerun this one with correct reward: 
         # [Not necessary, reward was not used for decisions (q-table is already trained) or for metrics. Simply rename :D]
         # [But was the correct q-table used?] TODO rerun today eod for 500 length eval.
-        parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parameterconfirm9", "qtrainlog/batch 6f/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
-        parametersets.append(ParameterSet("single_aggressive26", "hard", 0.3, 0.8, 10.0, False, "unsuitable_param2", "qtrainlog/batch 6h/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
-        parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "aggrtagsnobool", "qtrainlog/batch 6g/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parameterconfirm9", "qtrainlog/batch 6f/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.3, 0.8, 10.0, False, "unsuitable_param2", "qtrainlog/batch 6h/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "aggrtagsnobool", "qtrainlog/batch 6g/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
         # parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.99, 10.0, False, "defender4", "qtrainlog/batch 8a/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
         # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm11", "qtrainlog/batch 6g/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=True, sim_speedup=3))
-        parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parameterconfirm9", "qtrainlog/batch 6g/", i, boolchange=True, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
-        parametersets.append(ParameterSet("aggressive_tags_26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm17", "qtrainlog/batch 6f/", i, boolchange=True, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
-        parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "defender1", "qtrainlog/batch 8a/", i, boolchange=True, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
+        # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parameterconfirm9", "qtrainlog/batch 6g/", i, boolchange=True, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        # parametersets.append(ParameterSet("aggressive_tags_26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm17", "qtrainlog/batch 6f/", i, boolchange=True, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        # parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "defender1", "qtrainlog/batch 8a/", i, boolchange=True, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
         # parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, True, "pretr1", "qtrainlog/batch 8a/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
         # parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, True, "pretr3", "qtrainlog/batch 8a/", i, boolchange=True, nrs=20, ep=1000)) 
         parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "prevcontinue4", "qtrainlog/batch 7c/", i, boolchange=False, nrs=nrs, ep=4000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
@@ -651,27 +651,31 @@ if __name__ == "__main__":
         #########################################
         # running quantifying games (500x) for selected parameters (used to be 60 but likely not enough for robust results)
 
-        seeds = []
+        # seeds = []
         # generate 300 random seeds for evaluation
-        for _ in range(300):
-            seeds.append(np.random.randint(0, 1000000)) 
-        print("seeds: ", seeds)
+        # for _ in range(300):
+        #     seeds.append(np.random.randint(0, 1000000)) 
+        # print("seeds: ", seeds)
+        seeds = [973660, 69568, 666280, 246071, 849626, 462335, 903981, 406670, 349226, 637856, 351541, 369468, 773865, 814354, 703515, 753559, 416349, 748451, 7417, 758135, 288627, 875692, 814877, 478545, 233554, 151904, 922338, 614576, 924262, 127752, 569890, 178537, 557156, 705931, 797162, 388927, 23708, 763122, 586968, 988336, 168412, 178255, 854279, 993136, 608455, 396024, 946356, 869809, 573392, 906882, 700589, 564872, 203926, 105323, 448577, 792175, 381817, 31362, 431301, 902179, 129867, 462536, 851536, 235615, 206442, 885339, 719051, 390412, 195566, 712593, 454919, 169107, 866145, 736266, 853263, 463795, 159352, 231648, 644194, 945840, 973224, 393605, 305071, 173991, 262393, 461960, 64334, 278719, 576296, 950548, 740821, 687014, 759057, 650393, 137549, 983887, 973557, 685681, 328580, 262474, 576815, 458360, 70444, 424796, 816636, 711775, 284556, 296729, 637250, 692486, 411930, 55922, 94976, 317059, 437072, 23713, 32494, 131158, 398749, 654876, 920688, 460551, 70709, 314768, 221641, 840936, 614386, 440161, 153988, 725699, 32041, 92797, 496850, 21382, 61115, 423711, 218653, 169153, 711152, 554914, 166778, 83506, 661958, 65079, 249759, 548377, 513425, 131503, 224214, 806894, 901319, 621667, 217873, 15560, 529330, 54899, 453528, 335483, 205174, 547820, 934934, 266613, 58937, 290211, 132137, 228530, 412692, 49269, 681588, 347470, 587459, 615661, 390563, 225933, 732249, 606806, 996507, 790879, 25007, 246083, 85353, 248046, 848931, 778601, 296079, 796570, 205469, 686113, 378481, 380165, 89527, 342054, 38425, 178445, 388761, 746098, 445312, 55930, 74854, 394732, 293326, 185798, 941789, 896436, 362671, 336157, 216755, 306490, 130174, 788661, 846992, 372760, 259460, 262911, 43223, 443993, 925604, 949458, 961183, 585728, 156495, 383060, 964939, 912585, 317784, 52837, 364159, 248545, 957807, 712610, 261261, 687121, 604081, 365279, 512355, 504586, 864453, 957038, 332473, 738059, 906309, 510134, 155456, 568892, 137889, 433324, 884034, 669195, 896760, 113944, 114384, 73393, 783621, 184124, 49566, 290251, 455861, 235764, 424428, 102743, 261202, 761750, 772819, 115581, 495966, 94162, 126790, 900605, 799892, 948894, 267003, 2775, 579063, 662843, 108170, 769835, 222599, 784211, 385896, 715275, 849925, 481605, 367353, 288620, 630296, 63563, 559340, 895991, 628479, 407647, 38888, 802622, 936228, 933322, 839150, 804223, 705043, 945932, 149051, 644764]
 
         for para in parametersets:
             para.evalseed = seeds
 
         # Run all scheduled parameters in parallel
-        num_jobs = len(parametersets)
+        #num_jobs = len(parametersets)
+
+        for para in parametersets:
+            doEval(para)
 
         # if num_jobs <= max(1, os.cpu_count()):
         #     num_workers = num_jobs
         # else:
         #     num_workers = max(1, os.cpu_count() + 2)
-        num_workers = 6
-        print(f"Selecting {num_workers} as num_workers.", flush=True)
+        # num_workers = 1 #6 appears to work... almost.
+        #print(f"Selecting {num_workers} as num_workers.", flush=True)
 
-        with Pool(processes=num_workers) as pool:
-            pool.map(doEval, parametersets)
+        #with Pool(processes=num_workers) as pool:
+        #    pool.map(doEval, parametersets)
 
         timer = datetime.now() - timestamp
         print(f"Finished evaluation of {len(parametersets)} policies in {timer}")
