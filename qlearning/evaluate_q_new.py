@@ -1144,23 +1144,72 @@ def circle_detection(positions: np.ndarray) -> bool:
 
 def average_multiple_runs(data, bagsize=50):
     """
-    data is expected to be a np array of shape (N, T, 2) where N is number of runs, 
-    T is number of time steps, and the last dimension has size 2 for the two teams.
-    This function will compute for a number of runs (T) equal to bagsize the average 
-    data value for each team and each parallel run (N) and return this average as an 
-    array of shape (N, T / bagsize, 2).
+    data is expected to be a np array of shape (N, T, 2) for two teams OR (N, T) for single team OR (N, T, 1) for single team.
+    
+    For two teams (shape N, T, 2):
+      - N is number of runs
+      - T is number of time steps
+      - Last dimension has size 2 for the two teams
+      - Returns array of shape (N, T / bagsize, 2)
+    
+    For single team (shape N, T) or (N, T, 1):
+      - N is number of runs
+      - T is number of time steps
+      - Returns array of shape (N, T / bagsize)
+    
+    This function will compute for a number of episodes equal to bagsize the average 
+    data value for each team (if present) and each parallel run (N).
     """
-    N, T, num_teams = data.shape
-    assert num_teams == 2, "Expected last dimension to be size 2 for two teams"
-
-    num_bags = (T + bagsize - 1) // bagsize  # Ceiling division
-    averaged_data = np.zeros((N, num_bags, num_teams))
+    data = np.asarray(data)
     
-    for i in range(0, T, bagsize):
-        bag_index = i // bagsize
-        averaged_data[:, bag_index, :] = np.mean(data[:, i:i+bagsize, :], axis=1)
+    if data.ndim == 3:
+        # 3D case: (N, T, num_teams)
+        N, T, num_teams = data.shape
+        
+        if num_teams == 2:
+            # This is a creeepy implementation, but it works and the deadline is moving ever closer.
+            # Two teams case
+            num_bags = (T + bagsize - 1) // bagsize  # Ceiling division
+            averaged_data = np.zeros((N, num_bags, num_teams))
+            
+            for i in range(0, T, bagsize):
+                bag_index = i // bagsize
+                averaged_data[:, bag_index, :] = np.mean(data[:, i:i+bagsize, :], axis=1)
+            
+            return averaged_data
+        
+        elif num_teams == 1:
+            # Single team with explicit dimension: (N, T, 1) -> convert to (N, T)
+            data = np.squeeze(data, axis=2)
+            N, T = data.shape
+            
+            num_bags = (T + bagsize - 1) // bagsize
+            averaged_data = np.zeros((N, num_bags))
+            
+            for i in range(0, T, bagsize):
+                bag_index = i // bagsize
+                averaged_data[:, bag_index] = np.mean(data[:, i:i+bagsize], axis=1)
+            
+            return averaged_data
+        
+        else:
+            raise ValueError(f"Expected last dimension to be 1 or 2, got {num_teams}")
     
-    return averaged_data
+    elif data.ndim == 2:
+        # Single team case: (N, T)
+        N, T = data.shape
+        
+        num_bags = (T + bagsize - 1) // bagsize  # Ceiling division
+        averaged_data = np.zeros((N, num_bags))
+        
+        for i in range(0, T, bagsize):
+            bag_index = i // bagsize
+            averaged_data[:, bag_index] = np.mean(data[:, i:i+bagsize], axis=1)
+        
+        return averaged_data
+    
+    else:
+        raise ValueError(f"Expected data to have 2 or 3 dimensions, got {data.ndim}")
 
 def visualize_curve_boxplots(fulldata, foldername, name, attribute_name, show_outliers=True, figsize=(12,6), dpi=300, bagsize=50):
     """
@@ -1310,19 +1359,34 @@ def plot_anythingelse_multiscenario_boxplots(scenario_data, foldername, name, at
         if bagsize > 1:
             fulldata = average_multiple_runs(fulldata, bagsize=bagsize)
         
-        # Verify shape
-        if fulldata.ndim != 3 or fulldata.shape[2] != 2:
-            raise ValueError(f"Scenario '{scenario_name}': expected shape (N, T, 2), got {fulldata.shape}")
-        
+        # Detect if single-team (rewards) or two-team data
         T = fulldata.shape[1]
-        blue_data = [fulldata[:, t, 0] for t in range(T)]
-        red_data = [fulldata[:, t, 1] for t in range(T)]
+        has_two_teams = False
+        
+        if fulldata.ndim == 3 and fulldata.shape[2] == 2:
+            # Two teams: shape (N, T, 2)
+            has_two_teams = True
+            blue_data = [fulldata[:, t, 0] for t in range(T)]
+            red_data = [fulldata[:, t, 1] for t in range(T)]
+        elif fulldata.ndim == 2:
+            # Single team: shape (N, T)
+            has_two_teams = False
+            blue_data = [fulldata[:, t] for t in range(T)]
+            red_data = None
+        elif fulldata.ndim == 3 and fulldata.shape[2] == 1:
+            # Single team with explicit dimension: shape (N, T, 1)
+            has_two_teams = False
+            blue_data = [fulldata[:, t, 0] for t in range(T)]
+            red_data = None
+        else:
+            raise ValueError(f"Scenario '{scenario_name}': expected shape (N, T) or (N, T, 2), got {fulldata.shape}")
         
         processed_scenarios.append({
             'name': scenario_name,
             'T': T,
             'blue': blue_data,
-            'red': red_data
+            'red': red_data,
+            'has_two_teams': has_two_teams
         })
     
     # All scenarios should have same T (number of timesteps)
@@ -1351,13 +1415,20 @@ def plot_anythingelse_multiscenario_boxplots(scenario_data, foldername, name, at
         scenario_name = scenario['name']
         blue_data = scenario['blue']
         red_data = scenario['red']
+        has_two_teams = scenario['has_two_teams']
         
         # Calculate positions for this scenario
         # Offset from center of timestep group
         base_offset = -0.4 + (scenario_idx + 0.5) * width_per_scenario
         
-        pos_blue = indices + base_offset - width_per_team / 2 #+0.01#- 0.05
-        pos_red = indices + base_offset + width_per_team / 2 #-0.01#+ 0.05
+        if has_two_teams:
+            # Two teams: split boxes
+            pos_blue = indices + base_offset - width_per_team / 2 #+0.01#-0.05
+            pos_red = indices + base_offset + width_per_team / 2 #-0.01#+0.05
+        else:
+            # Single team: center the boxes
+            pos_blue = indices + base_offset
+            pos_red = None
         
         # Boxplot styling
         bp_kwargs = dict(widths=width_per_team, showfliers=show_outliers, patch_artist=True)
@@ -1376,19 +1447,20 @@ def plot_anythingelse_multiscenario_boxplots(scenario_data, foldername, name, at
         for flier in bp_blue['fliers']:
             flier.set(marker='o', markerfacecolor='blue', markeredgecolor='darkblue', markersize=3)
         
-        # Plot red boxes for this scenario (using red palette)
-        bp_red = ax.boxplot(red_data, positions=pos_red, **bp_kwargs)
-        color_red = red_palette[scenario_idx]
-        for box in bp_red['boxes']:
-            box.set(facecolor=color_red, edgecolor='darkred', linewidth=0.8)
-        for median in bp_red['medians']:
-            median.set(color='darkred', linewidth=1.2)
-        for whisker in bp_red['whiskers']:
-            whisker.set(color='darkred', linewidth=0.8)
-        for cap in bp_red['caps']:
-            cap.set(color='darkred', linewidth=0.8)
-        for flier in bp_red['fliers']:
-            flier.set(marker='o', markerfacecolor='red', markeredgecolor='darkred', markersize=3)
+        # Plot red boxes for this scenario (using red palette) - only if two teams
+        if has_two_teams and red_data is not None:
+            bp_red = ax.boxplot(red_data, positions=pos_red, **bp_kwargs)
+            color_red = red_palette[scenario_idx]
+            for box in bp_red['boxes']:
+                box.set(facecolor=color_red, edgecolor='darkred', linewidth=0.8)
+            for median in bp_red['medians']:
+                median.set(color='darkred', linewidth=1.2)
+            for whisker in bp_red['whiskers']:
+                whisker.set(color='darkred', linewidth=0.8)
+            for cap in bp_red['caps']:
+                cap.set(color='darkred', linewidth=0.8)
+            for flier in bp_red['fliers']:
+                flier.set(marker='o', markerfacecolor='red', markeredgecolor='darkred', markersize=3)
     
     # Axis labels and title
     ax.set_title(name, fontsize=NAMEFONT) #TODOvis remove this
@@ -1420,16 +1492,26 @@ def plot_anythingelse_multiscenario_boxplots(scenario_data, foldername, name, at
     handles = []
     labels = []
     
+    # Determine if we're plotting one or two teams (check first scenario)
+    has_two_teams_global = processed_scenarios[0]['has_two_teams']
+    
     for scenario_idx, scenario_name in enumerate(scenario_names):
         color_blue = blue_palette[scenario_idx]
-        color_red = red_palette[scenario_idx]
-        # Blue and Red boxes for this scenario
+        # Blue boxes for this scenario
         h1 = plt.Rectangle((0, 0), 1, 1, facecolor=color_blue, edgecolor='darkblue', linewidth=0.8)
-        h2 = plt.Rectangle((0, 0), 1, 1, facecolor=color_red, edgecolor='darkred', linewidth=0.8)
-        handles.extend([h1, h2])
-        labels.extend([f"{scenario_name} Blue", f"{scenario_name} Red"])
+        handles.append(h1)
+        labels.append(f"{scenario_name} Blue")
+        
+        # Add red boxes only if two teams
+        if has_two_teams_global:
+            color_red = red_palette[scenario_idx]
+            h2 = plt.Rectangle((0, 0), 1, 1, facecolor=color_red, edgecolor='darkred', linewidth=0.8)
+            handles.append(h2)
+            labels.append(f"{scenario_name} Red")
     
-    ax.legend(handles, labels, fontsize=LEGENDFONT, loc='upper left', ncol=min(2, num_scenarios))
+    # Position legend: lower right for Reward, upper left for others
+    legend_loc = 'lower right' if attribute_name == 'Reward' else 'upper left'
+    ax.legend(handles, labels, fontsize=LEGENDFONT, loc=legend_loc, ncol=min(2, num_scenarios))
     
     plt.tight_layout()
     
@@ -1479,17 +1561,33 @@ def plot_anythingelse_multiscenario_curves(scenario_data, foldername, name, attr
         if bagsize > 1:
             fulldata = average_multiple_runs(fulldata, bagsize=bagsize)
         
-        # Verify shape
-        if fulldata.ndim != 3 or fulldata.shape[2] != 2:
-            raise ValueError(f"Scenario '{scenario_name}': expected shape (N, T, 2), got {fulldata.shape}")
-        
+        # Detect if single-team (rewards) or two-team data
         T = fulldata.shape[1]
+        has_two_teams = False
         
-        # Compute mean and std per team
-        mean_blue = np.mean(fulldata[:, :, 0], axis=0)
-        std_blue = np.std(fulldata[:, :, 0], axis=0)
-        mean_red = np.mean(fulldata[:, :, 1], axis=0)
-        std_red = np.std(fulldata[:, :, 1], axis=0)
+        if fulldata.ndim == 3 and fulldata.shape[2] == 2:
+            # Two teams: shape (N, T, 2)
+            has_two_teams = True
+            mean_blue = np.mean(fulldata[:, :, 0], axis=0)
+            std_blue = np.std(fulldata[:, :, 0], axis=0)
+            mean_red = np.mean(fulldata[:, :, 1], axis=0)
+            std_red = np.std(fulldata[:, :, 1], axis=0)
+        elif fulldata.ndim == 2:
+            # Single team: shape (N, T)
+            has_two_teams = False
+            mean_blue = np.mean(fulldata, axis=0)
+            std_blue = np.std(fulldata, axis=0)
+            mean_red = None
+            std_red = None
+        elif fulldata.ndim == 3 and fulldata.shape[2] == 1:
+            # Single team with explicit dimension: shape (N, T, 1)
+            has_two_teams = False
+            mean_blue = np.mean(fulldata[:, :, 0], axis=0)
+            std_blue = np.std(fulldata[:, :, 0], axis=0)
+            mean_red = None
+            std_red = None
+        else:
+            raise ValueError(f"Scenario '{scenario_name}': expected shape (N, T) or (N, T, 2), got {fulldata.shape}")
         
         processed_scenarios.append({
             'name': scenario_name,
@@ -1498,6 +1596,7 @@ def plot_anythingelse_multiscenario_curves(scenario_data, foldername, name, attr
             'std_blue': std_blue,
             'mean_red': mean_red,
             'std_red': std_red,
+            'has_two_teams': has_two_teams,
         })
     
     # All scenarios should have same T
@@ -1528,24 +1627,25 @@ def plot_anythingelse_multiscenario_curves(scenario_data, foldername, name, attr
         std_blue = scenario['std_blue']
         mean_red = scenario['mean_red']
         std_red = scenario['std_red']
+        has_two_teams = scenario['has_two_teams']
         
         # Plot blue team: solid line in blue shade
         line_blue = ax.plot(x_indices, mean_blue, label=f"{scenario_name} Blue", 
                             color=color_blue, linestyle='-', linewidth=2.5)
         ax.fill_between(x_indices, mean_blue - std_blue, mean_blue + std_blue, 
-                        color=color_blue, alpha=0.10)#25
+                        color=color_blue, alpha=0.10)
         
-        # Plot red team: dashed line in red shade
-        line_red = ax.plot(x_indices, mean_red, label=f"{scenario_name} Red", 
-                           color=color_red, linestyle='--', linewidth=2.0, alpha=0.9)#2.5
-        ax.fill_between(x_indices, mean_red - std_red, mean_red + std_red, 
-                        color=color_red, alpha=0.1)#15
-        
-        # Collect for legend
         handles.append(line_blue[0])
-        handles.append(line_red[0])
-        labels.append(f"{scenario_name}")# Blue")
-        labels.append(f"{scenario_name}")# Red")
+        labels.append(f"{scenario_name} Blue")
+        
+        # Plot red team: dashed line in red shade - only if two teams
+        if has_two_teams and mean_red is not None:
+            line_red = ax.plot(x_indices, mean_red, label=f"{scenario_name} Red", 
+                               color=color_red, linestyle='--', linewidth=2.0)
+            ax.fill_between(x_indices, mean_red - std_red, mean_red + std_red, 
+                            color=color_red, alpha=0.1)
+            handles.append(line_red[0])
+            labels.append(f"{scenario_name} Red")
     
     # Axis labels and title
     ax.set_title(name, fontsize=NAMEFONT) #TODOvis remove this
@@ -1570,8 +1670,9 @@ def plot_anythingelse_multiscenario_curves(scenario_data, foldername, name, attr
     ax.set_xticks(ticks)
     ax.set_xticklabels([str(int(t * bagsize)) for t in ticks])
     
-    # Legend
-    ax.legend(handles, labels, fontsize=LEGENDFONT, loc='upper left', ncol=min(2, num_scenarios))
+    # Position legend: lower right for Reward, upper left for others
+    legend_loc = 'lower right' if attribute_name == 'Reward' else 'upper left'
+    ax.legend(handles, labels, fontsize=LEGENDFONT, loc=legend_loc, ncol=min(2, num_scenarios))
     
     plt.tight_layout()
     
@@ -1805,13 +1906,25 @@ if __name__ == "__main__":
     "tagslist"
     "grabslist"     """
 
+    # Reward has shape (20, 1000, 3). Use np.mean to get the shape to (20, 1000, 1)
+    for param in parameters:
+        param['rewardcurve'] = np.mean(param['rewardcurve'], axis=2, keepdims=True)
+
+    # print shapes of the 4 lists:
+    for i, param in enumerate(parameters):  
+        print(f"Parameter {i}: {namename[i]}")
+        print(f"Reward curve shape: {param['rewardcurve'].shape}")
+        print(f"Score list shape: {param['scorelist'].shape}")
+        print(f"Tags list shape: {param['tagslist'].shape}")
+        print(f"Grabs list shape: {param['grabslist'].shape}")
+
     # Base-* plot: (score, tags, grabs) reward is not yet implemented
     d0, d1, d2, d3 = 0,1,2,3
-    # parametergroup1 = [(namename[d0], parameters[d0]['rewardcurve']), (namename[d1], parameters[d1]['rewardcurve']), (namename[d2], parameters[2]['rewardcurve'])] #TODO reward doesn't work yet (1 team)
+    parametergroup1 = [(namename[d0], parameters[d0]['rewardcurve']), (namename[d1], parameters[d1]['rewardcurve']), (namename[d2], parameters[d2]['rewardcurve']), (namename[d3], parameters[d3]['rewardcurve'])]
     parametergroup1b = [(namename[d0], parameters[d0]['scorelist']), (namename[d1], parameters[d1]['scorelist']), (namename[d2], parameters[d2]['scorelist']), (namename[d3], parameters[d3]['scorelist'])]
     parametergroup1c = [(namename[d0], parameters[d0]['tagslist']), (namename[d1], parameters[d1]['tagslist']), (namename[d2], parameters[d2]['tagslist']), (namename[d3], parameters[d3]['tagslist'])]
     parametergroup1d = [(namename[d0], parameters[d0]['grabslist']), (namename[d1], parameters[d1]['grabslist']), (namename[d2], parameters[d2]['grabslist']), (namename[d3], parameters[d3]['grabslist'])]
-    # plot_anythingelse_multiscenario(parametergroup1, "qtrainlog/", "testrendering", "Reward")
+    plot_anythingelse_multiscenario(parametergroup1, "qtrainlog/", "Allbase", "Reward", bagsize = 100)
     plot_anythingelse_multiscenario(parametergroup1b, "qtrainlog/", "Allbase", "Score", bagsize = 100)
     plot_anythingelse_multiscenario(parametergroup1c, "qtrainlog/", "Allbase", "Tags", bagsize = 100)
     plot_anythingelse_multiscenario(parametergroup1d, "qtrainlog/", "Allbase", "Grabs", bagsize = 100)
@@ -1823,7 +1936,7 @@ if __name__ == "__main__":
     parametergroup1b = [(namename[d0], parameters[d0]['scorelist']), (namename[d1], parameters[d1]['scorelist']), (namename[d2], parameters[d2]['scorelist']), (namename[d3], parameters[d3]['scorelist'])]
     parametergroup1c = [(namename[d0], parameters[d0]['tagslist']), (namename[d1], parameters[d1]['tagslist']), (namename[d2], parameters[d2]['tagslist']), (namename[d3], parameters[d3]['tagslist'])]
     parametergroup1d = [(namename[d0], parameters[d0]['grabslist']), (namename[d1], parameters[d1]['grabslist']), (namename[d2], parameters[d2]['grabslist']), (namename[d3], parameters[d3]['grabslist'])]
-    # plot_anythingelse_multiscenario(parametergroup1, "qtrainlog/", "testrendering", "Reward")
+    plot_anythingelse_multiscenario(parametergroup1, "qtrainlog/", "AllAggr", "Reward", bagsize = 100)
     plot_anythingelse_multiscenario(parametergroup1b, "qtrainlog/", "AllAggr", "Score", bagsize = 100)
     plot_anythingelse_multiscenario(parametergroup1c, "qtrainlog/", "AllAggr", "Tags", bagsize = 100)
     plot_anythingelse_multiscenario(parametergroup1d, "qtrainlog/", "AllAggr", "Grabs", bagsize = 100)
@@ -1847,6 +1960,7 @@ if __name__ == "__main__":
     parametergroup1c = [(namename[d0], parameters[d0]['tagslist']), (namename[d1], parameters[d1]['tagslist']), (namename[d2], parameters[d2]['tagslist'])]#, (namename[d3], parameters[d3]['tagslist'])]
     parametergroup1d = [(namename[d0], parameters[d0]['grabslist']), (namename[d1], parameters[d1]['grabslist']), (namename[d2], parameters[d2]['grabslist'])]#, (namename[d3], parameters[d3]['grabslist'])]
     # plot_anythingelse_multiscenario(parametergroup1, "qtrainlog/", "testrendering", "Reward")
+    plot_anythingelse_multiscenario(parametergroup1, "qtrainlog/", "AllTags", "Reward", bagsize = 100)
     plot_anythingelse_multiscenario(parametergroup1b, "qtrainlog/", "AllTags", "Score", bagsize = 100)
     plot_anythingelse_multiscenario(parametergroup1c, "qtrainlog/", "AllTags", "Tags", bagsize = 100)
     plot_anythingelse_multiscenario(parametergroup1d, "qtrainlog/", "AllTags", "Grabs", bagsize = 100)
@@ -1859,6 +1973,7 @@ if __name__ == "__main__":
     parametergroup1c = [(namename[d0], parameters[d0]['tagslist']), (namename[d1], parameters[d1]['tagslist']), (namename[d2], parameters[d2]['tagslist'])]#, (namename[d3], parameters[d3]['tagslist'])]
     parametergroup1d = [(namename[d0], parameters[d0]['grabslist']), (namename[d1], parameters[d1]['grabslist']), (namename[d2], parameters[d2]['grabslist'])]#, (namename[d3], parameters[d3]['grabslist'])]
     # plot_anythingelse_multiscenario(parametergroup1, "qtrainlog/", "testrendering", "Reward")
+    plot_anythingelse_multiscenario(parametergroup1, "qtrainlog/", "AllDef", "Reward", bagsize = 100)
     plot_anythingelse_multiscenario(parametergroup1b, "qtrainlog/", "AllDef", "Score", bagsize = 100)
     plot_anythingelse_multiscenario(parametergroup1c, "qtrainlog/", "AllDef", "Tags", bagsize = 100)
     plot_anythingelse_multiscenario(parametergroup1d, "qtrainlog/", "AllDef", "Grabs", bagsize = 100)
@@ -1871,6 +1986,7 @@ if __name__ == "__main__":
     parametergroup1c = [(namename[d0], parameters[d0]['tagslist']), (namename[d1], parameters[d1]['tagslist']), (namename[d2], parameters[d2]['tagslist']), (namename[d3], parameters[d3]['tagslist'])]
     parametergroup1d = [(namename[d0], parameters[d0]['grabslist']), (namename[d1], parameters[d1]['grabslist']), (namename[d2], parameters[d2]['grabslist']), (namename[d3], parameters[d3]['grabslist'])]
     # plot_anythingelse_multiscenario(parametergroup1, "qtrainlog/", "testrendering", "Reward")
+    plot_anythingelse_multiscenario(parametergroup1, "qtrainlog/", "AllPretrain", "Reward", bagsize = 100)
     plot_anythingelse_multiscenario(parametergroup1b, "qtrainlog/", "AllPretrain", "Score", bagsize = 100)
     plot_anythingelse_multiscenario(parametergroup1c, "qtrainlog/", "AllPretrain", "Tags", bagsize = 100)
     plot_anythingelse_multiscenario(parametergroup1d, "qtrainlog/", "AllPretrain", "Grabs", bagsize = 100)
@@ -1883,18 +1999,20 @@ if __name__ == "__main__":
     parametergroup1c = [(namename[d0], parameters[d0]['tagslist']), (namename[d1], parameters[d1]['tagslist'])]#, (namename[d2], parameters[d2]['tagslist']), (namename[d3], parameters[d3]['tagslist'])]
     parametergroup1d = [(namename[d0], parameters[d0]['grabslist']), (namename[d1], parameters[d1]['grabslist'])]#, (namename[d2], parameters[d2]['grabslist']), (namename[d3], parameters[d3]['grabslist'])]
     # plot_anythingelse_multiscenario(parametergroup1, "qtrainlog/", "testrendering", "Reward")
+    plot_anythingelse_multiscenario(parametergroup1, "qtrainlog/", "AggrPretrain", "Reward", bagsize = 100)
     plot_anythingelse_multiscenario(parametergroup1b, "qtrainlog/", "AggrPretrain", "Score", bagsize = 100)
     plot_anythingelse_multiscenario(parametergroup1c, "qtrainlog/", "AggrPretrain", "Tags", bagsize = 100)
     plot_anythingelse_multiscenario(parametergroup1d, "qtrainlog/", "AggrPretrain", "Grabs", bagsize = 100)
     
 
-    # Pretrain-Def (pre-def, base-def)
+    # Pretrain-Def (pre-def, base-def)  #TODO Parameter 9: Pretrain-Def\nReward curve shape: (20, 1000, 2) this is weird, should be 3 not 2...
     d0, d1, d2, d3 = 9,3,   -1,-1
     # parametergroup1 = [(namename[d0], parameters[d0]['rewardcurve']), (namename[d1], parameters[d1]['rewardcurve']), (namename[d2], parameters[d2]['rewardcurve'])] #TODO reward doesn't work yet (1 team)
     parametergroup1b = [(namename[d0], parameters[d0]['scorelist']), (namename[d1], parameters[d1]['scorelist'])]#, (namename[d2], parameters[d2]['scorelist']), (namename[d3], parameters[d3]['scorelist'])]
     parametergroup1c = [(namename[d0], parameters[d0]['tagslist']), (namename[d1], parameters[d1]['tagslist'])]#, (namename[d2], parameters[d2]['tagslist']), (namename[d3], parameters[d3]['tagslist'])]
     parametergroup1d = [(namename[d0], parameters[d0]['grabslist']), (namename[d1], parameters[d1]['grabslist'])]#, (namename[d2], parameters[d2]['grabslist']), (namename[d3], parameters[d3]['grabslist'])]
     # plot_anythingelse_multiscenario(parametergroup1, "qtrainlog/", "testrendering", "Reward")
+    plot_anythingelse_multiscenario(parametergroup1, "qtrainlog/", "DefPretrain", "Reward", bagsize = 100)
     plot_anythingelse_multiscenario(parametergroup1b, "qtrainlog/", "DefPretrain", "Score", bagsize = 100)
     plot_anythingelse_multiscenario(parametergroup1c, "qtrainlog/", "DefPretrain", "Tags", bagsize = 100)
     plot_anythingelse_multiscenario(parametergroup1d, "qtrainlog/", "DefPretrain", "Grabs", bagsize = 100)
