@@ -10,7 +10,8 @@ from evaluate_q import matrix_to_heatmap
 # from qlearning.train_qlearn import ParameterSet
 from train_qlearn import ParameterSet
 
-BAGSIZE = 50 # number of episodes to average over for boxplot visualization, default 50
+# BAGSIZE = 50 # number of episodes to average over for boxplot visualization, default 50
+BAGSIZE = 200
 AXISFONT = 22
 LEGENDFONT = 17
 NUMBERSFONT = 18
@@ -410,7 +411,7 @@ def evalrender(foldername, parameterset_name):
     # The name of the output files is based on the parameter set's name and the type of data being visualized (score, etc.).
 
     starttime = datetime.now()
-        
+
     # Load data from file
     para_file = foldername + parameterset_name + "_eval.npy"
     data = np.load(para_file, allow_pickle=True)
@@ -790,7 +791,9 @@ def plot_anythingelse(scorearray, foldername, name, attribute_name):
     visualize_curve(meandata, lowdata, highdata, foldername, name, attribute_name)
     visualize_curve_boxplots(scorearray, foldername, name, attribute_name, bagsize=BAGSIZE)
     #visualize_many_curves(scorearray, foldername, name, attribute_name)
-#End of plot_rewards()
+#End of plot_anythingelse()
+
+
 
 
 def visualize_curve(meandata, lowdata, highdata, foldername, name, attribute_name):
@@ -1046,6 +1049,67 @@ def load_and_call_helper(parameterset):
         avg_team_score = np.mean(final_scores, axis=0) # average over episodes, resulting in average score for team blue and team red
         print(f"Final average team scores for {name_indexed[i]}: Team Blue: {avg_team_score[0]:.2f}, Team Red: {avg_team_score[1]:.2f}")
     print(f"\nHighest final average team score for {name}: {max(np.mean(scorelist[i][-100:], axis=0)[0] for i in range(len(scorelist))):.2f} (Team Blue), smallest opponent score was {min(np.mean(scorelist[i][-100:], axis=0)[1] for i in range(len(scorelist))):.2f} (Team Red Minimum)")
+
+
+
+
+# def plot_combined_res(parameterset: ParameterSet):
+#     #TODO actually the below will be done from main. Here do visualization
+#     rewardcurve, scorelist, tagslist, grabslist = load_one_para(parameterset)
+
+def load_one_para(parameterset: ParameterSet):
+    """
+    Loading the 4 lists of stats from a filename provided by parameterset.
+    Returns the 4 numpy arrays in a dictionary:
+    "rewardcurve"
+    "scorelist"
+    "tagslist"
+    "grabslist"
+    """
+
+    # from train_qlearn import ParameterSet  # Local import to avoid circular dependency #no longer needed
+    name = parameterset.create_name_without_index()
+    nrs = parameterset.nrs
+    folder = parameterset.foldername
+    ep = parameterset.ep
+
+    name_indexed = []
+    for i in range(nrs):
+        name_indexed.append(name + f"_nr{i}")
+    reward_name = [f"{nam}_reward_curve.npy" for nam in name_indexed]
+    scores_name = [f"{nam}_scores.npy" for nam in name_indexed]
+    tagslist_name = [f"{nam}_tagslist.npy" for nam in name_indexed]
+    grabslist_name = [f"{nam}_grabslist.npy" for nam in name_indexed]
+
+    # load data from file
+    rewardcurve_list = []
+    valid_indices = []
+    for i in range(len(reward_name)):
+        try:
+            data = np.load(folder + reward_name[i])
+            # print(f"#+#Loaded {reward_name[i]} with shape {data.shape[0]}")
+            if data.shape[0] == ep:  # Your expected episode count
+                rewardcurve_list.append(data)
+                valid_indices.append(i)
+        except:
+            print(f"Error loading {reward_name[i]}, skipping this run.")
+            pass
+    rewardcurve = np.array(rewardcurve_list)
+    print(f"Loaded {len(valid_indices)}/{len(reward_name)} valid files")
+    scorelist = np.array([np.load(folder + scores_name[i]) for i in valid_indices])
+    tagslist = np.array([np.load(folder + tagslist_name[i]) for i in valid_indices])
+    grabslist = np.array([np.load(folder + grabslist_name[i]) for i in valid_indices])
+
+    #return rewardcurve, scorelist, tagslist, grabslist, statecountlist
+    # We return the 4 np arrays as one structure for easier handling in the visualization function:
+    return {
+        "rewardcurve": rewardcurve,
+        "scorelist": scorelist,
+        "tagslist": tagslist,
+        "grabslist": grabslist
+    }
+
+
     
 
 #(circle detection example lists were removed from code)
@@ -1203,6 +1267,336 @@ def visualize_curve_boxplots(fulldata, foldername, name, attribute_name, show_ou
     plt.close()
 #End of visualize_curve_boxplots()
 
+
+def plot_anythingelse_multiscenario_boxplots(scenario_data, foldername, name, attribute_name, show_outliers=True, figsize=(14, 6), dpi=300, bagsize=200):
+    """
+    Plot boxplots for multiple scenarios in a merged visualization with alternating scenario positions.
+    
+    Args:
+        scenario_data: List of tuples [(scenario_name1, array1), (scenario_name2, array2), ...]
+                       Each array has shape (N, T, 2) where N=runs, T=timesteps, 2=teams
+        foldername: Directory to save plot (will create 'figures' subdirectory)
+        name: Filename base (without extension)
+        attribute_name: Metric name (e.g., 'Score', 'Tags', 'Grabs') - used for y-axis limits
+        show_outliers: Whether to show outlier points in boxplots
+        figsize: Figure size tuple (default 14x6 for good readability with multiple scenarios)
+        dpi: Resolution for saved image
+        bagsize: Number of episodes to average over (default 200, matching main bagsize)
+    """
+    import matplotlib.pyplot as plt
+    from matplotlib import cm
+    import numpy as np
+    
+    # Validate input
+    if not scenario_data:
+        raise ValueError("scenario_data cannot be empty")
+    if len(scenario_data) > 4:
+        raise ValueError("Maximum 4 scenarios supported")
+    
+    num_scenarios = len(scenario_data)
+    scenario_names = [name for name, _ in scenario_data]
+    scenario_arrays = [data for _, data in scenario_data]
+    
+    # Process each scenario: average and detect dimensions
+    processed_scenarios = []
+    for scenario_name, fulldata in scenario_data:
+        fulldata = np.asarray(fulldata)
+        
+        # Bag the data if bagsize > 1
+        if bagsize > 1:
+            fulldata = average_multiple_runs(fulldata, bagsize=bagsize)
+        
+        # Verify shape
+        if fulldata.ndim != 3 or fulldata.shape[2] != 2:
+            raise ValueError(f"Scenario '{scenario_name}': expected shape (N, T, 2), got {fulldata.shape}")
+        
+        T = fulldata.shape[1]
+        blue_data = [fulldata[:, t, 0] for t in range(T)]
+        red_data = [fulldata[:, t, 1] for t in range(T)]
+        
+        processed_scenarios.append({
+            'name': scenario_name,
+            'T': T,
+            'blue': blue_data,
+            'red': red_data
+        })
+    
+    # All scenarios should have same T (number of timesteps)
+    T = processed_scenarios[0]['T']
+    for scenario in processed_scenarios[1:]:
+        if scenario['T'] != T:
+            raise ValueError("All scenarios must have the same number of timesteps")
+    
+    # Create figure
+    fig, ax = plt.subplots(figsize=figsize)
+    
+    # Color palettes: shades of blue and red for different scenarios
+    # Map scenario indices to color intensities
+    blue_palette = plt.cm.Blues(np.linspace(0.4, 0.95, num_scenarios))  # Light to dark blue
+    red_palette = plt.cm.Reds(np.linspace(0.4, 0.95, num_scenarios))    # Light to dark red
+    
+    # Interleaved positioning
+    # At each timestep, position scenarios sequentially with small gaps
+    # Width allocation: 0.8 / num_scenarios per scenario
+    indices = np.arange(T)
+    width_per_scenario = 0.8 / num_scenarios
+    width_per_team = width_per_scenario / 2.2  # Leave small gap between blue and red
+    
+    for scenario_idx, scenario in enumerate(processed_scenarios):
+        scenario_name = scenario['name']
+        blue_data = scenario['blue']
+        red_data = scenario['red']
+        
+        # Calculate positions for this scenario
+        # Offset from center of timestep group
+        base_offset = -0.4 + (scenario_idx + 0.5) * width_per_scenario
+        
+        pos_blue = indices + base_offset - width_per_team / 2 - 0.05
+        pos_red = indices + base_offset + width_per_team / 2 + 0.05
+        
+        # Boxplot styling
+        bp_kwargs = dict(widths=width_per_team, showfliers=show_outliers, patch_artist=True)
+        
+        # Plot blue boxes for this scenario (using blue palette)
+        bp_blue = ax.boxplot(blue_data, positions=pos_blue, **bp_kwargs)
+        color_blue = blue_palette[scenario_idx]
+        for box in bp_blue['boxes']:
+            box.set(facecolor=color_blue, edgecolor='darkblue', linewidth=0.8)
+        for median in bp_blue['medians']:
+            median.set(color='darkblue', linewidth=1.2)
+        for whisker in bp_blue['whiskers']:
+            whisker.set(color='darkblue', linewidth=0.8)
+        for cap in bp_blue['caps']:
+            cap.set(color='darkblue', linewidth=0.8)
+        for flier in bp_blue['fliers']:
+            flier.set(marker='o', markerfacecolor='blue', markeredgecolor='darkblue', markersize=3)
+        
+        # Plot red boxes for this scenario (using red palette)
+        bp_red = ax.boxplot(red_data, positions=pos_red, **bp_kwargs)
+        color_red = red_palette[scenario_idx]
+        for box in bp_red['boxes']:
+            box.set(facecolor=color_red, edgecolor='darkred', linewidth=0.8)
+        for median in bp_red['medians']:
+            median.set(color='darkred', linewidth=1.2)
+        for whisker in bp_red['whiskers']:
+            whisker.set(color='darkred', linewidth=0.8)
+        for cap in bp_red['caps']:
+            cap.set(color='darkred', linewidth=0.8)
+        for flier in bp_red['fliers']:
+            flier.set(marker='o', markerfacecolor='red', markeredgecolor='darkred', markersize=3)
+    
+    # Axis labels and title
+    ax.set_xlabel("Episodes" + (f" (averaged over each {bagsize} episodes)" if bagsize > 1 else ""), 
+                  fontsize=AXISFONT)
+    ax.set_ylabel(attribute_name, fontsize=AXISFONT)
+    
+    # Fixed y-axis limits for comparability
+    if attribute_name == "Score":
+        ax.set_ylim(0, 8)
+    elif attribute_name == "Tags":
+        ax.set_ylim(0, 10)
+    elif attribute_name == "Grabs":
+        ax.set_ylim(0, 13)
+    
+    ax.grid(True, alpha=0.3)
+    ax.tick_params(axis='both', labelsize=NUMBERSFONT)
+    
+    # X ticks: show fewer labels to avoid clutter
+    step = max(1, T // 10)
+    ax.set_xticks(indices[::step])
+    ax.set_xticklabels([str(i * bagsize) for i in indices[::step]])
+    
+    # Legend: create proxy artists for scenarios and teams
+    handles = []
+    labels = []
+    
+    for scenario_idx, scenario_name in enumerate(scenario_names):
+        color_blue = blue_palette[scenario_idx]
+        color_red = red_palette[scenario_idx]
+        # Blue and Red boxes for this scenario
+        h1 = plt.Rectangle((0, 0), 1, 1, facecolor=color_blue, edgecolor='darkblue', linewidth=0.8)
+        h2 = plt.Rectangle((0, 0), 1, 1, facecolor=color_red, edgecolor='darkred', linewidth=0.8)
+        handles.extend([h1, h2])
+        labels.extend([f"{scenario_name} Blue", f"{scenario_name} Red"])
+    
+    ax.legend(handles, labels, fontsize=LEGENDFONT, loc='upper left', ncol=min(2, num_scenarios))
+    
+    plt.tight_layout()
+    
+    # Ensure target directory exists
+    outdir = os.path.join(foldername, "figures")
+    os.makedirs(outdir, exist_ok=True)
+    
+    plt.savefig(os.path.join(outdir, f"{name}_{attribute_name}_multi_bxplt.png"), dpi=dpi, bbox_inches='tight')
+    plt.close()
+
+#End of plot_anythingelse_multiscenario_boxplots()
+
+
+def plot_anythingelse_multiscenario_curves(scenario_data, foldername, name, attribute_name, figsize=(14, 6), dpi=300, bagsize=200):
+    """
+    Plot curves with error bands for multiple scenarios in a merged visualization.
+    
+    Args:
+        scenario_data: List of tuples [(scenario_name1, array1), (scenario_name2, array2), ...]
+                       Each array has shape (N, T, 2) where N=runs, T=timesteps, 2=teams
+        foldername: Directory to save plot (will create 'figures' subdirectory)
+        name: Filename base (without extension)
+        attribute_name: Metric name (e.g., 'Score', 'Tags', 'Grabs') - used for y-axis limits
+        figsize: Figure size tuple (default 14x6)
+        dpi: Resolution for saved image
+        bagsize: Number of episodes to average over (default 200)
+    """
+    import matplotlib.pyplot as plt
+    from matplotlib import cm
+    import numpy as np
+    
+    # Validate input
+    if not scenario_data:
+        raise ValueError("scenario_data cannot be empty")
+    if len(scenario_data) > 4:
+        raise ValueError("Maximum 4 scenarios supported")
+    
+    num_scenarios = len(scenario_data)
+    scenario_names = [sname for sname, _ in scenario_data]
+    
+    # Process each scenario: average and compute mean/std
+    processed_scenarios = []
+    for scenario_name, fulldata in scenario_data:
+        fulldata = np.asarray(fulldata)
+        
+        # Bag the data
+        if bagsize > 1:
+            fulldata = average_multiple_runs(fulldata, bagsize=bagsize)
+        
+        # Verify shape
+        if fulldata.ndim != 3 or fulldata.shape[2] != 2:
+            raise ValueError(f"Scenario '{scenario_name}': expected shape (N, T, 2), got {fulldata.shape}")
+        
+        T = fulldata.shape[1]
+        
+        # Compute mean and std per team
+        mean_blue = np.mean(fulldata[:, :, 0], axis=0)
+        std_blue = np.std(fulldata[:, :, 0], axis=0)
+        mean_red = np.mean(fulldata[:, :, 1], axis=0)
+        std_red = np.std(fulldata[:, :, 1], axis=0)
+        
+        processed_scenarios.append({
+            'name': scenario_name,
+            'T': T,
+            'mean_blue': mean_blue,
+            'std_blue': std_blue,
+            'mean_red': mean_red,
+            'std_red': std_red,
+        })
+    
+    # All scenarios should have same T
+    T = processed_scenarios[0]['T']
+    for scenario in processed_scenarios[1:]:
+        if scenario['T'] != T:
+            raise ValueError("All scenarios must have the same number of timesteps")
+    
+    # Create figure
+    fig, ax = plt.subplots(figsize=figsize)
+    
+    # Color palettes: shades of blue and red for different scenarios
+    blue_palette = plt.cm.Blues(np.linspace(0.4, 0.95, num_scenarios))  # Light to dark blue
+    red_palette = plt.cm.Reds(np.linspace(0.4, 0.95, num_scenarios))    # Light to dark red
+    
+    # Plot each scenario
+    x_indices = np.arange(T)
+    
+    handles = []
+    labels = []
+    
+    for scenario_idx, scenario in enumerate(processed_scenarios):
+        scenario_name = scenario['name']
+        color_blue = blue_palette[scenario_idx]
+        color_red = red_palette[scenario_idx]
+        
+        mean_blue = scenario['mean_blue']
+        std_blue = scenario['std_blue']
+        mean_red = scenario['mean_red']
+        std_red = scenario['std_red']
+        
+        # Plot blue team: solid line in blue shade
+        line_blue = ax.plot(x_indices, mean_blue, label=f"{scenario_name} Blue", 
+                            color=color_blue, linestyle='-', linewidth=2.5)
+        ax.fill_between(x_indices, mean_blue - std_blue, mean_blue + std_blue, 
+                        color=color_blue, alpha=0.25)
+        
+        # Plot red team: dashed line in red shade
+        line_red = ax.plot(x_indices, mean_red, label=f"{scenario_name} Red", 
+                           color=color_red, linestyle='--', linewidth=2.5)
+        ax.fill_between(x_indices, mean_red - std_red, mean_red + std_red, 
+                        color=color_red, alpha=0.15)
+        
+        # Collect for legend
+        handles.append(line_blue[0])
+        handles.append(line_red[0])
+        labels.append(f"{scenario_name} Blue")
+        labels.append(f"{scenario_name} Red")
+    
+    # Axis labels and title
+    ax.set_xlabel("Episodes" + (f" (averaged over each {bagsize} episodes)" if bagsize > 1 else ""), 
+                  fontsize=AXISFONT)
+    ax.set_ylabel(attribute_name, fontsize=AXISFONT)
+    
+    # Fixed y-axis limits for comparability
+    if attribute_name == "Score":
+        ax.set_ylim(0, 8)
+    elif attribute_name == "Tags":
+        ax.set_ylim(0, 10)
+    elif attribute_name == "Grabs":
+        ax.set_ylim(0, 13)
+    
+    ax.grid(True, alpha=0.3)
+    ax.tick_params(axis='both', labelsize=NUMBERSFONT)
+    
+    # X ticks: scale to represent actual episodes
+    step = max(1, T // 10)
+    ticks = x_indices[::step]
+    ax.set_xticks(ticks)
+    ax.set_xticklabels([str(int(t * bagsize)) for t in ticks])
+    
+    # Legend
+    ax.legend(handles, labels, fontsize=LEGENDFONT, loc='upper left', ncol=min(2, num_scenarios))
+    
+    plt.tight_layout()
+    
+    # Ensure target directory exists
+    outdir = os.path.join(foldername, "figures")
+    os.makedirs(outdir, exist_ok=True)
+    
+    plt.savefig(os.path.join(outdir, f"{name}_{attribute_name}_multi_curve.png"), dpi=dpi, bbox_inches='tight')
+    plt.close()
+
+#End of plot_anythingelse_multiscenario_curves()
+
+
+def plot_anythingelse_multiscenario(scenario_data, foldername, name, attribute_name, show_outliers=True, figsize=(14, 6), dpi=300, bagsize=100):
+    """
+    Wrapper function that generates both boxplot and curve visualizations for multiple scenarios.
+    
+    Args:
+        scenario_data: List of tuples [(scenario_name1, array1), (scenario_name2, array2), ...]
+                       Each array has shape (N, T, 2) where N=runs, T=timesteps, 2=teams
+        foldername: Directory to save plots (will create 'figures' subdirectory)
+        name: Filename base (without extension)
+        attribute_name: Metric name (e.g., 'Score', 'Tags', 'Grabs')
+        show_outliers: Whether to show outlier points in boxplots (default True)
+        figsize: Figure size tuple (default 14x6)
+        dpi: Resolution for saved images
+        bagsize: Number of episodes to average over (default 200)
+    """
+    plot_anythingelse_multiscenario_boxplots(scenario_data, foldername, name, attribute_name, 
+                                             show_outliers=show_outliers, figsize=figsize, 
+                                             dpi=dpi, bagsize=bagsize)
+    plot_anythingelse_multiscenario_curves(scenario_data, foldername, name, attribute_name, 
+                                          figsize=figsize, dpi=dpi, bagsize=int(bagsize / 2)) #assumes dividable size (50 or 50 * n)
+
+#End of plot_anythingelse_multiscenario()
+
 if __name__ == "__main__":
 
     # print("Circledetector test")
@@ -1233,7 +1627,7 @@ if __name__ == "__main__":
     # names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parametersearch3", "qtrainlog/batch 5/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
     # names.append(ParameterSet("single_aggressive26", "hard", 0.15, 0.95, 10.0, False, "parametersearch4", "qtrainlog/batch 5/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
     # names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.95, 10.0, False, "parametersearch5", "qtrainlog/batch 5/", i, boolchange=False, nrs=10, ep=1000, teamsize3=True, timelimit=600., ignoreseed=False))
-    if True: #enable when re-running already generated figures or their score prints
+    if False: #enable when re-running already generated figures or their score prints
         if False: #these are not necessary to run ever again, too small sample size or ran before important updates to the code (not suited for comparability)
             # # batch 6b
             # #load_and_call_helper("shortpara1_sharpturns_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_1nrs_600ep_no_pre", 1)#_nr0") #alternative way to call the visualization
@@ -1328,30 +1722,92 @@ if __name__ == "__main__":
         # batch 6h (getting a confirmation that certain parameters do not result in training success on average; only good parameters were run in breadth so far)
         # names.append(ParameterSet("single_aggressive_rew", "hard", 0.2, 0.85, 10.0, False, "unsuitable_param1", "qtrainlog/batch 6h/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
         # names.append(ParameterSet("single_aggressive_rew", "hard", 0.3, 0.8, 10.0, False, "unsuitable_param2", "qtrainlog/batch 6h/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
-    if True:
+    if False:
         # batch 6i re-run of wrong reward
         names.append(ParameterSet("single_aggressive26", "hard", 0.2, 0.85, 10.0, False, "unsuitable_param1", "qtrainlog/batch 6h/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
         names.append(ParameterSet("single_aggressive26", "hard", 0.3, 0.8, 10.0, False, "unsuitable_param2", "qtrainlog/batch 6h/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
         names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "aggrtagsnobool", "qtrainlog/batch 6g/", i, boolchange=False, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+    
+    if True:
+        nrs = 20
+        i = 0
+        namename = []
+        # Selected parametersets for thesis plot:
+        #0 
+        namename.append("Base-Aggr")
+        names.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parameterconfirm9", "qtrainlog/batch 6f/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        #1 Base-Off
+        namename.append("Base-Off")
+        names.append(ParameterSet("single_aggressive26", "hard", 0.3, 0.8, 10.0, False, "unsuitable_param2", "qtrainlog/batch 6h/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        #2 Base-Tags
+        namename.append("Base-Tags")
+        names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "aggrtagsnobool", "qtrainlog/batch 6g/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        #3 Base-Def
+        namename.append("Base-Def")
+        names.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.99, 10.0, False, "defender4", "qtrainlog/batch 8a/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
+        #4 Turn-Aggr
+        namename.append("Turn-Aggr")
+        names.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm11", "qtrainlog/batch 6g/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=True, sim_speedup=3))
+        
+        #5 Bool-Aggr
+        namename.append("Bool-Aggr")
+        names.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parameterconfirm9", "qtrainlog/batch 6g/", i, boolchange=True, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        #6 Bool-Tags
+        namename.append("Bool-Tags")
+        names.append(ParameterSet("aggressive_tags_26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm17", "qtrainlog/batch 6f/", i, boolchange=True, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        #7 Bool-Def
+        namename.append("Bool-Def")
+        names.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "defender1", "qtrainlog/batch 8a/", i, boolchange=True, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
+        #8 Pretrain-Aggr
+        namename.append("Pretrain-Aggr")
+        names.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, True, "pretr1", "qtrainlog/batch 8a/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
+        #9 Pretrain-Def
+        namename.append("Pretrain-Def")
+        names.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, True, "pretr3", "qtrainlog/batch 8a/", i, boolchange=True, nrs=20, ep=1000)) 
+        #10 
+        namename.append("Previous-Aggr")
+        names.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "prevcontinue4", "qtrainlog/batch 7c/", i, boolchange=False, nrs=nrs, ep=4000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
 
     #####################################################################
     # for name in names:
     #     load_and_call_helper(name.create_name_without_index(), name.nrs, name.foldername, name.ep)
     
-    # Run all scheduled parameters in parallel
-    num_jobs = len(names)
+    if False:
+        # Run all scheduled parameters in parallel
+        num_jobs = len(names)
 
-    num_workers = max(1, os.cpu_count() - 1)
-    # or overwrite with own number:
-    #num_workers = 5
-    print(f"Rendering plots with {num_workers} workers.")
+        num_workers = max(1, os.cpu_count() - 1)
+        # or overwrite with own number:
+        #num_workers = 5
+        print(f"Rendering plots with {num_workers} workers.")
 
-    with Pool(processes=num_workers) as pool:
-        pool.map(load_and_call_helper, names)
-    # for nam in names:
-    #     load_and_call_helper(nam)
+        with Pool(processes=num_workers) as pool:
+            pool.map(load_and_call_helper, names)
+        # for nam in names:
+        #     load_and_call_helper(nam)
 
+    #TODO implement and enable here:
+    # plot_combined_res()
 
+    parameters =[load_one_para(name) for name in names]
+    """ Loading the 4 lists of stats from a filename provided by parameterset.
+    Returns the 4 numpy arrays in a dictionary:
+    "rewardcurve"
+    "scorelist"
+    "tagslist"
+    "grabslist"     """
+
+    # parametergroup1 = [(namename[0], parameters[0]['rewardcurve']), (namename[1], parameters[1]['rewardcurve']), (namename[2], parameters[2]['rewardcurve'])] #TODO reward doesn't work yet (1 team)
+    parametergroup1b = [(namename[0], parameters[0]['scorelist']), (namename[1], parameters[1]['scorelist']), (namename[2], parameters[2]['scorelist'])]
+    parametergroup1c = [(namename[0], parameters[0]['tagslist']), (namename[1], parameters[1]['tagslist']), (namename[2], parameters[2]['tagslist'])]
+    parametergroup1d = [(namename[0], parameters[0]['grabslist']), (namename[1], parameters[1]['grabslist']), (namename[2], parameters[2]['grabslist'])]
+
+    # plot_anythingelse_multiscenario(parametergroup1, "qtrainlog/", "testrendering", "Reward")
+    plot_anythingelse_multiscenario(parametergroup1b, "qtrainlog/", "testrendering", "Score", bagsize = 100)
+    plot_anythingelse_multiscenario(parametergroup1c, "qtrainlog/", "testrendering", "Tags", bagsize = 100)
+    plot_anythingelse_multiscenario(parametergroup1d, "qtrainlog/", "testrendering", "Grabs", bagsize = 100)
+    
+    #scenario_data: List of tuples [(scenario_name1, array1), (scenario_name2, array2), ...]
 
 
     # testing 
