@@ -18,6 +18,9 @@ LEGENDFONT = 17
 NUMBERSFONT = 18
 NAMEFONT = 25
 
+#width_per_scenario
+WPS = 0.85
+
 
 # ===== Metric Computation Helper Functions =====
 
@@ -1333,15 +1336,16 @@ def plot_anythingelse_multiscenario_boxplots(scenario_data, foldername, name, at
     
     # Color palettes: shades of blue and red for different scenarios
     # Map scenario indices to color intensities
-    blue_palette = plt.cm.Blues(np.linspace(0.4, 0.95, num_scenarios))  # Light to dark blue
-    red_palette = plt.cm.Reds(np.linspace(0.4, 0.95, num_scenarios))    # Light to dark red
+    # blue_palette = plt.cm.Blues(np.linspace(0.4, 0.95, num_scenarios))  # Light to dark blue #WASLIKETHIS COLOR
+    blue_palette = plt.cm.Blues(np.linspace(0.2, 0.99, num_scenarios))  # Light to dark blue
+    red_palette = plt.cm.Reds(np.linspace(0.2, 0.99, num_scenarios))    # Light to dark red
     
     # Interleaved positioning
     # At each timestep, position scenarios sequentially with small gaps
     # Width allocation: 0.8 / num_scenarios per scenario
     indices = np.arange(T)
-    width_per_scenario = 0.8 / num_scenarios
-    width_per_team = width_per_scenario / 2.2  # Leave small gap between blue and red
+    width_per_scenario = WPS / num_scenarios#0.8 / num_scenarios
+    width_per_team = width_per_scenario / 2.2#1.6#2.2  # Leave small gap between blue and red
     
     for scenario_idx, scenario in enumerate(processed_scenarios):
         scenario_name = scenario['name']
@@ -1387,6 +1391,7 @@ def plot_anythingelse_multiscenario_boxplots(scenario_data, foldername, name, at
             flier.set(marker='o', markerfacecolor='red', markeredgecolor='darkred', markersize=3)
     
     # Axis labels and title
+    ax.set_title(name, fontsize=NAMEFONT) #TODOvis remove this
     ax.set_xlabel("Episodes" + (f" (averaged over each {bagsize} episodes)" if bagsize > 1 else ""), 
                   fontsize=AXISFONT)
     ax.set_ylabel(attribute_name, fontsize=AXISFONT)
@@ -1505,8 +1510,8 @@ def plot_anythingelse_multiscenario_curves(scenario_data, foldername, name, attr
     fig, ax = plt.subplots(figsize=figsize)
     
     # Color palettes: shades of blue and red for different scenarios
-    blue_palette = plt.cm.Blues(np.linspace(0.4, 0.95, num_scenarios))  # Light to dark blue
-    red_palette = plt.cm.Reds(np.linspace(0.4, 0.95, num_scenarios))    # Light to dark red
+    blue_palette = plt.cm.Blues(np.linspace(0.35, 1., num_scenarios))  # Light to dark blue
+    red_palette = plt.cm.Reds(np.linspace(0.35, 1., num_scenarios))    # Light to dark red #0.98
     
     # Plot each scenario
     x_indices = np.arange(T)
@@ -1528,21 +1533,22 @@ def plot_anythingelse_multiscenario_curves(scenario_data, foldername, name, attr
         line_blue = ax.plot(x_indices, mean_blue, label=f"{scenario_name} Blue", 
                             color=color_blue, linestyle='-', linewidth=2.5)
         ax.fill_between(x_indices, mean_blue - std_blue, mean_blue + std_blue, 
-                        color=color_blue, alpha=0.25)
+                        color=color_blue, alpha=0.10)#25
         
         # Plot red team: dashed line in red shade
         line_red = ax.plot(x_indices, mean_red, label=f"{scenario_name} Red", 
-                           color=color_red, linestyle='--', linewidth=2.5)
+                           color=color_red, linestyle='--', linewidth=2.0, alpha=0.9)#2.5
         ax.fill_between(x_indices, mean_red - std_red, mean_red + std_red, 
-                        color=color_red, alpha=0.15)
+                        color=color_red, alpha=0.1)#15
         
         # Collect for legend
         handles.append(line_blue[0])
         handles.append(line_red[0])
-        labels.append(f"{scenario_name} Blue")
-        labels.append(f"{scenario_name} Red")
+        labels.append(f"{scenario_name}")# Blue")
+        labels.append(f"{scenario_name}")# Red")
     
     # Axis labels and title
+    ax.set_title(name, fontsize=NAMEFONT) #TODOvis remove this
     ax.set_xlabel("Episodes" + (f" (averaged over each {bagsize} episodes)" if bagsize > 1 else ""), 
                   fontsize=AXISFONT)
     ax.set_ylabel(attribute_name, fontsize=AXISFONT)
@@ -1836,30 +1842,74 @@ if __name__ == "__main__":
 
     # Base-Tags, Bool-Tags, Base-Aggr
     d0, d1, d2, d3 = 2,6,0    ,-1
-    # parametergroup1 = [(namename[d0], parameters[d0]['rewardcurve']), (namename[d1], parameters[d1]['rewardcurve']), (namename[2], parameters[2]['rewardcurve'])] #TODO reward doesn't work yet (1 team)
+    # parametergroup1 = [(namename[d0], parameters[d0]['rewardcurve']), (namename[d1], parameters[d1]['rewardcurve']), (namename[d2], parameters[d2]['rewardcurve'])] #TODO reward doesn't work yet (1 team)
     parametergroup1b = [(namename[d0], parameters[d0]['scorelist']), (namename[d1], parameters[d1]['scorelist']), (namename[d2], parameters[d2]['scorelist'])]#, (namename[d3], parameters[d3]['scorelist'])]
     parametergroup1c = [(namename[d0], parameters[d0]['tagslist']), (namename[d1], parameters[d1]['tagslist']), (namename[d2], parameters[d2]['tagslist'])]#, (namename[d3], parameters[d3]['tagslist'])]
     parametergroup1d = [(namename[d0], parameters[d0]['grabslist']), (namename[d1], parameters[d1]['grabslist']), (namename[d2], parameters[d2]['grabslist'])]#, (namename[d3], parameters[d3]['grabslist'])]
     # plot_anythingelse_multiscenario(parametergroup1, "qtrainlog/", "testrendering", "Reward")
     plot_anythingelse_multiscenario(parametergroup1b, "qtrainlog/", "AllTags", "Score", bagsize = 100)
-    plot_anythingelse_multiscenario(parametergroup1c, "qtrainlog/", "Allbase", "Tags", bagsize = 100)
-    plot_anythingelse_multiscenario(parametergroup1d, "qtrainlog/", "Allbase", "Grabs", bagsize = 100)
+    plot_anythingelse_multiscenario(parametergroup1c, "qtrainlog/", "AllTags", "Tags", bagsize = 100)
+    plot_anythingelse_multiscenario(parametergroup1d, "qtrainlog/", "AllTags", "Grabs", bagsize = 100)
 
     
     # Base-Def, Bool-Def, Pretrain-Def? oder Base-Aggr?/Base-Tags?
-    d0, d1, d2, d3 = 3,7,8
-    # parametergroup1 = [(namename[d0], parameters[d0]['rewardcurve']), (namename[d1], parameters[d1]['rewardcurve']), (namename[2], parameters[2]['rewardcurve'])] #TODO reward doesn't work yet (1 team)
+    d0, d1, d2, d3 = 3,7,8  ,-1
+    # parametergroup1 = [(namename[d0], parameters[d0]['rewardcurve']), (namename[d1], parameters[d1]['rewardcurve']), (namename[d2], parameters[d2]['rewardcurve'])] #TODO reward doesn't work yet (1 team)
+    parametergroup1b = [(namename[d0], parameters[d0]['scorelist']), (namename[d1], parameters[d1]['scorelist']), (namename[d2], parameters[d2]['scorelist'])]#, (namename[d3], parameters[d3]['scorelist'])]
+    parametergroup1c = [(namename[d0], parameters[d0]['tagslist']), (namename[d1], parameters[d1]['tagslist']), (namename[d2], parameters[d2]['tagslist'])]#, (namename[d3], parameters[d3]['tagslist'])]
+    parametergroup1d = [(namename[d0], parameters[d0]['grabslist']), (namename[d1], parameters[d1]['grabslist']), (namename[d2], parameters[d2]['grabslist'])]#, (namename[d3], parameters[d3]['grabslist'])]
+    # plot_anythingelse_multiscenario(parametergroup1, "qtrainlog/", "testrendering", "Reward")
+    plot_anythingelse_multiscenario(parametergroup1b, "qtrainlog/", "AllDef", "Score", bagsize = 100)
+    plot_anythingelse_multiscenario(parametergroup1c, "qtrainlog/", "AllDef", "Tags", bagsize = 100)
+    plot_anythingelse_multiscenario(parametergroup1d, "qtrainlog/", "AllDef", "Grabs", bagsize = 100)
+
+
+    # Pretrain-* (pre-agr,pre-def, base-agr, base-def)
+    d0, d1, d2, d3 = 8,9,0,3
+    # parametergroup1 = [(namename[d0], parameters[d0]['rewardcurve']), (namename[d1], parameters[d1]['rewardcurve']), (namename[d2], parameters[d2]['rewardcurve'])] #TODO reward doesn't work yet (1 team)
     parametergroup1b = [(namename[d0], parameters[d0]['scorelist']), (namename[d1], parameters[d1]['scorelist']), (namename[d2], parameters[d2]['scorelist']), (namename[d3], parameters[d3]['scorelist'])]
     parametergroup1c = [(namename[d0], parameters[d0]['tagslist']), (namename[d1], parameters[d1]['tagslist']), (namename[d2], parameters[d2]['tagslist']), (namename[d3], parameters[d3]['tagslist'])]
     parametergroup1d = [(namename[d0], parameters[d0]['grabslist']), (namename[d1], parameters[d1]['grabslist']), (namename[d2], parameters[d2]['grabslist']), (namename[d3], parameters[d3]['grabslist'])]
     # plot_anythingelse_multiscenario(parametergroup1, "qtrainlog/", "testrendering", "Reward")
-    plot_anythingelse_multiscenario(parametergroup1b, "qtrainlog/", "AllDef", "Score", bagsize = 100)
-    plot_anythingelse_multiscenario(parametergroup1c, "qtrainlog/", "Allbase", "Tags", bagsize = 100)
-    plot_anythingelse_multiscenario(parametergroup1d, "qtrainlog/", "Allbase", "Grabs", bagsize = 100)
+    plot_anythingelse_multiscenario(parametergroup1b, "qtrainlog/", "AllPretrain", "Score", bagsize = 100)
+    plot_anythingelse_multiscenario(parametergroup1c, "qtrainlog/", "AllPretrain", "Tags", bagsize = 100)
+    plot_anythingelse_multiscenario(parametergroup1d, "qtrainlog/", "AllPretrain", "Grabs", bagsize = 100)
+    
+
+    # Pretrain-Aggr (pre-agr, base-agr)
+    d0, d1, d2, d3 = 8,0,   -1,-1
+    # parametergroup1 = [(namename[d0], parameters[d0]['rewardcurve']), (namename[d1], parameters[d1]['rewardcurve']), (namename[d2], parameters[d2]['rewardcurve'])] #TODO reward doesn't work yet (1 team)
+    parametergroup1b = [(namename[d0], parameters[d0]['scorelist']), (namename[d1], parameters[d1]['scorelist'])]#, (namename[d2], parameters[d2]['scorelist']), (namename[d3], parameters[d3]['scorelist'])]
+    parametergroup1c = [(namename[d0], parameters[d0]['tagslist']), (namename[d1], parameters[d1]['tagslist'])]#, (namename[d2], parameters[d2]['tagslist']), (namename[d3], parameters[d3]['tagslist'])]
+    parametergroup1d = [(namename[d0], parameters[d0]['grabslist']), (namename[d1], parameters[d1]['grabslist'])]#, (namename[d2], parameters[d2]['grabslist']), (namename[d3], parameters[d3]['grabslist'])]
+    # plot_anythingelse_multiscenario(parametergroup1, "qtrainlog/", "testrendering", "Reward")
+    plot_anythingelse_multiscenario(parametergroup1b, "qtrainlog/", "AggrPretrain", "Score", bagsize = 100)
+    plot_anythingelse_multiscenario(parametergroup1c, "qtrainlog/", "AggrPretrain", "Tags", bagsize = 100)
+    plot_anythingelse_multiscenario(parametergroup1d, "qtrainlog/", "AggrPretrain", "Grabs", bagsize = 100)
+    
+
+    # Pretrain-Def (pre-def, base-def)
+    d0, d1, d2, d3 = 9,3,   -1,-1
+    # parametergroup1 = [(namename[d0], parameters[d0]['rewardcurve']), (namename[d1], parameters[d1]['rewardcurve']), (namename[d2], parameters[d2]['rewardcurve'])] #TODO reward doesn't work yet (1 team)
+    parametergroup1b = [(namename[d0], parameters[d0]['scorelist']), (namename[d1], parameters[d1]['scorelist'])]#, (namename[d2], parameters[d2]['scorelist']), (namename[d3], parameters[d3]['scorelist'])]
+    parametergroup1c = [(namename[d0], parameters[d0]['tagslist']), (namename[d1], parameters[d1]['tagslist'])]#, (namename[d2], parameters[d2]['tagslist']), (namename[d3], parameters[d3]['tagslist'])]
+    parametergroup1d = [(namename[d0], parameters[d0]['grabslist']), (namename[d1], parameters[d1]['grabslist'])]#, (namename[d2], parameters[d2]['grabslist']), (namename[d3], parameters[d3]['grabslist'])]
+    # plot_anythingelse_multiscenario(parametergroup1, "qtrainlog/", "testrendering", "Reward")
+    plot_anythingelse_multiscenario(parametergroup1b, "qtrainlog/", "DefPretrain", "Score", bagsize = 100)
+    plot_anythingelse_multiscenario(parametergroup1c, "qtrainlog/", "DefPretrain", "Tags", bagsize = 100)
+    plot_anythingelse_multiscenario(parametergroup1d, "qtrainlog/", "DefPretrain", "Grabs", bagsize = 100)
     
     
-    
-    
+    # # Previous vs Base-agr    #Different numbers of steps is too complicated right now...
+    # d0, d1, d2, d3 = 10, 0  ,-1,-1
+    # # parametergroup1 = [(namename[d0], parameters[d0]['rewardcurve']), (namename[d1], parameters[d1]['rewardcurve']), (namename[d2], parameters[d2]['rewardcurve'])] #TODO reward doesn't work yet (1 team)
+    # parametergroup1b = [(namename[d0], parameters[d0]['scorelist']), (namename[d1], parameters[d1]['scorelist'])]#, (namename[d2], parameters[d2]['scorelist']), (namename[d3], parameters[d3]['scorelist'])]
+    # parametergroup1c = [(namename[d0], parameters[d0]['tagslist']), (namename[d1], parameters[d1]['tagslist'])]#, (namename[d2], parameters[d2]['tagslist']), (namename[d3], parameters[d3]['tagslist'])]
+    # parametergroup1d = [(namename[d0], parameters[d0]['grabslist']), (namename[d1], parameters[d1]['grabslist'])]#, (namename[d2], parameters[d2]['grabslist']), (namename[d3], parameters[d3]['grabslist'])]
+    # # plot_anythingelse_multiscenario(parametergroup1, "qtrainlog/", "testrendering", "Reward")
+    # plot_anythingelse_multiscenario(parametergroup1b, "qtrainlog/", "Previous", "Score", bagsize = 100)
+    # plot_anythingelse_multiscenario(parametergroup1c, "qtrainlog/", "Previous", "Tags", bagsize = 100)
+    # plot_anythingelse_multiscenario(parametergroup1d, "qtrainlog/", "Previous", "Grabs", bagsize = 100)
     
     
     
