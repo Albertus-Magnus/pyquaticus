@@ -4,6 +4,7 @@ import os
 import sys
 from time import time
 from matplotlib import pyplot as plt
+from matplotlib import ticker ##here
 import numpy as np
 from scipy.spatial import Voronoi
 from evaluate_q import matrix_to_heatmap
@@ -1351,8 +1352,8 @@ def plot_anythingelse_multiscenario_boxplots(scenario_data, foldername, name, at
         # Offset from center of timestep group
         base_offset = -0.4 + (scenario_idx + 0.5) * width_per_scenario
         
-        pos_blue = indices + base_offset - width_per_team / 2 - 0.05
-        pos_red = indices + base_offset + width_per_team / 2 + 0.05
+        pos_blue = indices + base_offset - width_per_team / 2 #+0.01#- 0.05
+        pos_red = indices + base_offset + width_per_team / 2 #-0.01#+ 0.05
         
         # Boxplot styling
         bp_kwargs = dict(widths=width_per_team, showfliers=show_outliers, patch_artist=True)
@@ -1405,6 +1406,10 @@ def plot_anythingelse_multiscenario_boxplots(scenario_data, foldername, name, at
     step = max(1, T // 10)
     ax.set_xticks(indices[::step])
     ax.set_xticklabels([str(i * bagsize) for i in indices[::step]])
+    
+    # Add minor ticks at midpoints between major ticks for grid positioning
+    ax.xaxis.set_minor_locator(ticker.MultipleLocator(0.5))
+    ax.grid(True, which='minor', alpha=0.3, axis='x') ##here
     
     # Legend: create proxy artists for scenarios and teams
     handles = []
@@ -1733,7 +1738,7 @@ if __name__ == "__main__":
         i = 0
         namename = []
         # Selected parametersets for thesis plot:
-        #0 
+        #0 Base-Aggr
         namename.append("Base-Aggr")
         names.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parameterconfirm9", "qtrainlog/batch 6f/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
         #1 Base-Off
@@ -1764,7 +1769,7 @@ if __name__ == "__main__":
         #9 Pretrain-Def
         namename.append("Pretrain-Def")
         names.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, True, "pretr3", "qtrainlog/batch 8a/", i, boolchange=True, nrs=20, ep=1000)) 
-        #10 
+        #10 Previous-Aggr
         namename.append("Previous-Aggr")
         names.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "prevcontinue4", "qtrainlog/batch 7c/", i, boolchange=False, nrs=nrs, ep=4000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
 
@@ -1786,9 +1791,6 @@ if __name__ == "__main__":
         # for nam in names:
         #     load_and_call_helper(nam)
 
-    #TODO implement and enable here:
-    # plot_combined_res()
-
     parameters =[load_one_para(name) for name in names]
     """ Loading the 4 lists of stats from a filename provided by parameterset.
     Returns the 4 numpy arrays in a dictionary:
@@ -1797,15 +1799,83 @@ if __name__ == "__main__":
     "tagslist"
     "grabslist"     """
 
-    # parametergroup1 = [(namename[0], parameters[0]['rewardcurve']), (namename[1], parameters[1]['rewardcurve']), (namename[2], parameters[2]['rewardcurve'])] #TODO reward doesn't work yet (1 team)
-    parametergroup1b = [(namename[0], parameters[0]['scorelist']), (namename[1], parameters[1]['scorelist']), (namename[2], parameters[2]['scorelist'])]
-    parametergroup1c = [(namename[0], parameters[0]['tagslist']), (namename[1], parameters[1]['tagslist']), (namename[2], parameters[2]['tagslist'])]
-    parametergroup1d = [(namename[0], parameters[0]['grabslist']), (namename[1], parameters[1]['grabslist']), (namename[2], parameters[2]['grabslist'])]
-
+    # Base-* plot: (score, tags, grabs) reward is not yet implemented
+    d0, d1, d2, d3 = 0,1,2,3
+    # parametergroup1 = [(namename[d0], parameters[d0]['rewardcurve']), (namename[d1], parameters[d1]['rewardcurve']), (namename[d2], parameters[2]['rewardcurve'])] #TODO reward doesn't work yet (1 team)
+    parametergroup1b = [(namename[d0], parameters[d0]['scorelist']), (namename[d1], parameters[d1]['scorelist']), (namename[d2], parameters[d2]['scorelist']), (namename[d3], parameters[d3]['scorelist'])]
+    parametergroup1c = [(namename[d0], parameters[d0]['tagslist']), (namename[d1], parameters[d1]['tagslist']), (namename[d2], parameters[d2]['tagslist']), (namename[d3], parameters[d3]['tagslist'])]
+    parametergroup1d = [(namename[d0], parameters[d0]['grabslist']), (namename[d1], parameters[d1]['grabslist']), (namename[d2], parameters[d2]['grabslist']), (namename[d3], parameters[d3]['grabslist'])]
     # plot_anythingelse_multiscenario(parametergroup1, "qtrainlog/", "testrendering", "Reward")
-    plot_anythingelse_multiscenario(parametergroup1b, "qtrainlog/", "testrendering", "Score", bagsize = 100)
-    plot_anythingelse_multiscenario(parametergroup1c, "qtrainlog/", "testrendering", "Tags", bagsize = 100)
-    plot_anythingelse_multiscenario(parametergroup1d, "qtrainlog/", "testrendering", "Grabs", bagsize = 100)
+    plot_anythingelse_multiscenario(parametergroup1b, "qtrainlog/", "Allbase", "Score", bagsize = 100)
+    plot_anythingelse_multiscenario(parametergroup1c, "qtrainlog/", "Allbase", "Tags", bagsize = 100)
+    plot_anythingelse_multiscenario(parametergroup1d, "qtrainlog/", "Allbase", "Grabs", bagsize = 100)
+
+
+    # Base-Aggr, Base-Off, Turn-Aggr, Bool-Aggr
+    d0, d1, d2, d3 = 0,1,4,5
+    # parametergroup1 = [(namename[d], parameters[d]['rewardcurve']), (namename[d1], parameters[d1]['rewardcurve']), (namename[2], parameters[2]['rewardcurve'])] #TODO reward doesn't work yet (1 team)
+    parametergroup1b = [(namename[d0], parameters[d0]['scorelist']), (namename[d1], parameters[d1]['scorelist']), (namename[d2], parameters[d2]['scorelist']), (namename[d3], parameters[d3]['scorelist'])]
+    parametergroup1c = [(namename[d0], parameters[d0]['tagslist']), (namename[d1], parameters[d1]['tagslist']), (namename[d2], parameters[d2]['tagslist']), (namename[d3], parameters[d3]['tagslist'])]
+    parametergroup1d = [(namename[d0], parameters[d0]['grabslist']), (namename[d1], parameters[d1]['grabslist']), (namename[d2], parameters[d2]['grabslist']), (namename[d3], parameters[d3]['grabslist'])]
+    # plot_anythingelse_multiscenario(parametergroup1, "qtrainlog/", "testrendering", "Reward")
+    plot_anythingelse_multiscenario(parametergroup1b, "qtrainlog/", "AllAggr", "Score", bagsize = 100)
+    plot_anythingelse_multiscenario(parametergroup1c, "qtrainlog/", "AllAggr", "Tags", bagsize = 100)
+    plot_anythingelse_multiscenario(parametergroup1d, "qtrainlog/", "AllAggr", "Grabs", bagsize = 100)
+    
+    #0 Base-Aggr
+    #1 Base-Off
+    #2 Base-Tags
+    #3 Base-Def
+    #4 Turn-Aggr
+    #5 Bool-Aggr
+    #6 Bool-Tags
+    #7 Bool-Def
+    #8 Pretrain-Aggr
+    #9 Pretrain-Def
+    #10 Previous-Aggr
+
+    # Base-Tags, Bool-Tags, Base-Aggr
+    d0, d1, d2, d3 = 2,6,0    ,-1
+    # parametergroup1 = [(namename[d0], parameters[d0]['rewardcurve']), (namename[d1], parameters[d1]['rewardcurve']), (namename[2], parameters[2]['rewardcurve'])] #TODO reward doesn't work yet (1 team)
+    parametergroup1b = [(namename[d0], parameters[d0]['scorelist']), (namename[d1], parameters[d1]['scorelist']), (namename[d2], parameters[d2]['scorelist'])]#, (namename[d3], parameters[d3]['scorelist'])]
+    parametergroup1c = [(namename[d0], parameters[d0]['tagslist']), (namename[d1], parameters[d1]['tagslist']), (namename[d2], parameters[d2]['tagslist'])]#, (namename[d3], parameters[d3]['tagslist'])]
+    parametergroup1d = [(namename[d0], parameters[d0]['grabslist']), (namename[d1], parameters[d1]['grabslist']), (namename[d2], parameters[d2]['grabslist'])]#, (namename[d3], parameters[d3]['grabslist'])]
+    # plot_anythingelse_multiscenario(parametergroup1, "qtrainlog/", "testrendering", "Reward")
+    plot_anythingelse_multiscenario(parametergroup1b, "qtrainlog/", "AllTags", "Score", bagsize = 100)
+    plot_anythingelse_multiscenario(parametergroup1c, "qtrainlog/", "Allbase", "Tags", bagsize = 100)
+    plot_anythingelse_multiscenario(parametergroup1d, "qtrainlog/", "Allbase", "Grabs", bagsize = 100)
+
+    
+    # Base-Def, Bool-Def, Pretrain-Def? oder Base-Aggr?/Base-Tags?
+    d0, d1, d2, d3 = 3,7,8
+    # parametergroup1 = [(namename[d0], parameters[d0]['rewardcurve']), (namename[d1], parameters[d1]['rewardcurve']), (namename[2], parameters[2]['rewardcurve'])] #TODO reward doesn't work yet (1 team)
+    parametergroup1b = [(namename[d0], parameters[d0]['scorelist']), (namename[d1], parameters[d1]['scorelist']), (namename[d2], parameters[d2]['scorelist']), (namename[d3], parameters[d3]['scorelist'])]
+    parametergroup1c = [(namename[d0], parameters[d0]['tagslist']), (namename[d1], parameters[d1]['tagslist']), (namename[d2], parameters[d2]['tagslist']), (namename[d3], parameters[d3]['tagslist'])]
+    parametergroup1d = [(namename[d0], parameters[d0]['grabslist']), (namename[d1], parameters[d1]['grabslist']), (namename[d2], parameters[d2]['grabslist']), (namename[d3], parameters[d3]['grabslist'])]
+    # plot_anythingelse_multiscenario(parametergroup1, "qtrainlog/", "testrendering", "Reward")
+    plot_anythingelse_multiscenario(parametergroup1b, "qtrainlog/", "AllDef", "Score", bagsize = 100)
+    plot_anythingelse_multiscenario(parametergroup1c, "qtrainlog/", "Allbase", "Tags", bagsize = 100)
+    plot_anythingelse_multiscenario(parametergroup1d, "qtrainlog/", "Allbase", "Grabs", bagsize = 100)
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    #0 Base-Aggr
+    #1 Base-Off
+    #2 Base-Tags
+    #3 Base-Def
+    #4 Turn-Aggr
+    #5 Bool-Aggr
+    #6 Bool-Tags
+    #7 Bool-Def
+    #8 Pretrain-Aggr
+    #9 Pretrain-Def
+    #10 Previous-Aggr
     
     #scenario_data: List of tuples [(scenario_name1, array1), (scenario_name2, array2), ...]
 
