@@ -409,7 +409,7 @@ def extract_score_grabs_tags(data):
     return np.array(scores), np.array(grabs), np.array(tags)
 
 
-def evalrender(foldername, parameterset_name):
+def evalrender(foldername, parameterset_name):  #TODO TODO CURRENT: this saves metrics to file metrics. EOD: Visualization has to be changed/from scratch generated to load these metrics and plot tem PER METRIC (not per setting).
     # This function is called for each parameter set, it loads the statistics from the specified file and creates visualizations.
     # The visualizations are saved to files in a "figures" subfolder of the parameter set's folder.
     # The name of the output files is based on the parameter set's name and the type of data being visualized (score, etc.).
