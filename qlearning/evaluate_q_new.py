@@ -1473,7 +1473,7 @@ def plot_anythingelse_multiscenario_boxplots(scenario_data, foldername, name, at
             ax.plot(pos_red, red_means, color=color_red, linestyle='-', linewidth=1.5, marker='o', markersize=3, alpha=0.9)
     
     # Axis labels and title
-    ax.set_title(name, fontsize=NAMEFONT) #TODOvis remove this
+    # ax.set_title(name, fontsize=NAMEFONT) #TODOvis remove this
     ax.set_xlabel("Episodes" + (f" (averaged over each {bagsize} episodes)" if bagsize > 1 else ""), 
                   fontsize=AXISFONT)
     ax.set_ylabel(attribute_name, fontsize=AXISFONT)
