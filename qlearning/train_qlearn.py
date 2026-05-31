@@ -683,9 +683,9 @@ if __name__ == "__main__":
 
 
 
-    elif len(sys.argv) > 1 and sys.argv[1] == "render": ####
+    elif len(sys.argv) > 1 and sys.argv[1] == "compute": #### #changing back to read from file metrics instead of computing metrics. File sizes of eval.npy files are too large...
         from evaluate_q_new import evalrender  # Local import to avoid circular dependency
-        print("Eval Render mode selected.")
+        print("Compute metrics mode selected.")
 
         parametersets: list[ParameterSet] = []
         i = 0
@@ -752,6 +752,64 @@ if __name__ == "__main__":
 
         # with Pool(processes=num_workers) as pool:
         #     pool.map(doEval, parametersets)
+
+        sys.exit(0) 
+    elif len(sys.argv) > 1 and sys.argv[1] == "render": #### #changing back to read from file metrics instead of computing metrics. File sizes of eval.npy files are too large...
+        #from evaluate_q_new import evalrender  # Local import to avoid circular dependency
+        print("Eval Render mode selected.")
+
+        parametersets: list[ParameterSet] = []
+        i = 0
+        nrs = 20
+        #########################################
+        # The policies that are referred to and shown in the thesis q-results section:
+        parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parameterconfirm9", "qtrainlog/batch 6f/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        parametersets.append(ParameterSet("single_aggressive26", "hard", 0.3, 0.8, 10.0, False, "unsuitable_param2", "qtrainlog/batch 6h/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "aggrtagsnobool", "qtrainlog/batch 6g/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.99, 10.0, False, "defender4", "qtrainlog/batch 8a/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
+        parametersets.append(ParameterSet("single_aggressive26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm11", "qtrainlog/batch 6g/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=True, sim_speedup=3))
+        parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "parameterconfirm9", "qtrainlog/batch 6g/", i, boolchange=True, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        parametersets.append(ParameterSet("aggressive_tags_26", "hard", 0.01, 0.99, 10.0, False, "parameterconfirm17", "qtrainlog/batch 6f/", i, boolchange=True, nrs=nrs, ep=1000, teamsize3=True, timelimit=1500., ignoreseed=False, sharpturns=False, sim_speedup=3))
+        parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, False, "defender1", "qtrainlog/batch 8a/", i, boolchange=True, nrs=20, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
+        parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, True, "pretr1", "qtrainlog/batch 8a/", i, boolchange=False, nrs=nrs, ep=1000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=False))
+        parametersets.append(ParameterSet("caps_and_tags", "hard", 0.1, 0.9, 10.0, True, "pretr3", "qtrainlog/batch 8a/", i, boolchange=True, nrs=20, ep=1000)) 
+        parametersets.append(ParameterSet("single_aggressive26", "hard", 0.1, 0.99, 10.0, False, "prevcontinue4", "qtrainlog/batch 7c/", i, boolchange=False, nrs=nrs, ep=4000, teamsize3=True, timelimit=1200., ignoreseed=False, sharpturns=False, sim_speedup=3, previous_action=True))
+
+
+        #########################################
+
+        """# Example loading from metrics.npy:
+        para_file = parametersets[0].foldername + parametersets[0].create_name_without_index() + "_metrics.npy"
+        metric_arrays = np.load(para_file, allow_pickle=True)
+
+        # metric_arrays is a dictionary with entries:
+        metric_display_names = {
+            'total_distance': 'Total Distance',
+            'area_coverage': 'Area Coverage',
+            'distance_coverage': 'Distance Coverage',
+            'voronoi_coverage': 'Voronoi Uniformity',
+            'defensive_distance': 'Defensive Distance',
+            'aggressive_distance': 'Aggressive Distance',
+            'combined_position_score': 'Combined Position Score',
+            'score_tag_ratio': 'Score/Tag Ratio',
+            'aggr_def_percentage': 'Aggr-Def Percentage'
+        }
+        metric_arrays['scores']
+        metric_arrays['grabs']
+        metric_arrays['tags']"""
+
+        # ===== Visualize metrics across all policies =====
+        print("\n" + "="*60)
+        print("Visualizing metrics across all policies...")
+        print("="*60 + "\n")
+        
+        from evaluate_q_new import load_metrics_for_policies, visualize_metrics_across_policies
+        
+        aggregated_metrics = load_metrics_for_policies(parametersets)
+        output_folder = "qtrainlog/eval/"
+        visualize_metrics_across_policies(aggregated_metrics, parametersets, output_folder, show_errorbar=True)
+        
+        print(f"\nMetrics visualizations saved to: {output_folder}\n")
 
         sys.exit(0) 
     else:

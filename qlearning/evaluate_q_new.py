@@ -471,14 +471,15 @@ def evalrender(foldername, parameterset_name):  #TODO TODO CURRENT: this saves m
     team_names = ['Team Blue', 'Team Red']
     metric_display_names = {
         'total_distance': 'Total Distance',
-        'area_coverage': 'Area Coverage',
-        'distance_coverage': 'Distance Coverage',
-        'voronoi_coverage': 'Voronoi Uniformity',
+        'area_coverage': 'Area-Coverage',
+        'distance_coverage': 'Distance-Coverage',
+        'voronoi_coverage': 'Voronoi-Coverage',
         'defensive_distance': 'Defensive Distance',
         'aggressive_distance': 'Aggressive Distance',
-        'combined_position_score': 'Combined Position Score',
-        'score_tag_ratio': 'Score/Tag Ratio',
-        'aggr_def_percentage': 'Aggr-Def Percentage'
+        'combined_position_score': 'Combined Positioning Score',
+        'score_tag_ratio': 'Score-Tag Ratio',
+        'aggr_def_percentage': 'Aggr-Def Percentage',
+        'combined_quantification_metric': 'Combined Quantification Metric'
     }
     
     print(f"{'Metric':<40} {'Team Blue':<25} {'Team Red':<25}")
@@ -536,6 +537,7 @@ def group_metrics_by_unit():
         ('score_tag_ratio', 3, 'Score/Tag Ratio'),
         # Percentage metric (group 4) - 0-100 scale
         ('aggr_def_percentage', 4, 'Aggr-Def Percentage'),
+        ('combined_quantification_metric', 1, 'Combined Quantification Metric')
     ]
     return metric_groups
 
@@ -1446,6 +1448,10 @@ def plot_anythingelse_multiscenario_boxplots(scenario_data, foldername, name, at
             cap.set(color='darkblue', linewidth=0.8)
         for flier in bp_blue['fliers']:
             flier.set(marker='o', markerfacecolor='blue', markeredgecolor='darkblue', markersize=3)
+
+        # Connect blue means across the scenario
+        blue_means = [np.mean(d) for d in blue_data]
+        ax.plot(pos_blue, blue_means, color=color_blue, linestyle='-', linewidth=1.5, marker='o', markersize=3, alpha=0.9)
         
         # Plot red boxes for this scenario (using red palette) - only if two teams
         if has_two_teams and red_data is not None:
@@ -1461,6 +1467,10 @@ def plot_anythingelse_multiscenario_boxplots(scenario_data, foldername, name, at
                 cap.set(color='darkred', linewidth=0.8)
             for flier in bp_red['fliers']:
                 flier.set(marker='o', markerfacecolor='red', markeredgecolor='darkred', markersize=3)
+
+            # Connect red means across the scenario
+            red_means = [np.mean(d) for d in red_data]
+            ax.plot(pos_red, red_means, color=color_red, linestyle='-', linewidth=1.5, marker='o', markersize=3, alpha=0.9)
     
     # Axis labels and title
     ax.set_title(name, fontsize=NAMEFONT) #TODOvis remove this
@@ -1708,6 +1718,365 @@ def plot_anythingelse_multiscenario(scenario_data, foldername, name, attribute_n
                                           figsize=figsize, dpi=dpi, bagsize=int(bagsize / 2)) #assumes dividable size (50 or 50 * n)
 
 #End of plot_anythingelse_multiscenario()
+
+
+def load_metrics_for_policies(parametersets):
+    """
+    Load pre-computed metrics from multiple parametersets and aggregate across episodes.
+    
+    Args:
+        parametersets: List of ParameterSet objects
+        
+    Returns:
+        dict[metric_name] -> dict[policy_name] -> {'blue': (mean, std), 'red': (mean, std)}
+    """
+    aggregated_metrics = {}
+    
+    metric_names = [
+        'total_distance', 'area_coverage', 'distance_coverage', 'voronoi_coverage',
+        'defensive_distance', 'aggressive_distance', 'combined_position_score',
+        'score_tag_ratio', 'aggr_def_percentage', 'scores', 'grabs', 'tags'
+    ]
+    
+    # Initialize dict structure
+    for metric_name in metric_names:
+        aggregated_metrics[metric_name] = {}
+    
+    # Load metrics for each policy
+    for parameterset in parametersets:
+        policy_name = parameterset.create_name_without_index()
+        metrics_file = parameterset.foldername + policy_name + "_metrics.npy"
+        
+        try:
+            metric_arrays = np.load(metrics_file, allow_pickle=True).item()
+            print(f"  Loaded metrics from: {metrics_file}")
+        except FileNotFoundError:
+            print(f"  WARNING: Metrics file not found: {metrics_file}")
+            continue
+        except Exception as e:
+            print(f"  ERROR loading {metrics_file}: {e}")
+            continue
+        
+        # Extract mean and std for each metric and team
+        for metric_name in metric_names:
+            if metric_name in metric_arrays:
+                metric_data = metric_arrays[metric_name]  # shape (num_episodes, 2)
+                
+                # Compute mean and std for blue (index 0) and red (index 1) teams
+                blue_mean = np.mean(metric_data[:, 0])
+                blue_std = np.std(metric_data[:, 0])
+                red_mean = np.mean(metric_data[:, 1])
+                red_std = np.std(metric_data[:, 1])
+                
+                aggregated_metrics[metric_name][policy_name] = {
+                    'blue': (blue_mean, blue_std),
+                    'red': (red_mean, red_std)
+                }
+    
+    return aggregated_metrics
+
+
+# Prepare HELPERS for plotting
+def add_group_separators(ax, group_names, labels):
+    """Draw separators and group labels when group name changes.
+
+    Args:
+        ax: matplotlib Axes
+        group_names: list of group identifier strings (one per policy)
+        labels: list of x-axis labels (one per policy)
+    """
+    last_group = None
+    for i, g in enumerate(group_names):
+        if last_group is None:
+            last_group = g
+            continue
+        if g != last_group:
+            ax.axvline(i - 0.5, color="gray", linestyle="--", linewidth=1, alpha=0.6)
+            last_group = g
+
+    # Add big group labels on top
+    centers = {}
+    for i, g in enumerate(group_names):
+        centers.setdefault(g, []).append(i)
+
+    ymin, ymax = ax.get_ylim()
+    y = ymax * 1.02
+    for g, idxs in centers.items():
+        c = sum(idxs) / len(idxs)
+        ax.text(c, y, str(g), ha="center", va="bottom", fontsize=10, fontweight="bold")
+
+
+def plot_pairs_metrics(aggregated_metrics, parametersets, metric_blue, metric_red, title, ylabel, filename, output_folder):
+    """
+    Plot paired bar charts (blue vs red) for the given metric keys across policies.
+
+    Args:
+        aggregated_metrics: dict returned by load_metrics_for_policies()
+        parametersets: list of ParameterSet objects in desired order
+        metric_blue: metric name to use for blue team (e.g., 'total_distance' or 'blue_total_dist')
+        metric_red: metric name to use for red team
+        title: plot title
+        ylabel: y-axis label
+        filename: output filename (png)
+        output_folder: directory to save the plot
+    """
+    os.makedirs(output_folder, exist_ok=True)
+
+    # Prepare policy names in order
+    policy_names = [p.create_name_without_index() for p in parametersets]
+    # group by short name (use ParameterSet.name) for separators
+    group_names = [p.name for p in parametersets]
+
+    blue_vals = []
+    red_vals = []
+    for pname in policy_names:
+        if metric_blue in aggregated_metrics and pname in aggregated_metrics[metric_blue]:
+            blue_vals.append(aggregated_metrics[metric_blue][pname]['blue'][0])
+        else:
+            blue_vals.append(np.nan)
+
+        if metric_red in aggregated_metrics and pname in aggregated_metrics[metric_red]:
+            red_vals.append(aggregated_metrics[metric_red][pname]['red'][0])
+        else:
+            red_vals.append(np.nan)
+
+    x = np.arange(len(policy_names))
+    width = 0.35
+
+    fig, ax = plt.subplots(figsize=(max(8, len(x)*0.7), 5))
+
+    ax.bar(x - width/2, blue_vals, width, label="Blue", color="tab:blue")
+    ax.bar(x + width/2, red_vals,  width, label="Red",  color="tab:red")
+
+    ax.set_xticks(x)
+    ax.set_xticklabels(policy_names, rotation=45, ha="right")
+    ax.set_ylabel(ylabel)
+    ax.set_title(title, pad=18)
+    ax.legend()
+
+    # Add separators and group headers
+    add_group_separators(ax, group_names, policy_names)
+
+    plt.tight_layout()
+    outfile = os.path.join(output_folder, filename)
+    plt.savefig(outfile, dpi=300, bbox_inches='tight')
+    plt.close(fig)
+
+
+def visualize_metrics_across_policies(aggregated_metrics, parametersets, output_folder, show_errorbar=True):
+    """
+    Create visualizations for all metrics across multiple policies.
+    
+    Generates one plot per metric showing all policies with blue and red team bars.
+    
+    Args:
+        aggregated_metrics: dict from load_metrics_for_policies()
+        parametersets: List of ParameterSet objects (for ordering and metadata)
+        output_folder: Where to save PNG files
+        show_errorbar: Whether to include ±std dev error bars
+    """
+    os.makedirs(output_folder, exist_ok=True)
+    
+    metric_display_names = {
+        'total_distance': 'Total Distance',
+        'area_coverage': 'Area Coverage',
+        'distance_coverage': 'Distance Coverage',
+        'voronoi_coverage': 'Voronoi Uniformity',
+        'defensive_distance': 'Defensive Distance',
+        'aggressive_distance': 'Aggressive Distance',
+        'combined_position_score': 'Combined Position Score',
+        'score_tag_ratio': 'Score/Tag Ratio',
+        'aggr_def_percentage': 'Aggr-Def Percentage',
+        'combined_quantification_metric': 'Combined Quantification Metric',
+        'scores': 'Scores',
+        'grabs': 'Grabs',
+        'tags': 'Tags'
+    }
+
+    # Compute an additional metric that is the sum of voronoi_coverage, area_coverage and combined_position_score (1 - combined_position_score) 
+    if 'voronoi_coverage' in aggregated_metrics and 'area_coverage' in aggregated_metrics and 'combined_position_score' in aggregated_metrics:
+        aggregated_metrics['combined_quantification_metric'] = {}
+        for policy_name in aggregated_metrics['voronoi_coverage']:
+            if policy_name in aggregated_metrics['area_coverage'] and policy_name in aggregated_metrics['combined_position_score']:
+                blue_voronoi, blue_voronoi_std = aggregated_metrics['voronoi_coverage'][policy_name]['blue']
+                red_voronoi, red_voronoi_std = aggregated_metrics['voronoi_coverage'][policy_name]['red']
+                blue_area, blue_area_std = aggregated_metrics['area_coverage'][policy_name]['blue']
+                red_area, red_area_std = aggregated_metrics['area_coverage'][policy_name]['red']
+                blue_combined, blue_combined_std = aggregated_metrics['combined_position_score'][policy_name]['blue']
+                red_combined, red_combined_std = aggregated_metrics['combined_position_score'][policy_name]['red']
+
+                # Compute new combined score
+                new_blue_combined = blue_voronoi + blue_area + (1 - blue_combined)
+                new_red_combined = red_voronoi + red_area + (1 - red_combined)
+
+                # For std dev, we can use a simple sum of variances (assuming independence) as an approximation
+                new_blue_combined_std = np.sqrt(blue_voronoi_std**2 + blue_area_std**2 + blue_combined_std**2)
+                new_red_combined_std = np.sqrt(red_voronoi_std**2 + red_area_std**2 + red_combined_std**2)
+
+                aggregated_metrics['combined_quantification_metric'][policy_name] = {
+                    'blue': (new_blue_combined, new_blue_combined_std),
+                    'red': (new_red_combined, new_red_combined_std)
+                }
+    
+    # Get y-axis limits using existing grouping logic
+    metric_groups = group_metrics_by_unit()
+    y_limits = {}
+    
+    for metric_name, unit_group, _ in metric_groups:
+        if metric_name in aggregated_metrics:
+            data_list = []
+            for policy_name in aggregated_metrics[metric_name]:
+                blue_mean, _ = aggregated_metrics[metric_name][policy_name]['blue']
+                red_mean, _ = aggregated_metrics[metric_name][policy_name]['red']
+                data_list.extend([blue_mean, red_mean])
+            
+            if data_list:
+                min_val = min(data_list)
+                max_val = max(data_list)
+                margin = (max_val - min_val) * 0.1 if max_val > min_val else 0.5
+                y_limits[unit_group] = (min_val - margin, max_val + margin)
+    
+    # Force percentage group (4) to be 0-100
+    y_limits[4] = (-5, 105)
+    
+    # Generate plot for each metric
+    metrics_to_plot = [
+        'total_distance', 'area_coverage', 'distance_coverage', 'voronoi_coverage',
+        'defensive_distance', 'aggressive_distance', 'combined_position_score',
+        'score_tag_ratio', 'aggr_def_percentage', 'combined_quantification_metric', 'scores', 'grabs', 'tags'
+    ]
+    
+    for metric_name in metrics_to_plot:
+        if metric_name not in aggregated_metrics or not aggregated_metrics[metric_name]:
+            print(f"  Skipping {metric_name} - no data")
+            continue
+        
+        display_name = metric_display_names.get(metric_name, metric_name)
+        
+        # Find unit group for y-axis limits
+        unit_group = 1  # default
+        for mn, ug, _ in metric_groups:
+            if mn == metric_name:
+                unit_group = ug
+                break
+        
+        # Create figure
+        fig, ax = plt.subplots(figsize=(16, 6))
+        
+        # Extract data
+        policy_names = [p.create_name_without_index() for p in parametersets 
+                       if p.create_name_without_index() in aggregated_metrics[metric_name]]
+        # Pretty manual names for plot rendering loading:
+        printing_names = [p.name for p in parametersets if p.create_name_without_index() in aggregated_metrics[metric_name]]
+        printing_names = ["Base-Aggr", "Base-Off", "Base-Tags", "Base-Def", "Turn-Aggr", "Bool-Aggr", "Bool-Tags", "Bool-Def", "Pretrain-Aggr", "Pretrain-Def", "Previous-Aggr"]
+        num_policies = len(policy_names)
+        
+        x_positions_blue = np.arange(num_policies) * 2.5
+        x_positions_red = x_positions_blue + 0.35
+        
+        blue_means = []
+        blue_stds = []
+        red_means = []
+        red_stds = []
+        
+        for policy_name in policy_names:
+            blue_mean, blue_std = aggregated_metrics[metric_name][policy_name]['blue']
+            red_mean, red_std = aggregated_metrics[metric_name][policy_name]['red']
+            blue_means.append(blue_mean)
+            blue_stds.append(blue_std)
+            red_means.append(red_mean)
+            red_stds.append(red_std)
+        
+        # Plot bars
+        if show_errorbar:
+            ax.bar(x_positions_blue, blue_means, width=0.35, label='Blue Team', 
+                   color='tab:blue', edgecolor='tab:blue', linewidth=1.5, yerr=blue_stds, capsize=5)
+            ax.bar(x_positions_red, red_means, width=0.35, label='Red Team', 
+                   color='tab:red', edgecolor='tab:red', linewidth=1.5, yerr=red_stds, capsize=5)
+        else:
+            ax.bar(x_positions_blue, blue_means, width=0.35, label='Blue Team', 
+                   color='tab:blue', edgecolor='tab:blue', linewidth=1.5)
+            ax.bar(x_positions_red, red_means, width=0.35, label='Red Team', 
+                   color='tab:red', edgecolor='tab:red', linewidth=1.5)
+        # else:
+        #     ax.bar(x_positions_blue, blue_means, width=0.35, label='Blue Team', 
+        #            color='lightblue', edgecolor='blue', linewidth=1.5)
+        #     ax.bar(x_positions_red, red_means, width=0.35, label='Red Team', 
+        #            color='lightcoral', edgecolor='red', linewidth=1.5)
+        
+        # Customize plot
+        ax.set_xticks((x_positions_blue + x_positions_red) / 2)
+        ax.set_xticklabels(printing_names, rotation=45, ha='right', fontsize=NAMEFONT - 2)
+        ax.set_ylabel(display_name, fontsize=NAMEFONT)
+        # increase y-axis tick font
+        ax.tick_params(axis='y', labelsize=NUMBERSFONT)
+        # ax.set_title(display_name, fontsize=NAMEFONT)
+        # ax.legend(fontsize=LEGENDFONT)
+        ax.grid(True, alpha=0.3, axis='y')
+        
+        # Set y-axis limits
+        # if unit_group in y_limits:
+        #     ax.set_ylim(y_limits[unit_group])
+        if metric_name == 'combined_position_score':
+            ax.set_ylim(0.6, 1)
+            # ax.set_ylim(0.7, 0.9)
+        elif metric_name =='aggr_def_percentage':
+            ax.set_ylim(0, 100)
+        elif metric_name =='score_tag_ratio':
+            ax.set_ylim(0, 3)
+        # else:
+        #     # For distance and coverage metrics, set lower limit to 0 and upper limit based on data
+        #     all_means = blue_means + red_means
+        #     max_mean = max(all_means)
+        #     ax.set_ylim(0, max_mean * 1.2 if max_mean > 0 else 1)
+        
+        # Ensure reasonable spacing
+        ax.set_xlim(-0.5, x_positions_blue[-1] + 1.5)
+        
+        plt.tight_layout()
+        
+        # Save figure
+        output_file = os.path.join(output_folder, f"metric_{metric_name}.png")
+        plt.savefig(output_file, dpi=300, bbox_inches='tight')
+        plt.close()
+        
+        print(f"  Saved: {output_file}")
+
+    """# Also produce older-style paired plots (blue vs red per policy) for each metric
+    print("\n  Generating paired Blue vs Red plots (old style)...")
+    for metric_name in metrics_to_plot:
+        if metric_name not in aggregated_metrics or not aggregated_metrics[metric_name]:
+            continue
+        display_name = metric_display_names.get(metric_name, metric_name)
+        pairs_filename = f"pairs_{metric_name}.png"
+        try:
+            plot_pairs_metrics(aggregated_metrics, parametersets, metric_name, metric_name,
+                               title=f"{display_name} - Blue vs Red",
+                               ylabel=display_name,
+                               filename=pairs_filename,
+                               output_folder=output_folder)
+            print(f"  Saved paired plot: {os.path.join(output_folder, pairs_filename)}")
+        except Exception as e:
+            print(f"  Warning: failed to create paired plot for {metric_name}: {e}")
+
+    # Additionally generate paired plots for scores, grabs, and tags if available
+    extra_metrics = ['scores', 'grabs', 'tags']
+    for metric_name in extra_metrics:
+        if metric_name not in aggregated_metrics or not aggregated_metrics[metric_name]:
+            print(f"  Skipping {metric_name} - no data")
+            continue
+        display_name = metric_display_names.get(metric_name, metric_name)
+        pairs_filename = f"pairs_{metric_name}.png"
+        try:
+            plot_pairs_metrics(aggregated_metrics, parametersets, metric_name, metric_name,
+                               title=f"{display_name} - Blue vs Red",
+                               ylabel=display_name,
+                               filename=pairs_filename,
+                               output_folder=output_folder)
+            print(f"  Saved paired plot: {os.path.join(output_folder, pairs_filename)}")
+        except Exception as e:
+            print(f"  Warning: failed to create paired plot for {metric_name}: {e}")"""
+
 
 if __name__ == "__main__":
 
