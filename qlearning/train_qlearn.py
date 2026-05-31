@@ -18,11 +18,19 @@ from qtable import QlearnPolicy, QTable
 # from pyquaticus.utils.rewards import caps_and_grabs, defensive_rew, double_aggressive_rew, single_aggressive_rew, caps_and_tags, aggressive_tags, aggressive_tags_26
 from qlearn_test import train_qlearn, eval_qlearn
 from multiprocessing import Pool, Lock, Value #i don't need any parallel processing (is qlearn even compatible?), i just need to run 10 scripts in different terminals...
+import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
 
 lock = Lock()
 counter = Value('i', 0)
 # number_jobs = -1
 # counter = -1
+
+# Constants for heatmap visualization
+BINS = 600  # number of bins for heatmaps
+TAGBINS = 50  # number of bins for tag heatmaps
+blue_agents = [0, 1, 2]
+red_agents = [3, 4, 5]
 
 """
 (used code from qlearn_test.py, also imported some)
@@ -32,6 +40,191 @@ and for each create a test of 2x qlearn policy agents
 versus 2x base_combined agents during the Masters 
 thesis (March 2026).
 """
+
+# ============================================================================
+# HEATMAP VISUALIZATION FUNCTIONS
+# ============================================================================
+
+def plot_heatmap(positions, title, filename, plotdir, bins=BINS, cmap="hot"):
+    """
+    (should be in evaluate_q_new.py but time is quite short now)
+    Generate a 2D histogram heatmap from position data.
+    
+    Args:
+        positions: list of (x, y) tuples
+        title: title for the plot
+        filename: filename to save as (without path)
+        plotdir: directory to save the plot to
+        bins: number of bins for the histogram
+        cmap: colormap to use
+    """
+    if not positions:
+        return
+
+    xs = [p[0] for p in positions]
+    ys = [p[1] for p in positions]
+
+    fig, ax = plt.subplots(figsize=(20, 10))
+    ax.set_facecolor('black')
+
+    h = ax.hist2d(xs, ys, bins=bins, cmap=cmap)
+    cbar = plt.colorbar(h[3], ax=ax)
+    cbar.ax.tick_params(labelsize=20)
+
+    # ax.set_title(title)
+    # ax.set_xlabel("X")
+    # ax.set_ylabel("Y")
+
+    # Set fixed display area
+    ax.set_xlim(0, 160)
+    ax.set_ylim(0, 80)
+    ax.tick_params(axis='both', which='both', labelsize=25)
+
+
+    # Add border lines
+    ax.axhline(y=0, color='green', linestyle='-', linewidth=3)
+    ax.axhline(y=80, color='green', linestyle='-', linewidth=3)
+    ax.axvline(x=0, color='green', linestyle='-', linewidth=3)
+    ax.axvline(x=80, color='green', linestyle='-', linewidth=6)  # middle line
+    ax.axvline(x=160, color='green', linestyle='-', linewidth=3)
+    
+    plt.tight_layout()
+    outfile = os.path.join(plotdir, filename)
+    plt.savefig(outfile)
+    plt.close(fig)
+
+
+def aggregate_positions_from_eval(eval_data):
+    """
+    Extract agent positions for blue and red teams from eval data.
+    
+    Args:
+        eval_data: numpy array loaded from eval.npy file (list of episode_stats dicts)
+        
+    Returns:
+        dict with 'blue' and 'red' keys, each containing a list of (x, y) tuples
+    """
+    blue_positions = []
+    red_positions = []
+    
+    # eval_data is a list of episode_stats dictionaries (300 episodes)
+    for episode_stats in eval_data:
+        if episode_stats is None:
+            continue
+        
+        # Handle if episode_stats is a dict-like object
+        if isinstance(episode_stats, dict):
+            agent_positions = episode_stats.get('agent_positions', {})
+        else:
+            # Try to access as attribute
+            try:
+                agent_positions = episode_stats.get('agent_positions', {})
+            except:
+                continue
+        
+        if not agent_positions:
+            continue
+        
+        # Collect positions for blue agents (keys are strings: 'agent_0', 'agent_1', etc.)
+        for idx in [0, 1, 2]:
+            agent_key = f'agent_{idx}'
+            if agent_key in agent_positions:
+                positions = agent_positions[agent_key]
+                if isinstance(positions, list) and len(positions) > 0:
+                    blue_positions.extend(positions)
+        
+        # Collect positions for red agents
+        for idx in [3, 4, 5]:
+            agent_key = f'agent_{idx}'
+            if agent_key in agent_positions:
+                positions = agent_positions[agent_key]
+                if isinstance(positions, list) and len(positions) > 0:
+                    red_positions.extend(positions)
+    
+    return {
+        'blue': blue_positions,
+        'red': red_positions
+    }
+
+
+def plot_heatmaps_from_eval(para_folder, para_name):
+    """
+    Generate and save heatmaps from eval.npy files.
+    
+    Args:
+        para_folder: folder path where eval.npy is stored
+        para_name: parameter name (without index) used to construct filename
+    """
+    # Load eval.npy
+    eval_file = os.path.join(para_folder, para_name + "_eval.npy")
+    
+    if not os.path.isfile(eval_file):
+        print(f"Warning: eval.npy not found at {eval_file}")
+        return
+    
+    print(f"Loading evaluation data from {eval_file}")
+    eval_data = np.load(eval_file, allow_pickle=True)
+    
+    # Debug: print info about eval_data structure
+    print(f"DEBUG: eval_data type: {type(eval_data)}, shape: {eval_data.shape if hasattr(eval_data, 'shape') else 'N/A'}")
+    if len(eval_data) > 0:
+        print(f"DEBUG: First episode type: {type(eval_data[0])}")
+        if isinstance(eval_data[0], dict):
+            print(f"DEBUG: First episode keys: {list(eval_data[0].keys())}")
+            if 'agent_positions' in eval_data[0]:
+                print(f"DEBUG: agent_positions keys: {list(eval_data[0]['agent_positions'].keys())}")
+                # Check first position
+                first_key = list(eval_data[0]['agent_positions'].keys())[0]
+                first_positions = eval_data[0]['agent_positions'][first_key]
+                print(f"DEBUG: Sample positions for {first_key}: {first_positions[:3] if len(first_positions) > 0 else 'empty'}")
+    
+    # Aggregate positions
+    positions = aggregate_positions_from_eval(eval_data)
+    
+    # Create output directory
+    plotdir = os.path.join(para_folder, "analysis_plots")
+    os.makedirs(plotdir, exist_ok=True)
+    
+    # Generate heatmaps for blue team
+    if positions['blue']:
+        print(f"DEBUG: Found {len(positions['blue'])} blue team positions")
+        plot_heatmap(
+            positions['blue'],
+            title=f"Blue team positions - {para_name}",
+            filename=f"heatmap_blue_{para_name}.png",
+            plotdir=plotdir,
+            bins=BINS,
+            cmap=LinearSegmentedColormap.from_list(
+                'custom_heatmap',
+                ['black', 'blue', 'cyan', 'white'],
+                N=256
+            )
+        )
+        print(f"Saved blue team heatmap to {plotdir}/heatmap_blue_{para_name}.png")
+    else:
+        print("No blue team positions found in eval data, skipping blue heatmap.")
+    
+    # Generate heatmaps for red team
+    if positions['red']:
+        print(f"DEBUG: Found {len(positions['red'])} red team positions")
+        plot_heatmap(
+            positions['red'],
+            title=f"Red team positions - {para_name}",
+            filename=f"heatmap_red_{para_name}.png",
+            plotdir=plotdir,
+            bins=BINS,
+            cmap=LinearSegmentedColormap.from_list(
+                'custom_heatmap',
+                ['black', 'red', 'yellow', 'white'],
+                N=256
+            )
+        )
+        print(f"Saved red team heatmap to {plotdir}/heatmap_red_{para_name}.png")
+    else:
+        print("No red team positions found in eval data, skipping red heatmap.")
+
+
+# ============================================================================
 
 # this class is just there to select (and store for some time) the right parameters and generate filenames (to log the data reliably)
 class ParameterSet:
@@ -738,7 +931,9 @@ if __name__ == "__main__":
         # print(data0) #much more promising now...
         # sys.exit()
         for para in parametersets:
-            evalrender(para.foldername, para.create_name_without_index())
+            # evalrender(para.foldername, para.create_name_without_index()) #NOTE disabled for now, should have a cleaner toggle...
+            # Generate heatmaps from eval.npy data
+            plot_heatmaps_from_eval(para.foldername, para.create_name_without_index())
 
 
         # # Visualize all scheduled parameters in parallel <-first sequentially, this maybe later...
@@ -855,10 +1050,10 @@ if __name__ == "__main__":
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 6h/unsuitable_param2_single_aggressive_rew_hard_lrate0.3_discount0.8_initq10.0_20nrs_1000ep_no_pre_nr0_q_table.npy", boolchange=False, prev_action=False, sharpturns=False)
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 6f/parameterconfirm17_newbool_aggressive_tags_26_hard_lrate0.01_discount0.99_initq10.0_20nrs_1000ep_no_pre_nr0_q_table.npy", boolchange=True, prev_action=False, sharpturns=False)
         # op baseline 6f:
-        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 6f/parameterconfirm9_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_20nrs_1000ep_no_pre_nr0_q_table.npy", boolchange=False, prev_action=False, sharpturns=False)
+        # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 6f/parameterconfirm9_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_20nrs_1000ep_no_pre_nr0_q_table.npy", boolchange=False, prev_action=False, sharpturns=False)
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 7c/prevcontinue4_prevact_single_aggressive26_hard_lrate0.1_discount0.99_initq10.0_20nrs_4000ep_no_pre_nr0_q_table.npy", boolchange=False, prev_action=True, sharpturns=False)
         # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 8a/defender4_caps_and_tags_hard_lrate0.1_discount0.99_initq10.0_20nrs_1000ep_no_pre_nr0_q_table.npy", boolchange=False, prev_action=False, sharpturns=False)
-        # qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 8a/defender1_newbool_caps_and_tags_hard_lrate0.1_discount0.9_initq10.0_20nrs_1000ep_no_pre_nr1_q_table.npy", boolchange=True, prev_action=False, sharpturns=False)
+        qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 8a/defender1_newbool_caps_and_tags_hard_lrate0.1_discount0.9_initq10.0_20nrs_1000ep_no_pre_nr1_q_table.npy", boolchange=True, prev_action=False, sharpturns=False)
     
         # Muster:
         #qt = QTable(setup.LEARNING_RATE, setup.DISCOUNT_FACTOR, setup.INITIAL_Q_VALUE, "qtrainlog/batch 2/_nr0_q_table.npy")
